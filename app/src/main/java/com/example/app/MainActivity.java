@@ -55,8 +55,7 @@ public class MainActivity extends Activity {
             logDebug("Board: " + android.os.Build.BOARD);
             logDebug("\n--- Detection Strategy ---");
             logDebug("1. Try sysfs paths (requires root or system app)");
-            logDebug("2. Fallback to BatteryManager + Intent API");
-            logDebug("3. Estimate charger voltage from power calculation\n");
+            logDebug("2. Fallback to BatteryManager + Intent API (official, no root needed)\n");
             debugWriter.flush();
         } catch (Exception e) {
             e.printStackTrace();
@@ -102,15 +101,6 @@ public class MainActivity extends Activity {
                     data.put("temp", sysfsTemp != null ? sysfsTemp : "0");
                     data.put("voltage", sysfsVoltage);
                     data.put("source", "sysfs");
-                    
-                    // Try get charger voltage from sysfs
-                    String chargerVoltage = readSysFile("/sys/devices/platform/charger/ADC_Charger_Voltage", null, "Charger_Voltage");
-                    if (chargerVoltage != null && !chargerVoltage.equals("0")) {
-                        data.put("charger_voltage", chargerVoltage);
-                        logDebug("Charger Voltage (sysfs): " + chargerVoltage + " mV");
-                    } else {
-                        data.put("charger_voltage", "0");
-                    }
                 } else {
                     logDebug("✗ Sysfs access failed, using BatteryManager + Intent API");
                     
@@ -142,23 +132,11 @@ public class MainActivity extends Activity {
                     // Temperature is in tenths of degree Celsius
                     int tempDeci = batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
                     
-                    // Get plugged type
-                    int plugged = batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-                    
                     logDebug("BatteryManager - Capacity: " + capacity + "%");
                     logDebug("Intent - Status: " + statusStr);
                     logDebug("Intent - Voltage: " + voltageMv + " mV (" + voltageUv + " µV)");
                     logDebug("BatteryManager - Current: " + currentUa + " µA");
                     logDebug("Intent - Temp: " + tempDeci + " deci°C (" + (tempDeci / 10.0) + " °C)");
-                    
-                    // Estimate charger voltage from power
-                    ChargerEstimation estimation = estimateChargerVoltage(currentUa, voltageMv, status, plugged);
-                    
-                    logDebug("Charger Estimation:");
-                    logDebug("  Power: " + estimation.powerW + " W");
-                    logDebug("  Estimated Voltage: " + estimation.estimatedVoltageMv + " mV");
-                    logDebug("  Charging Mode: " + estimation.chargingMode);
-                    logDebug("  Confidence: " + estimation.confidence);
                     
                     // Convert to same format as sysfs
                     data.put("capacity", String.valueOf(capacity));
@@ -167,12 +145,6 @@ public class MainActivity extends Activity {
                     data.put("current_now", String.valueOf(currentUa)); // Already in µA like sysfs
                     data.put("temp", String.valueOf(tempDeci)); // Already in deci°C like sysfs
                     data.put("source", "hybrid");
-                    
-                    // Add charger voltage estimation
-                    data.put("charger_voltage", String.valueOf(estimation.estimatedVoltageMv));
-                    data.put("charger_power", String.format("%.1f", estimation.powerW));
-                    data.put("charging_mode", estimation.chargingMode);
-                    data.put("estimation_confidence", estimation.confidence);
                 }
                 
                 logDebug("Final JSON: " + data.toString());
@@ -183,80 +155,6 @@ public class MainActivity extends Activity {
                 e.printStackTrace();
                 return "{\"error\":\"" + e.getMessage() + "\"}";
             }
-        }
-        
-        private class ChargerEstimation {
-            float powerW;
-            int estimatedVoltageMv;
-            String chargingMode;
-            String confidence;
-        }
-        
-        private ChargerEstimation estimateChargerVoltage(int currentUa, int voltageMv, int status, int plugged) {
-            ChargerEstimation result = new ChargerEstimation();
-            
-            // Calculate power (W = V × I)
-            // currentUa is negative when charging
-            float currentA = Math.abs(currentUa) / 1000000.0f;
-            float voltageV = voltageMv / 1000.0f;
-            result.powerW = voltageV * currentA;
-            
-            if (status != BatteryManager.BATTERY_STATUS_CHARGING) {
-                result.estimatedVoltageMv = 0;
-                result.chargingMode = "Not Charging";
-                result.confidence = "N/A";
-                return result;
-            }
-            
-            // Infinix GT 30 Pro specs: 45W max (9V/5A or 12V/3.75A)
-            // Typical efficiency: ~85-90%
-            
-            if (result.powerW > 35) {
-                // 45W fast charging detected
-                // Reverse calculate: ChargerVoltage = Power / Current (with efficiency factor)
-                // Assume 85% efficiency: ActualPower = 45W, BatteryPower = 38W
-                float estimatedChargerCurrent = currentA / 0.85f; // Account for losses
-                result.estimatedVoltageMv = (int)(45000 / estimatedChargerCurrent); // 45W in mW
-                
-                if (result.estimatedVoltageMv >= 8000 && result.estimatedVoltageMv <= 10000) {
-                    result.estimatedVoltageMv = 9000; // Snap to 9V
-                    result.chargingMode = "45W Fast Charge (9V/5A)";
-                    result.confidence = "High";
-                } else if (result.estimatedVoltageMv >= 11000 && result.estimatedVoltageMv <= 13000) {
-                    result.estimatedVoltageMv = 12000; // Snap to 12V
-                    result.chargingMode = "45W Fast Charge (12V/3.75A)";
-                    result.confidence = "High";
-                } else {
-                    result.chargingMode = "Fast Charge (Unknown Protocol)";
-                    result.confidence = "Medium";
-                }
-            } else if (result.powerW > 15) {
-                // ~18W charging (9V/2A or similar)
-                result.estimatedVoltageMv = 9000;
-                result.chargingMode = "18W Fast Charge (9V)";
-                result.confidence = "Medium";
-            } else if (result.powerW > 8) {
-                // Standard 10W charging (5V/2A)
-                result.estimatedVoltageMv = 5000;
-                result.chargingMode = "10W Standard Charge (5V/2A)";
-                result.confidence = "High";
-            } else if (result.powerW > 3) {
-                // Slow charging (5V/1A or less)
-                result.estimatedVoltageMv = 5000;
-                result.chargingMode = "Slow Charge (5V/<2A)";
-                result.confidence = "High";
-            } else {
-                // Trickle charge or USB
-                result.estimatedVoltageMv = 5000;
-                if (plugged == BatteryManager.BATTERY_PLUGGED_USB) {
-                    result.chargingMode = "USB Charge (5V/0.5A)";
-                } else {
-                    result.chargingMode = "Trickle Charge";
-                }
-                result.confidence = "Low";
-            }
-            
-            return result;
         }
         
         private String getStatusString(int status) {
@@ -327,29 +225,12 @@ public class MainActivity extends Activity {
                 int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
                 int voltageMv = batteryStatus.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
                 int tempDeci = batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
-                int plugged = batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
                 
                 info.append("✓ Capacity: ").append(capacity).append("% (BatteryManager)\n");
                 info.append("✓ Status: ").append(getStatusString(status)).append(" (Intent)\n");
                 info.append("✓ Voltage: ").append(voltageMv).append(" mV (").append(String.format("%.2f", voltageMv / 1000.0)).append(" V) (Intent)\n");
                 info.append("✓ Current: ").append(current).append(" µA (").append(current / 1000).append(" mA) (BatteryManager)\n");
                 info.append("✓ Temperature: ").append(tempDeci).append(" deci°C (").append(String.format("%.1f", tempDeci / 10.0)).append(" °C) (Intent)\n\n");
-                
-                // Charger voltage estimation
-                ChargerEstimation estimation = estimateChargerVoltage(current, voltageMv, status, plugged);
-                
-                info.append("=== CHARGER VOLTAGE ESTIMATION ===\n\n");
-                info.append("Calculated Power: ").append(String.format("%.2f", estimation.powerW)).append(" W\n");
-                info.append("Estimated Charger Voltage: ").append(estimation.estimatedVoltageMv).append(" mV (");
-                info.append(String.format("%.1f", estimation.estimatedVoltageMv / 1000.0)).append(" V)\n");
-                info.append("Charging Mode: ").append(estimation.chargingMode).append("\n");
-                info.append("Confidence: ").append(estimation.confidence).append("\n\n");
-                
-                info.append("⚡ Formula: Power = Battery_Voltage × |Current|\n");
-                info.append("   ").append(String.format("%.2f", estimation.powerW)).append("W = ");
-                info.append(String.format("%.2f", voltageMv / 1000.0)).append("V × ");
-                info.append(String.format("%.2f", Math.abs(current) / 1000000.0)).append("A\n\n");
-                
                 info.append("✅ Using Hybrid API (works on all Android versions)");
             } catch (Exception e) {
                 info.append("❌ API failed: ").append(e.getMessage());
