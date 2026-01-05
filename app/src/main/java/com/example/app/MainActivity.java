@@ -55,8 +55,7 @@ public class MainActivity extends Activity {
             logDebug("Board: " + android.os.Build.BOARD);
             logDebug("\n--- Detection Strategy ---");
             logDebug("1. Try sysfs paths (requires root or system app)");
-            logDebug("2. Fallback to BatteryManager API (official, no root needed)");
-            logDebug("3. Intent fallback for API < 31\n");
+            logDebug("2. Fallback to BatteryManager + Intent API (official, no root needed)\n");
             debugWriter.flush();
         } catch (Exception e) {
             e.printStackTrace();
@@ -103,7 +102,7 @@ public class MainActivity extends Activity {
                     data.put("voltage", sysfsVoltage);
                     data.put("source", "sysfs");
                 } else {
-                    logDebug("✗ Sysfs access failed, using BatteryManager API");
+                    logDebug("✗ Sysfs access failed, using BatteryManager + Intent API");
                     
                     // Get battery status from Intent
                     IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
@@ -115,49 +114,37 @@ public class MainActivity extends Activity {
                         return data.toString();
                     }
                     
-                    // Get capacity
+                    // Get capacity from BatteryManager (API 21+)
                     int capacity = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
                     
-                    // Get status
+                    // Get status from Intent
                     int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
                     String statusStr = getStatusString(status);
                     
-                    // Get current (available on all API levels via BatteryManager)
+                    // Get current from BatteryManager (API 21+)
                     int currentUa = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
                     
-                    int voltageUv;
-                    int tempDeci;
+                    // Get voltage & temperature from Intent (API 1+)
+                    // Voltage is in millivolts
+                    int voltageMv = batteryStatus.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
+                    int voltageUv = voltageMv * 1000; // Convert mV to µV
                     
-                    // API 31+ has direct properties
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        logDebug("Using API 31+ BatteryManager properties");
-                        voltageUv = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_VOLTAGE_NOW);
-                        tempDeci = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_TEMPERATURE);
-                    } else {
-                        // API < 31: Use Intent extras
-                        logDebug("Using Intent extras for voltage & temperature (API < 31)");
-                        
-                        // Voltage in millivolts from Intent
-                        int voltageMv = batteryStatus.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
-                        voltageUv = voltageMv * 1000; // Convert mV to µV
-                        
-                        // Temperature in tenths of degree Celsius from Intent
-                        tempDeci = batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
-                    }
+                    // Temperature is in tenths of degree Celsius
+                    int tempDeci = batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
                     
                     logDebug("BatteryManager - Capacity: " + capacity + "%");
-                    logDebug("BatteryManager - Status: " + statusStr);
-                    logDebug("BatteryManager - Voltage: " + voltageUv + " µV (" + (voltageUv / 1000) + " mV)");
+                    logDebug("Intent - Status: " + statusStr);
+                    logDebug("Intent - Voltage: " + voltageMv + " mV (" + voltageUv + " µV)");
                     logDebug("BatteryManager - Current: " + currentUa + " µA");
-                    logDebug("BatteryManager - Temp: " + tempDeci + " deci°C (" + (tempDeci / 10.0) + " °C)");
+                    logDebug("Intent - Temp: " + tempDeci + " deci°C (" + (tempDeci / 10.0) + " °C)");
                     
                     // Convert to same format as sysfs
                     data.put("capacity", String.valueOf(capacity));
                     data.put("status", statusStr);
-                    data.put("voltage", String.valueOf(voltageUv / 1000)); // µV to mV
+                    data.put("voltage", String.valueOf(voltageMv)); // Keep in mV like sysfs
                     data.put("current_now", String.valueOf(currentUa)); // Already in µA like sysfs
                     data.put("temp", String.valueOf(tempDeci)); // Already in deci°C like sysfs
-                    data.put("source", "batterymanager");
+                    data.put("source", "hybrid");
                 }
                 
                 logDebug("Final JSON: " + data.toString());
@@ -224,40 +211,29 @@ public class MainActivity extends Activity {
                 info.append("⚠️  No sysfs access (expected on non-root Android 10+)\n\n");
             }
             
-            info.append("=== BATTERYMANAGER API (Fallback) ===\n\n");
+            info.append("=== HYBRID API (BatteryManager + Intent) ===\n\n");
             
             try {
                 IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
                 Intent batteryStatus = registerReceiver(null, ifilter);
                 
+                // From BatteryManager
                 int capacity = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
                 int current = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
+                
+                // From Intent
                 int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+                int voltageMv = batteryStatus.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
+                int tempDeci = batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
                 
-                int voltage;
-                int temp;
-                String apiLevel;
-                
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    voltage = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_VOLTAGE_NOW);
-                    temp = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_TEMPERATURE);
-                    apiLevel = "API 31+ (BatteryManager properties)";
-                } else {
-                    int voltageMv = batteryStatus.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
-                    voltage = voltageMv * 1000;
-                    temp = batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
-                    apiLevel = "API < 31 (Intent extras)";
-                }
-                
-                info.append("Mode: ").append(apiLevel).append("\n\n");
-                info.append("✓ Capacity: ").append(capacity).append("%\n");
-                info.append("✓ Status: ").append(getStatusString(status)).append("\n");
-                info.append("✓ Voltage: ").append(voltage).append(" µV (").append(String.format("%.2f", voltage / 1000000.0)).append(" V)\n");
-                info.append("✓ Current: ").append(current).append(" µA (").append(current / 1000).append(" mA)\n");
-                info.append("✓ Temperature: ").append(temp).append(" deci°C (").append(String.format("%.1f", temp / 10.0)).append(" °C)\n\n");
-                info.append("✅ Using BatteryManager API (official, no root needed)");
+                info.append("✓ Capacity: ").append(capacity).append("% (BatteryManager)\n");
+                info.append("✓ Status: ").append(getStatusString(status)).append(" (Intent)\n");
+                info.append("✓ Voltage: ").append(voltageMv).append(" mV (").append(String.format("%.2f", voltageMv / 1000.0)).append(" V) (Intent)\n");
+                info.append("✓ Current: ").append(current).append(" µA (").append(current / 1000).append(" mA) (BatteryManager)\n");
+                info.append("✓ Temperature: ").append(tempDeci).append(" deci°C (").append(String.format("%.1f", tempDeci / 10.0)).append(" °C) (Intent)\n\n");
+                info.append("✅ Using Hybrid API (works on all Android versions)");
             } catch (Exception e) {
-                info.append("❌ BatteryManager API failed: ").append(e.getMessage());
+                info.append("❌ API failed: ").append(e.getMessage());
             }
             
             return info.toString();
