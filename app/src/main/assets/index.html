@@ -11,8 +11,8 @@
             background: #000;
             color: #00ffff;
             font-family: 'Courier New', monospace;
-            padding: 20px;
-            overflow: hidden;
+            padding: 15px;
+            overflow-y: auto;
         }
         
         .container {
@@ -26,6 +26,7 @@
             padding: 20px;
             background: rgba(0, 255, 255, 0.05);
             box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            margin-bottom: 15px;
         }
         
         .header {
@@ -72,11 +73,47 @@
             text-align: right;
         }
         
+        .value.error { color: #ff4444; }
         .status-charging { color: #00ff00; }
         .status-discharging { color: #ff4444; }
         .status-full { color: #00ff00; }
         
-        .error {
+        .debug-btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .debug-btn:active {
+            background: rgba(0, 255, 255, 0.3);
+        }
+        
+        .debug-output {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            font-size: 11px;
+            color: #0ff;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            display: none;
+        }
+        
+        .debug-output.show { display: block; }
+        
+        .error-msg {
             color: #ff4444;
             font-size: 12px;
             text-align: center;
@@ -122,11 +159,18 @@
                 <span class="value" id="temp">-- °C</span>
             </div>
             
-            <div class="error" id="error"></div>
+            <div class="error-msg" id="error"></div>
         </div>
+        
+        <button class="debug-btn" onclick="showDebug()">🔍 Show Debug Info</button>
+        <button class="debug-btn" onclick="copyDebug()">📋 Copy Debug to Clipboard</button>
+        
+        <div class="debug-output" id="debugOutput"></div>
     </div>
 
     <script>
+        let debugData = '';
+        
         function updateBattery() {
             try {
                 const jsonData = Android.getBatteryData();
@@ -148,12 +192,17 @@
                 const temperature = (tempRaw / 10).toFixed(1);
                 const wattage = Math.round(Math.abs((voltage * current) / 1000));
                 
-                document.getElementById('capacity').textContent = capacity + ' %';
+                // Update UI with error highlighting
+                const capacityEl = document.getElementById('capacity');
+                capacityEl.textContent = capacity + ' %';
+                capacityEl.className = 'value' + (capacity === 0 ? ' error' : '');
                 
                 const statusEl = document.getElementById('status');
                 statusEl.textContent = status;
                 statusEl.className = 'value';
-                if (status.includes('Charging') || status.includes('charging')) {
+                if (status === 'Unknown') {
+                    statusEl.classList.add('error');
+                } else if (status.includes('Charging') || status.includes('charging')) {
                     statusEl.classList.add('status-charging');
                 } else if (status.includes('Discharging') || status.includes('discharging')) {
                     statusEl.classList.add('status-discharging');
@@ -161,16 +210,56 @@
                     statusEl.classList.add('status-full');
                 }
                 
-                document.getElementById('voltage').textContent = voltage + ' V';
+                const voltageEl = document.getElementById('voltage');
+                voltageEl.textContent = voltage + ' V';
+                voltageEl.className = 'value' + (voltage == 0 ? ' error' : '');
+                
                 document.getElementById('current').textContent = current + ' mA';
                 document.getElementById('wattage').textContent = wattage + ' W';
                 document.getElementById('temp').textContent = temperature + ' °C';
                 
-                document.getElementById('error').textContent = '';
+                // Clear error if data is good
+                if (capacity > 0 && status !== 'Unknown') {
+                    document.getElementById('error').textContent = '';
+                } else {
+                    document.getElementById('error').textContent = '⚠️ Check debug log at /sdcard/battery_debug.txt';
+                }
                 
             } catch (e) {
                 document.getElementById('error').textContent = 'Error: ' + e.message;
             }
+        }
+        
+        function showDebug() {
+            try {
+                debugData = Android.getDebugInfo();
+                const output = document.getElementById('debugOutput');
+                output.textContent = debugData;
+                output.classList.add('show');
+            } catch (e) {
+                alert('Error getting debug info: ' + e.message);
+            }
+        }
+        
+        function copyDebug() {
+            if (!debugData) {
+                showDebug();
+            }
+            
+            // Create temporary textarea for copying
+            const textarea = document.createElement('textarea');
+            textarea.value = debugData;
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert('Debug info copied! Location: /sdcard/battery_debug.txt');
+            } catch (e) {
+                alert('Failed to copy. Check /sdcard/battery_debug.txt manually');
+            }
+            
+            document.body.removeChild(textarea);
         }
         
         setInterval(updateBattery, 200);
