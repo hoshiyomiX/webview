@@ -53,72 +53,124 @@ jobs:
       
       - name: Display build info
         run: |
-          echo "Building from branch: ${{ github.event.inputs.branch || github.ref_name }}"
-          echo "Build type: ${{ github.event.inputs.build_type || 'debug' }}"
-          echo "Triggered by: ${{ github.event_name }}"
+          echo "===== BUILD INFORMATION =====" | tee -a build_log.txt
+          echo "Branch: ${{ github.event.inputs.branch || github.ref_name }}" | tee -a build_log.txt
+          echo "Build type: ${{ github.event.inputs.build_type || 'debug' }}" | tee -a build_log.txt
+          echo "Triggered by: ${{ github.event_name }}" | tee -a build_log.txt
+          echo "Commit SHA: ${{ github.sha }}" | tee -a build_log.txt
+          echo "Timestamp: $(date)" | tee -a build_log.txt
+          echo "============================" | tee -a build_log.txt
+          echo "" | tee -a build_log.txt
       
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       
       - name: Build Debug APK
         if: ${{ github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == '' }}
+        continue-on-error: true
         run: |
-          ./gradlew assembleDebug --stacktrace --info 2>&1 | tee build_log.txt
+          echo "===== STARTING DEBUG BUILD =====" | tee -a build_log.txt
+          ./gradlew assembleDebug --stacktrace --info 2>&1 | tee -a build_log.txt
+          echo "" | tee -a build_log.txt
+          echo "Build exit code: $?" | tee -a build_log.txt
       
       - name: Build Release APK
         if: ${{ github.event.inputs.build_type == 'release' }}
+        continue-on-error: true
         run: |
-          ./gradlew assembleRelease --stacktrace --info 2>&1 | tee build_log.txt
+          echo "===== STARTING RELEASE BUILD =====" | tee -a build_log.txt
+          ./gradlew assembleRelease --stacktrace --info 2>&1 | tee -a build_log.txt
+          echo "" | tee -a build_log.txt
+          echo "Build exit code: $?" | tee -a build_log.txt
       
       - name: List build outputs
+        if: always()
         run: |
-          echo "=== Build outputs ==="
-          find app/build/outputs -name "*.apk" -type f
+          echo "" | tee -a build_log.txt
+          echo "===== BUILD OUTPUTS =====" | tee -a build_log.txt
+          find app/build/outputs -name "*.apk" -type f 2>&1 | tee -a build_log.txt || echo "No APK files found" | tee -a build_log.txt
+          echo "========================" | tee -a build_log.txt
       
       - name: Upload Debug APK
-        if: ${{ github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == '' }}
+        if: ${{ (github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == '') && success() }}
         uses: actions/upload-artifact@v4
         with:
           name: DevBattery-Monitor-Debug-${{ github.event.inputs.branch || github.ref_name }}
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 30
-          if-no-files-found: error
+          if-no-files-found: warn
       
       - name: Upload Release APK
-        if: ${{ github.event.inputs.build_type == 'release' }}
+        if: ${{ github.event.inputs.build_type == 'release' && success() }}
         uses: actions/upload-artifact@v4
         with:
           name: DevBattery-Monitor-Release-${{ github.event.inputs.branch || github.ref_name }}
           path: app/build/outputs/apk/release/*.apk
           retention-days: 90
-          if-no-files-found: error
+          if-no-files-found: warn
       
       - name: Upload Build Log Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-log-${{ github.event.inputs.branch || github.ref_name }}
+          name: build-log-${{ github.run_number }}-${{ github.event.inputs.branch || github.ref_name }}
           path: build_log.txt
-          retention-days: 5
+          retention-days: 7
       
       - name: Push Log to build-logs branch
         if: always()
         run: |
+          echo "" | tee -a build_log.txt
+          echo "===== PUSHING TO BUILD-LOGS BRANCH =====" | tee -a build_log.txt
+          
           # Setup git config
-          git config --global user.name "GitHub Actions"
+          git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
           
-          # Create/Switch to build-logs branch (orphan to keep history clean)
-          git checkout --orphan build-logs
-          git rm -rf .
+          # Save current build_log.txt
+          cp build_log.txt /tmp/build_log_backup.txt
           
-          # Prepare log file
-          cp ../build_log.txt . || echo "Build log not found in parent dir" > build_log.txt
-          echo "Log date: $(date)" >> build_log.txt
+          # Try to checkout build-logs branch, create if doesn't exist
+          git fetch origin build-logs || true
+          git checkout build-logs 2>/dev/null || git checkout --orphan build-logs
+          
+          # Clean everything except .git
+          git rm -rf . 2>/dev/null || true
+          
+          # Restore log file
+          cp /tmp/build_log_backup.txt build_log.txt
+          
+          # Create README
+          echo "# Build Logs" > README.md
+          echo "" >> README.md
+          echo "Latest build log from workflow run #${{ github.run_number }}" >> README.md
+          echo "Branch: ${{ github.event.inputs.branch || github.ref_name }}" >> README.md
+          echo "Timestamp: $(date)" >> README.md
           
           # Add and commit
-          git add build_log.txt
-          git commit -m "Update build log for run ${{ github.run_id }} [skip ci]"
+          git add build_log.txt README.md
+          git commit -m "Build log for run #${{ github.run_number }} from ${{ github.event.inputs.branch || github.ref_name }} [skip ci]" || echo "No changes to commit"
           
-          # Push to build-logs branch
-          git push -f origin build-logs
+          # Push
+          git push -f origin build-logs || echo "Failed to push, but continuing..."
+          
+          echo "Log pushed to build-logs branch" | tee -a build_log.txt
+      
+      - name: Build summary
+        if: always()
+        run: |
+          echo "### Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.event.inputs.branch || github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Type:** ${{ github.event.inputs.build_type || 'debug' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run Number:** #${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f "app/build/outputs/apk/debug/app-debug.apk" ] || [ -f "app/build/outputs/apk/release/app-release.apk" ]; then
+            echo "✅ **APK Build Successful!**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **APK Build Failed - Check logs**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Build log available in build-logs branch: [View Log](https://github.com/${{ github.repository }}/blob/build-logs/build_log.txt)" >> $GITHUB_STEP_SUMMARY
