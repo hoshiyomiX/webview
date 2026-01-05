@@ -5,7 +5,11 @@ import android.webkit.WebView;
 import android.webkit.WebSettings;
 import android.webkit.JavascriptInterface;
 import android.app.Activity;
+import android.os.BatteryManager;
 import android.os.Environment;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import org.json.JSONObject;
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -16,10 +20,14 @@ public class MainActivity extends Activity {
     
     private static final String DEBUG_FILE = "/sdcard/battery_debug.txt";
     private FileWriter debugWriter;
+    private BatteryManager batteryManager;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Initialize BatteryManager
+        batteryManager = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
         
         WebView webView = new WebView(this);
         setContentView(webView);
@@ -32,7 +40,6 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new BatteryBridge(), "Android");
         webView.loadUrl("file:///android_asset/index.html");
         
-        // Initialize debug file
         initDebugFile();
     }
     
@@ -42,9 +49,12 @@ public class MainActivity extends Activity {
             debugWriter = new FileWriter(debugFile, false);
             logDebug("=== DevBattery Monitor Debug Log ===");
             logDebug("Timestamp: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
-            logDebug("Android Version: " + android.os.Build.VERSION.RELEASE);
+            logDebug("Android Version: " + android.os.Build.VERSION.RELEASE + " (SDK " + android.os.Build.VERSION.SDK_INT + ")");
             logDebug("Device: " + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL);
-            logDebug("\n--- Starting sysfs scan ---\n");
+            logDebug("Board: " + android.os.Build.BOARD);
+            logDebug("\n--- Detection Strategy ---");
+            logDebug("1. Try sysfs paths (requires root or system app)");
+            logDebug("2. Fallback to BatteryManager API (official, no root needed)\n");
             debugWriter.flush();
         } catch (Exception e) {
             e.printStackTrace();
@@ -68,31 +78,90 @@ public class MainActivity extends Activity {
         public String getBatteryData() {
             try {
                 JSONObject data = new JSONObject();
+                boolean usedSysfs = false;
                 
                 logDebug("\n[" + new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date()) + "] Reading battery data...");
                 
-                data.put("capacity", readSysFile("/sys/class/power_supply/battery/capacity", "0", "Capacity"));
-                data.put("status", readSysFile("/sys/class/power_supply/battery/status", "Unknown", "Status"));
-                data.put("current_now", readSysFile("/sys/class/power_supply/battery/current_now", "0", "Current"));
-                data.put("temp", readSysFile("/sys/class/power_supply/battery/temp", "0", "Temperature"));
-                data.put("voltage", tryReadVoltage());
+                // Try sysfs first
+                String sysfsCapacity = readSysFile("/sys/class/power_supply/battery/capacity", null, "Capacity");
+                String sysfsStatus = readSysFile("/sys/class/power_supply/battery/status", null, "Status");
+                String sysfsCurrent = readSysFile("/sys/class/power_supply/battery/current_now", null, "Current");
+                String sysfsTemp = readSysFile("/sys/class/power_supply/battery/temp", null, "Temperature");
+                String sysfsVoltage = tryReadVoltageSysfs();
+                
+                // Check if sysfs worked
+                if (sysfsCapacity != null && !sysfsCapacity.equals("0")) {
+                    logDebug("✓ Using sysfs data");
+                    usedSysfs = true;
+                    data.put("capacity", sysfsCapacity);
+                    data.put("status", sysfsStatus != null ? sysfsStatus : "Unknown");
+                    data.put("current_now", sysfsCurrent != null ? sysfsCurrent : "0");
+                    data.put("temp", sysfsTemp != null ? sysfsTemp : "0");
+                    data.put("voltage", sysfsVoltage);
+                    data.put("source", "sysfs");
+                } else {
+                    logDebug("✗ Sysfs access failed, using BatteryManager API");
+                    
+                    // Fallback to BatteryManager API
+                    int capacity = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+                    int voltageUv = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_VOLTAGE_NOW);
+                    int currentUa = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
+                    int tempDeci = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_TEMPERATURE);
+                    
+                    // Get status from Intent
+                    IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                    Intent batteryStatus = registerReceiver(null, ifilter);
+                    int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+                    String statusStr = getStatusString(status);
+                    
+                    logDebug("BatteryManager - Capacity: " + capacity + "%");
+                    logDebug("BatteryManager - Status: " + statusStr);
+                    logDebug("BatteryManager - Voltage: " + voltageUv + " µV");
+                    logDebug("BatteryManager - Current: " + currentUa + " µA");
+                    logDebug("BatteryManager - Temp: " + tempDeci + " deci°C");
+                    
+                    // Convert to same format as sysfs
+                    data.put("capacity", String.valueOf(capacity));
+                    data.put("status", statusStr);
+                    data.put("voltage", String.valueOf(voltageUv / 1000)); // µV to mV
+                    data.put("current_now", String.valueOf(currentUa)); // Already in µA like sysfs
+                    data.put("temp", String.valueOf(tempDeci)); // Already in deci°C like sysfs
+                    data.put("source", "batterymanager");
+                }
                 
                 logDebug("Final JSON: " + data.toString());
                 
                 return data.toString();
             } catch (Exception e) {
                 logDebug("ERROR in getBatteryData: " + e.getMessage());
+                e.printStackTrace();
                 return "{\"error\":\"" + e.getMessage() + "\"}";
+            }
+        }
+        
+        private String getStatusString(int status) {
+            switch (status) {
+                case BatteryManager.BATTERY_STATUS_CHARGING:
+                    return "Charging";
+                case BatteryManager.BATTERY_STATUS_DISCHARGING:
+                    return "Discharging";
+                case BatteryManager.BATTERY_STATUS_FULL:
+                    return "Full";
+                case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
+                    return "Not charging";
+                default:
+                    return "Unknown";
             }
         }
         
         @JavascriptInterface
         public String getDebugInfo() {
             StringBuilder info = new StringBuilder();
-            info.append("Debug file location: ").append(DEBUG_FILE).append("\n\n");
-            info.append("Scanning all battery-related sysfs paths...\n\n");
+            info.append("Debug file: ").append(DEBUG_FILE).append("\n\n");
+            info.append("Device: ").append(android.os.Build.MANUFACTURER).append(" ").append(android.os.Build.MODEL).append("\n");
+            info.append("Android: ").append(android.os.Build.VERSION.RELEASE).append(" (SDK ").append(android.os.Build.VERSION.SDK_INT).append(")\n\n");
+            info.append("=== SYSFS SCAN ===\n\n");
             
-            // Scan all possible battery paths
             String[] allPaths = {
                 "/sys/class/power_supply/battery/capacity",
                 "/sys/class/power_supply/battery/status",
@@ -101,48 +170,68 @@ public class MainActivity extends Activity {
                 "/sys/class/power_supply/battery/temp",
                 "/sys/class/power_supply/battery/batt_vol",
                 "/sys/class/power_supply/usb/voltage_now",
-                "/sys/devices/platform/charger/ADC_Charger_Voltage",
-                "/sys/class/power_supply/battery/voltage_max",
-                "/sys/class/power_supply/battery/voltage_min"
+                "/sys/devices/platform/charger/ADC_Charger_Voltage"
             };
             
+            boolean anyAccessible = false;
             for (String path : allPaths) {
                 File file = new File(path);
                 if (file.exists()) {
                     if (file.canRead()) {
                         String value = readSysFileDebug(path);
-                        info.append("✓ ").append(path).append("\n  Value: ").append(value).append("\n\n");
+                        info.append("✓ ").append(path).append("\n  ").append(value).append("\n\n");
+                        anyAccessible = true;
                     } else {
-                        info.append("✗ ").append(path).append(" (exists but not readable)\n\n");
+                        info.append("✗ ").append(path).append("\n  (exists but not readable - SELinux)\n\n");
                     }
                 } else {
-                    info.append("✗ ").append(path).append(" (not found)\n\n");
+                    info.append("✗ ").append(path).append("\n  (not found)\n\n");
                 }
+            }
+            
+            if (!anyAccessible) {
+                info.append("⚠️  No sysfs access (expected on non-root Android 10+)\n\n");
+            }
+            
+            info.append("=== BATTERYMANAGER API (Fallback) ===\n\n");
+            
+            try {
+                int capacity = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+                int voltage = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_VOLTAGE_NOW);
+                int current = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
+                int temp = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_TEMPERATURE);
+                
+                IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                Intent batteryStatus = registerReceiver(null, ifilter);
+                int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+                
+                info.append("✓ Capacity: ").append(capacity).append("%\n");
+                info.append("✓ Status: ").append(getStatusString(status)).append("\n");
+                info.append("✓ Voltage: ").append(voltage).append(" µV (").append(String.format("%.2f", voltage / 1000000.0)).append(" V)\n");
+                info.append("✓ Current: ").append(current).append(" µA (").append(current / 1000).append(" mA)\n");
+                info.append("✓ Temperature: ").append(temp).append(" deci°C (").append(String.format("%.1f", temp / 10.0)).append(" °C)\n\n");
+                info.append("✅ Using BatteryManager API (official, no root needed)");
+            } catch (Exception e) {
+                info.append("❌ BatteryManager API failed: ").append(e.getMessage());
             }
             
             return info.toString();
         }
         
-        private String tryReadVoltage() {
-            logDebug("\n--- Scanning voltage paths ---");
-            
+        private String tryReadVoltageSysfs() {
             String[] paths = {
                 "/sys/devices/platform/charger/ADC_Charger_Voltage",
                 "/sys/class/power_supply/battery/voltage_now",
                 "/sys/class/power_supply/usb/voltage_now",
-                "/sys/class/power_supply/battery/batt_vol",
-                "/sys/class/power_supply/battery/voltage_max"
+                "/sys/class/power_supply/battery/batt_vol"
             };
             
             for (String path : paths) {
                 String value = readSysFile(path, null, "Voltage[" + path.substring(path.lastIndexOf('/') + 1) + "]");
                 if (value != null && !value.equals("0")) {
-                    logDebug("✓ Using voltage from: " + path);
                     return value;
                 }
             }
-            
-            logDebug("✗ No valid voltage path found!");
             return "0";
         }
         
@@ -150,30 +239,19 @@ public class MainActivity extends Activity {
             BufferedReader reader = null;
             try {
                 File file = new File(path);
-                
-                if (!file.exists()) {
-                    logDebug(label + " [" + path + "]: FILE NOT FOUND");
-                    return defaultValue;
-                }
-                
-                if (!file.canRead()) {
-                    logDebug(label + " [" + path + "]: NO READ PERMISSION");
-                    return defaultValue;
-                }
+                if (!file.exists()) return defaultValue;
+                if (!file.canRead()) return defaultValue;
                 
                 reader = new BufferedReader(new FileReader(file));
                 String line = reader.readLine();
                 
                 if (line != null) {
                     String trimmed = line.trim();
-                    logDebug(label + " [" + path + "]: " + trimmed);
+                    logDebug(label + ": " + trimmed);
                     return trimmed;
-                } else {
-                    logDebug(label + " [" + path + "]: EMPTY FILE");
-                    return defaultValue;
                 }
+                return defaultValue;
             } catch (Exception e) {
-                logDebug(label + " [" + path + "]: ERROR - " + e.getMessage());
                 return defaultValue;
             } finally {
                 if (reader != null) {
