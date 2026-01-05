@@ -3,169 +3,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DevBattery Monitor</title>
+    <meta name="theme-color" content="#1C1B1F">
+    <title>Battery Monitor</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            /* Material Design 3 - Dynamic Colors (Default fallback) */
+            --md-sys-color-primary: #D0BCFF;
+            --md-sys-color-on-primary: #371E73;
+            --md-sys-color-primary-container: #4F378B;
+            --md-sys-color-on-primary-container: #EADDFF;
+            
+            --md-sys-color-secondary: #CCC2DC;
+            --md-sys-color-on-secondary: #332D41;
+            --md-sys-color-secondary-container: #4A4458;
+            --md-sys-color-on-secondary-container: #E8DEF8;
+            
+            --md-sys-color-tertiary: #EFB8C8;
+            --md-sys-color-on-tertiary: #492532;
+            --md-sys-color-tertiary-container: #633B48;
+            --md-sys-color-on-tertiary-container: #FFD8E4;
+            
+            --md-sys-color-surface: #1C1B1F;
+            --md-sys-color-surface-variant: #49454F;
+            --md-sys-color-on-surface: #E6E1E5;
+            --md-sys-color-on-surface-variant: #CAC4D0;
+            
+            --md-sys-color-outline: #938F99;
+            --md-sys-color-outline-variant: #49454F;
+            
+            --md-sys-color-error: #F2B8B5;
+            --md-sys-color-on-error: #601410;
+            
+            /* Elevation shadows */
+            --md-sys-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+            --md-sys-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+            --md-sys-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
         
         body {
-            background: #000;
-            color: #00ffff;
-            font-family: 'Courier New', monospace;
-            padding: 15px;
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            font-family: 'Roboto', -apple-system, system-ui, sans-serif;
+            padding: 16px;
             overflow-y: auto;
+            -webkit-font-smoothing: antialiased;
         }
         
         .container {
-            max-width: 400px;
+            max-width: 480px;
             margin: 0 auto;
         }
         
-        .monitor-box {
-            border: 3px solid #00ffff;
-            border-radius: 15px;
-            padding: 20px;
-            background: rgba(0, 255, 255, 0.05);
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-            margin-bottom: 15px;
+        /* Material Design 3 Header */
+        .app-header {
+            margin-bottom: 24px;
+            padding: 8px 0;
         }
         
-        .header {
-            text-align: center;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #00ffff;
-            padding-bottom: 10px;
+        .app-title {
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            letter-spacing: 0;
+            margin-bottom: 4px;
         }
         
-        .header h1 {
-            font-size: 20px;
-            margin-bottom: 5px;
-            color: #00ffff;
-            text-shadow: 0 0 10px #00ffff;
-        }
-        
-        .telegram {
-            font-size: 12px;
-            color: #888;
+        .app-subtitle {
+            font-size: 14px;
+            color: var(--md-sys-color-on-surface-variant);
+            font-weight: 400;
             text-decoration: none;
+            display: inline-block;
         }
         
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 5px;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+        /* Material Design 3 Tiles Grid */
+        .tiles-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .tile {
+            background: var(--md-sys-color-surface-variant);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: var(--md-sys-elevation-1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tile:active {
+            transform: scale(0.98);
+            box-shadow: var(--md-sys-elevation-2);
+        }
+        
+        .tile-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface-variant);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .tile-value {
+            font-size: 32px;
+            font-weight: 400;
+            color: var(--md-sys-color-on-surface);
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .tile-unit {
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--md-sys-color-on-surface-variant);
+            margin-left: 4px;
+        }
+        
+        /* Special tiles */
+        .tile-large {
+            grid-column: span 2;
+            background: var(--md-sys-color-primary-container);
+        }
+        
+        .tile-large .tile-label {
+            color: var(--md-sys-color-on-primary-container);
+        }
+        
+        .tile-large .tile-value {
+            font-size: 56px;
+            color: var(--md-sys-color-on-primary-container);
+        }
+        
+        .tile-large .tile-unit {
+            color: var(--md-sys-color-on-primary-container);
+            opacity: 0.8;
+        }
+        
+        /* Status indicator */
+        .status-badge {
+            display: inline-flex;
             align-items: center;
-        }
-        
-        .info-row:last-child { border-bottom: none; }
-        
-        .label {
-            color: #00ffff;
-            font-weight: bold;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 8px;
             font-size: 14px;
+            font-weight: 500;
+            margin-top: 8px;
         }
         
-        .value {
-            color: #fff;
-            font-size: 16px;
-            font-weight: bold;
-            min-width: 80px;
-            text-align: right;
+        .status-charging {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
         }
         
-        .value.error { color: #ff4444; }
-        .status-charging { color: #00ff00; }
-        .status-discharging { color: #ff4444; }
-        .status-full { color: #00ff00; }
+        .status-discharging {
+            background: rgba(244, 67, 54, 0.2);
+            color: #F44336;
+        }
         
-        .debug-btn {
+        .status-full {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+        
+        .status-unknown {
+            background: rgba(158, 158, 158, 0.2);
+            color: #9E9E9E;
+        }
+        
+        /* Error state */
+        .tile-error .tile-value {
+            color: var(--md-sys-color-error);
+        }
+        
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .md-button {
             width: 100%;
-            padding: 15px;
-            background: rgba(0, 255, 255, 0.1);
-            border: 2px solid #00ffff;
-            color: #00ffff;
-            font-family: 'Courier New', monospace;
+            height: 48px;
+            border: none;
+            border-radius: 24px;
             font-size: 14px;
-            border-radius: 10px;
+            font-weight: 500;
+            letter-spacing: 0.1px;
             cursor: pointer;
-            margin-top: 10px;
-            font-weight: bold;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
-        .debug-btn:active {
-            background: rgba(0, 255, 255, 0.3);
+        .md-button-filled {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            box-shadow: var(--md-sys-elevation-1);
         }
         
-        .debug-output {
-            margin-top: 15px;
-            padding: 15px;
-            background: rgba(0, 255, 255, 0.05);
-            border: 2px solid #00ffff;
-            border-radius: 10px;
-            font-size: 11px;
-            color: #0ff;
+        .md-button-filled:active {
+            box-shadow: var(--md-sys-elevation-3);
+            transform: scale(0.98);
+        }
+        
+        .md-button-outlined {
+            background: transparent;
+            color: var(--md-sys-color-primary);
+            border: 1px solid var(--md-sys-color-outline);
+        }
+        
+        .md-button-outlined:active {
+            background: rgba(208, 188, 255, 0.08);
+        }
+        
+        /* Debug output */
+        .debug-card {
+            margin-top: 16px;
+            background: var(--md-sys-color-surface-variant);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: var(--md-sys-elevation-1);
+            display: none;
             max-height: 400px;
             overflow-y: auto;
+        }
+        
+        .debug-card.show {
+            display: block;
+        }
+        
+        .debug-card pre {
+            font-family: 'Roboto Mono', 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            color: var(--md-sys-color-on-surface-variant);
             white-space: pre-wrap;
             word-break: break-all;
+        }
+        
+        /* Error message */
+        .error-banner {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: rgba(242, 184, 181, 0.15);
+            border-radius: 12px;
+            border-left: 4px solid var(--md-sys-color-error);
+            font-size: 13px;
+            color: var(--md-sys-color-error);
             display: none;
         }
         
-        .debug-output.show { display: block; }
+        .error-banner.show {
+            display: block;
+        }
         
-        .error-msg {
-            color: #ff4444;
-            font-size: 12px;
-            text-align: center;
-            margin-top: 10px;
+        /* Icon styling */
+        .icon {
+            font-style: normal;
+            font-size: 20px;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--md-sys-color-outline-variant);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--md-sys-color-outline);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="monitor-box">
-            <div class="header">
-                <h1>DevBattery Monitor</h1>
-                <a href="https://t.me/hoshiyomi_id" class="telegram">t.me/hoshiyomi_id</a>
+        <!-- Header -->
+        <header class="app-header">
+            <h1 class="app-title">Battery Monitor</h1>
+            <a href="https://t.me/hoshiyomi_id" class="app-subtitle">@hoshiyomi_id</a>
+        </header>
+        
+        <!-- Battery Stats Tiles -->
+        <div class="tiles-grid">
+            <!-- Large capacity tile -->
+            <div class="tile tile-large" id="tile-capacity">
+                <div class="tile-label">Battery</div>
+                <div>
+                    <span class="tile-value" id="capacity-value">--</span>
+                    <span class="tile-unit">%</span>
+                </div>
+                <div class="status-badge status-unknown" id="status-badge">
+                    <span class="icon">⚡</span>
+                    <span id="status-text">--</span>
+                </div>
             </div>
             
-            <div class="info-row">
-                <span class="label">Capacity</span>
-                <span class="value" id="capacity">-- %</span>
+            <!-- Voltage tile -->
+            <div class="tile" id="tile-voltage">
+                <div class="tile-label">Voltage</div>
+                <div>
+                    <span class="tile-value" id="voltage-value">--</span>
+                    <span class="tile-unit">V</span>
+                </div>
             </div>
             
-            <div class="info-row">
-                <span class="label">Status</span>
-                <span class="value" id="status">--</span>
+            <!-- Current tile -->
+            <div class="tile" id="tile-current">
+                <div class="tile-label">Current</div>
+                <div>
+                    <span class="tile-value" id="current-value">--</span>
+                    <span class="tile-unit">mA</span>
+                </div>
             </div>
             
-            <div class="info-row">
-                <span class="label">Voltage</span>
-                <span class="value" id="voltage">-- V</span>
+            <!-- Power tile -->
+            <div class="tile" id="tile-power">
+                <div class="tile-label">Power</div>
+                <div>
+                    <span class="tile-value" id="power-value">--</span>
+                    <span class="tile-unit">W</span>
+                </div>
             </div>
             
-            <div class="info-row">
-                <span class="label">Current</span>
-                <span class="value" id="current">-- mA</span>
+            <!-- Temperature tile -->
+            <div class="tile" id="tile-temp">
+                <div class="tile-label">Temp</div>
+                <div>
+                    <span class="tile-value" id="temp-value">--</span>
+                    <span class="tile-unit">°C</span>
+                </div>
             </div>
-            
-            <div class="info-row">
-                <span class="label">Wattage</span>
-                <span class="value" id="wattage">-- W</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="label">Temperature</span>
-                <span class="value" id="temp">-- °C</span>
-            </div>
-            
-            <div class="error-msg" id="error"></div>
         </div>
         
-        <button class="debug-btn" onclick="showDebug()">🔍 Show Debug Info</button>
-        <button class="debug-btn" onclick="copyDebug()">📋 Copy Debug to Clipboard</button>
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="md-button md-button-filled" onclick="showDebug()">
+                <span class="icon">🔍</span>
+                <span>Show Debug Info</span>
+            </button>
+            <button class="md-button md-button-outlined" onclick="copyDebug()">
+                <span class="icon">📋</span>
+                <span>Copy to Clipboard</span>
+            </button>
+        </div>
         
-        <div class="debug-output" id="debugOutput"></div>
+        <!-- Error Banner -->
+        <div class="error-banner" id="error-banner"></div>
+        
+        <!-- Debug Output -->
+        <div class="debug-card" id="debug-card">
+            <pre id="debug-output"></pre>
+        </div>
     </div>
 
     <script>
@@ -177,67 +388,105 @@
                 const data = JSON.parse(jsonData);
                 
                 if (data.error) {
-                    document.getElementById('error').textContent = 'Error: ' + data.error;
+                    showError('Error: ' + data.error);
                     return;
                 }
                 
+                // Parse data
                 const capacity = parseInt(data.capacity) || 0;
                 const status = data.status || "Unknown";
                 const voltageRaw = parseInt(data.voltage) || 0;
                 const currentRaw = parseInt(data.current_now) || 0;
                 const tempRaw = parseInt(data.temp) || 0;
                 
-                const voltage = (voltageRaw / 1000).toFixed(1);
+                // Calculate values
+                const voltage = (voltageRaw / 1000).toFixed(2);
                 const current = Math.floor(currentRaw / 1000);
                 const temperature = (tempRaw / 10).toFixed(1);
-                const wattage = Math.round(Math.abs((voltage * current) / 1000));
+                const power = (Math.abs((voltage * current) / 1000)).toFixed(1);
                 
-                // Update UI with error highlighting
-                const capacityEl = document.getElementById('capacity');
-                capacityEl.textContent = capacity + ' %';
-                capacityEl.className = 'value' + (capacity === 0 ? ' error' : '');
+                // Update capacity tile
+                const capacityTile = document.getElementById('tile-capacity');
+                const capacityValue = document.getElementById('capacity-value');
+                capacityValue.textContent = capacity;
                 
-                const statusEl = document.getElementById('status');
-                statusEl.textContent = status;
-                statusEl.className = 'value';
-                if (status === 'Unknown') {
-                    statusEl.classList.add('error');
-                } else if (status.includes('Charging') || status.includes('charging')) {
-                    statusEl.classList.add('status-charging');
-                } else if (status.includes('Discharging') || status.includes('discharging')) {
-                    statusEl.classList.add('status-discharging');
-                } else if (status.includes('Full') || status.includes('full')) {
-                    statusEl.classList.add('status-full');
+                if (capacity === 0) {
+                    capacityTile.classList.add('tile-error');
+                } else {
+                    capacityTile.classList.remove('tile-error');
                 }
                 
-                const voltageEl = document.getElementById('voltage');
-                voltageEl.textContent = voltage + ' V';
-                voltageEl.className = 'value' + (voltage == 0 ? ' error' : '');
+                // Update status badge
+                const statusBadge = document.getElementById('status-badge');
+                const statusText = document.getElementById('status-text');
+                statusText.textContent = status;
                 
-                document.getElementById('current').textContent = current + ' mA';
-                document.getElementById('wattage').textContent = wattage + ' W';
-                document.getElementById('temp').textContent = temperature + ' °C';
+                statusBadge.className = 'status-badge';
+                if (status === 'Unknown') {
+                    statusBadge.classList.add('status-unknown');
+                } else if (status.toLowerCase().includes('charging')) {
+                    statusBadge.classList.add('status-charging');
+                } else if (status.toLowerCase().includes('discharging')) {
+                    statusBadge.classList.add('status-discharging');
+                } else if (status.toLowerCase().includes('full')) {
+                    statusBadge.classList.add('status-full');
+                }
                 
-                // Clear error if data is good
-                if (capacity > 0 && status !== 'Unknown') {
-                    document.getElementById('error').textContent = '';
+                // Update voltage tile
+                const voltageTile = document.getElementById('tile-voltage');
+                const voltageValue = document.getElementById('voltage-value');
+                voltageValue.textContent = voltage;
+                
+                if (voltage == 0) {
+                    voltageTile.classList.add('tile-error');
                 } else {
-                    document.getElementById('error').textContent = '⚠️ Check debug log at /sdcard/battery_debug.txt';
+                    voltageTile.classList.remove('tile-error');
+                }
+                
+                // Update current tile
+                document.getElementById('current-value').textContent = current;
+                
+                // Update power tile
+                document.getElementById('power-value').textContent = power;
+                
+                // Update temperature tile
+                document.getElementById('temp-value').textContent = temperature;
+                
+                // Show/hide error banner
+                if (capacity > 0 && status !== 'Unknown') {
+                    hideError();
+                } else {
+                    showError('⚠️ Check debug log at /sdcard/battery_debug.txt');
                 }
                 
             } catch (e) {
-                document.getElementById('error').textContent = 'Error: ' + e.message;
+                showError('Error: ' + e.message);
             }
+        }
+        
+        function showError(message) {
+            const banner = document.getElementById('error-banner');
+            banner.textContent = message;
+            banner.classList.add('show');
+        }
+        
+        function hideError() {
+            const banner = document.getElementById('error-banner');
+            banner.classList.remove('show');
         }
         
         function showDebug() {
             try {
                 debugData = Android.getDebugInfo();
-                const output = document.getElementById('debugOutput');
+                const output = document.getElementById('debug-output');
+                const card = document.getElementById('debug-card');
                 output.textContent = debugData;
-                output.classList.add('show');
+                card.classList.add('show');
+                
+                // Scroll to debug card
+                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } catch (e) {
-                alert('Error getting debug info: ' + e.message);
+                showError('Error getting debug info: ' + e.message);
             }
         }
         
@@ -249,19 +498,23 @@
             // Create temporary textarea for copying
             const textarea = document.createElement('textarea');
             textarea.value = debugData;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
             document.body.appendChild(textarea);
             textarea.select();
             
             try {
                 document.execCommand('copy');
-                alert('Debug info copied! Location: /sdcard/battery_debug.txt');
+                showError('✅ Debug info copied! Check /sdcard/battery_debug.txt');
+                setTimeout(hideError, 3000);
             } catch (e) {
-                alert('Failed to copy. Check /sdcard/battery_debug.txt manually');
+                showError('❌ Failed to copy. Check /sdcard/battery_debug.txt manually');
             }
             
             document.body.removeChild(textarea);
         }
         
+        // Update every 200ms
         setInterval(updateBattery, 200);
         setTimeout(updateBattery, 100);
     </script>
