@@ -1,11 +1,269 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>DevBattery Monitor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #000;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .monitor-box {
+            border: 3px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.05);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            margin-bottom: 15px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #00ffff;
+            padding-bottom: 10px;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        
+        .telegram {
+            font-size: 12px;
+            color: #888;
+            text-decoration: none;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 5px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            align-items: center;
+        }
+        
+        .info-row:last-child { border-bottom: none; }
+        
+        .label {
+            color: #00ffff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .value {
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: right;
+        }
+        
+        .value.error { color: #ff4444; }
+        .status-charging { color: #00ff00; }
+        .status-discharging { color: #ff4444; }
+        .status-full { color: #00ff00; }
+        
+        .debug-btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .debug-btn:active {
+            background: rgba(0, 255, 255, 0.3);
+        }
+        
+        .debug-output {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            font-size: 11px;
+            color: #0ff;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            display: none;
+        }
+        
+        .debug-output.show { display: block; }
+        
+        .error-msg {
+            color: #ff4444;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
 </head>
-<body style="font-family: monospace">
-    REPLACE THIS FILE WITH YOUR OWN INDEX.HTML
+<body>
+    <div class="container">
+        <div class="monitor-box">
+            <div class="header">
+                <h1>DevBattery Monitor</h1>
+                <a href="https://t.me/hoshiyomi_id" class="telegram">t.me/hoshiyomi_id</a>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Capacity</span>
+                <span class="value" id="capacity">-- %</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Status</span>
+                <span class="value" id="status">--</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Voltage</span>
+                <span class="value" id="voltage">-- V</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Current</span>
+                <span class="value" id="current">-- mA</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Wattage</span>
+                <span class="value" id="wattage">-- W</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Temperature</span>
+                <span class="value" id="temp">-- °C</span>
+            </div>
+            
+            <div class="error-msg" id="error"></div>
+        </div>
+        
+        <button class="debug-btn" onclick="showDebug()">🔍 Show Debug Info</button>
+        <button class="debug-btn" onclick="copyDebug()">📋 Copy Debug to Clipboard</button>
+        
+        <div class="debug-output" id="debugOutput"></div>
+    </div>
+
+    <script>
+        let debugData = '';
+        
+        function updateBattery() {
+            try {
+                const jsonData = Android.getBatteryData();
+                const data = JSON.parse(jsonData);
+                
+                if (data.error) {
+                    document.getElementById('error').textContent = 'Error: ' + data.error;
+                    return;
+                }
+                
+                const capacity = parseInt(data.capacity) || 0;
+                const status = data.status || "Unknown";
+                const voltageRaw = parseInt(data.voltage) || 0;
+                const currentRaw = parseInt(data.current_now) || 0;
+                const tempRaw = parseInt(data.temp) || 0;
+                
+                const voltage = (voltageRaw / 1000).toFixed(1);
+                const current = Math.floor(currentRaw / 1000);
+                const temperature = (tempRaw / 10).toFixed(1);
+                const wattage = Math.round(Math.abs((voltage * current) / 1000));
+                
+                // Update UI with error highlighting
+                const capacityEl = document.getElementById('capacity');
+                capacityEl.textContent = capacity + ' %';
+                capacityEl.className = 'value' + (capacity === 0 ? ' error' : '');
+                
+                const statusEl = document.getElementById('status');
+                statusEl.textContent = status;
+                statusEl.className = 'value';
+                if (status === 'Unknown') {
+                    statusEl.classList.add('error');
+                } else if (status.includes('Charging') || status.includes('charging')) {
+                    statusEl.classList.add('status-charging');
+                } else if (status.includes('Discharging') || status.includes('discharging')) {
+                    statusEl.classList.add('status-discharging');
+                } else if (status.includes('Full') || status.includes('full')) {
+                    statusEl.classList.add('status-full');
+                }
+                
+                const voltageEl = document.getElementById('voltage');
+                voltageEl.textContent = voltage + ' V';
+                voltageEl.className = 'value' + (voltage == 0 ? ' error' : '');
+                
+                document.getElementById('current').textContent = current + ' mA';
+                document.getElementById('wattage').textContent = wattage + ' W';
+                document.getElementById('temp').textContent = temperature + ' °C';
+                
+                // Clear error if data is good
+                if (capacity > 0 && status !== 'Unknown') {
+                    document.getElementById('error').textContent = '';
+                } else {
+                    document.getElementById('error').textContent = '⚠️ Check debug log at /sdcard/battery_debug.txt';
+                }
+                
+            } catch (e) {
+                document.getElementById('error').textContent = 'Error: ' + e.message;
+            }
+        }
+        
+        function showDebug() {
+            try {
+                debugData = Android.getDebugInfo();
+                const output = document.getElementById('debugOutput');
+                output.textContent = debugData;
+                output.classList.add('show');
+            } catch (e) {
+                alert('Error getting debug info: ' + e.message);
+            }
+        }
+        
+        function copyDebug() {
+            if (!debugData) {
+                showDebug();
+            }
+            
+            // Create temporary textarea for copying
+            const textarea = document.createElement('textarea');
+            textarea.value = debugData;
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert('Debug info copied! Location: /sdcard/battery_debug.txt');
+            } catch (e) {
+                alert('Failed to copy. Check /sdcard/battery_debug.txt manually');
+            }
+            
+            document.body.removeChild(textarea);
+        }
+        
+        setInterval(updateBattery, 200);
+        setTimeout(updateBattery, 100);
+    </script>
 </body>
 </html>
