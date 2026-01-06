@@ -365,7 +365,7 @@
             left: -50%;
             width: 200%;
             height: 0%;
-            transition: height 0.8s var(--md-motion-emphasized), background 0.5s ease;
+            transition: height 0.8s var(--md-motion-emphasized), background 0.5s ease, transform 0.1s linear;
             transform-origin: center bottom;
             will-change: transform, height;
         }
@@ -731,7 +731,16 @@
         let hasRoot = false;
         let previousValues = {};
         let tiltX = 0;
-        let tiltY = 0;
+        
+        // Format number untuk hide .0 decimal
+        function formatNumber(value, decimals = 2) {
+            const num = parseFloat(value);
+            if (isNaN(num)) return value;
+            
+            const fixed = num.toFixed(decimals);
+            // Remove .0, .00 etc
+            return fixed.replace(/\.0+$/, '');
+        }
         
         // Request permission for DeviceOrientation (iOS 13+)
         function requestOrientationPermission() {
@@ -755,35 +764,32 @@
             }
         }
         
-        // Handle device orientation
+        // Handle device orientation - LEFT-RIGHT ONLY (HIGH SENSITIVITY)
         function handleOrientation(event) {
             // gamma: left to right tilt (-90 to 90)
-            // beta: front to back tilt (-180 to 180)
+            // IGNORE beta (up/down tilt)
             const gamma = event.gamma || 0;
-            const beta = event.beta || 0;
             
-            // Normalize to -1 to 1 range
-            tiltX = Math.max(-1, Math.min(1, gamma / 45));
-            tiltY = Math.max(-1, Math.min(1, beta / 90));
+            // Very high sensitivity: normalize to -1 to 1 with 30° range instead of 45°
+            tiltX = Math.max(-1, Math.min(1, gamma / 30));
         }
         
         // Get color based on battery percentage (Red 0% -> Green 100%)
         function getBatteryColor(percentage) {
-            // Red (low) to Yellow (mid) to Green (high)
             let r, g, b;
             
             if (percentage < 50) {
                 // 0-50%: Red to Yellow
                 const ratio = percentage / 50;
-                r = 244;  // Red stays high
-                g = Math.floor(67 + (244 - 67) * ratio);  // Green increases
-                b = 54;   // Blue stays low
+                r = 244;
+                g = Math.floor(67 + (244 - 67) * ratio);
+                b = 54;
             } else {
                 // 50-100%: Yellow to Green
                 const ratio = (percentage - 50) / 50;
-                r = Math.floor(244 - (244 - 76) * ratio);  // Red decreases
-                g = Math.floor(244 - (244 - 175) * ratio); // Green adjusts
-                b = Math.floor(54 + (80 - 54) * ratio);    // Blue increases slightly
+                r = Math.floor(244 - (244 - 76) * ratio);
+                g = Math.floor(244 - (244 - 175) * ratio);
+                b = Math.floor(54 + (80 - 54) * ratio);
             }
             
             return `rgba(${r}, ${g}, ${b}, 0.6)`;
@@ -820,7 +826,7 @@
             }
         }
         
-        // Update liquid with color gradient and gravity
+        // Update liquid with color gradient and LEFT-RIGHT gravity only
         function updateLiquid(percentage) {
             const liquid = document.getElementById('liquid');
             
@@ -832,19 +838,9 @@
             const colorBefore = getBatteryColor(Math.min(100, percentage + 10));
             liquid.style.background = `linear-gradient(180deg, ${colorBefore} 0%, ${color} 100%)`;
             
-            // Update wave colors
-            liquid.style.setProperty('--wave-color', color);
-            if (liquid.querySelector('::before')) {
-                liquid.querySelector('::before').style.background = color;
-            }
-            if (liquid.querySelector('::after')) {
-                liquid.querySelector('::after').style.background = color;
-            }
-            
-            // Apply gravity tilt
-            const translateX = tiltX * 15; // Amplify for visible effect
-            const translateY = tiltY * 8;
-            liquid.style.transform = `translateX(${translateX}px) translateY(${translateY}px)`;
+            // Apply LEFT-RIGHT tilt ONLY (HIGH SENSITIVITY)
+            const translateX = tiltX * 30; // Increased from 15 to 30 for very high sensitivity
+            liquid.style.transform = `translateX(${translateX}px)`;
         }
         
         function animateValue(elementId, newValue) {
@@ -874,13 +870,14 @@
                 const tempRaw = parseInt(data.temp) || 0;
                 const chargerVoltageRaw = parseInt(data.charger_voltage) || 0;
                 
-                const voltage = (voltageRaw / 1000).toFixed(2);
+                // Format values - hide .0 decimals
+                const voltage = formatNumber(voltageRaw / 1000, 2);
                 const current = Math.floor(currentRaw / 1000);
-                const temperature = (tempRaw / 10).toFixed(1);
-                const power = (Math.abs((voltage * current) / 1000)).toFixed(1);
-                const chargerVoltage = (chargerVoltageRaw / 1000).toFixed(2);
+                const temperature = formatNumber(tempRaw / 10, 1);
+                const power = formatNumber(Math.abs((voltageRaw * currentRaw) / 1000000), 2);
+                const chargerVoltage = formatNumber(chargerVoltageRaw / 1000, 2);
                 
-                // Update liquid with dynamic color and gravity
+                // Update liquid with dynamic color and LEFT-RIGHT gravity
                 updateLiquid(capacity);
                 
                 // Update values
@@ -939,9 +936,9 @@
         function showDebug() {
             try {
                 debugData = Android.getDebugInfo();
-                debugData += '\n\n--- PROXIMITY DATA ---\n';
-                debugData += `Tilt X: ${tiltX.toFixed(2)}\n`;
-                debugData += `Tilt Y: ${tiltY.toFixed(2)}\n`;
+                debugData += '\n\n--- TILT DATA (Left-Right Only) ---\n';
+                debugData += `Tilt X (Horizontal): ${formatNumber(tiltX, 2)}\n`;
+                debugData += `Sensitivity: VERY HIGH (30° range)\n`;
                 
                 const output = document.getElementById('debug-output');
                 const card = document.getElementById('debug-card');
