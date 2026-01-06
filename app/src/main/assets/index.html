@@ -786,6 +786,7 @@
         let isCharging = false;
         let bubbleSpawnInterval = null;
         let bubbleCount = 0;
+        let lastStatus = '';  // Track last valid status to prevent undefined
         
         // Advanced debug logging
         const debugLog = {
@@ -796,7 +797,8 @@
             bubbleStats: { total: 0, active: 0 },
             performance: { avgUpdateTime: 0, totalTime: 0 },
             errors: [],
-            statusDetection: []  // Track status detection logic
+            statusDetection: [],
+            powerSource: []  // Track power calculation source
         };
         
         // Format number untuk hide .0 decimal
@@ -955,13 +957,15 @@
         function updateVoltageTile(batteryVoltage, chargerVoltage, isRooted, isCurrentlyCharging) {
             const tile = document.getElementById('tile-voltage');
             const label = document.getElementById('voltage-label');
-            const value = document.getElementById('voltage-value');
             
-            // If rooted AND charging, show charger voltage
-            if (isRooted && isCurrentlyCharging && chargerVoltage > 0) {
+            // Filter charger voltage noise: ignore if < 1V (1000mV)
+            const validChargerVoltage = chargerVoltage >= 1.0 ? chargerVoltage : 0;
+            
+            // If rooted AND charging AND charger voltage valid, show charger voltage
+            if (isRooted && isCurrentlyCharging && validChargerVoltage > 0) {
                 tile.classList.add('charger-mode');
                 label.textContent = '⚡ Charger';
-                animateValue('voltage-value', chargerVoltage);
+                animateValue('voltage-value', validChargerVoltage);
             } else {
                 // Show battery voltage (normal mode)
                 tile.classList.remove('charger-mode');
@@ -994,12 +998,17 @@
                 }
                 
                 const capacity = parseInt(data.capacity) || 0;
-                const status = data.status || "Unknown";
+                const status = data.status || lastStatus || "Unknown";  // Use lastStatus as fallback
                 const voltageRaw = parseInt(data.voltage) || 0;
                 const currentRaw = parseInt(data.current_now) || 0;
                 const tempRaw = parseInt(data.temp) || 0;
                 const chargerVoltageRaw = parseInt(data.charger_voltage) || 0;
                 const powerRaw = parseInt(data.power_now) || 0; // From /sys if available
+                
+                // Update lastStatus if current status is valid
+                if (status !== "Unknown" && status !== "undefined" && status) {
+                    lastStatus = status;
+                }
                 
                 // Track battery history
                 debugLog.batteryHistory.push({
@@ -1008,7 +1017,7 @@
                     voltage: voltageRaw,
                     current: currentRaw,
                     temp: tempRaw,
-                    status
+                    status: lastStatus  // Use lastStatus to avoid undefined
                 });
                 if (debugLog.batteryHistory.length > 50) debugLog.batteryHistory.shift();
                 
@@ -1020,16 +1029,23 @@
                 
                 // Power calculation: Use /sys value first, fallback to calculation
                 let power;
+                let powerSourceMethod = '';
                 if (powerRaw > 0) {
                     // Use direct /sys/class/power_supply/battery/power_now (in µW)
                     power = formatNumber(powerRaw / 1000000, 2);
-                    debugLog.statusDetection.push({ time: Date.now(), event: 'Power from /sys', value: power });
+                    powerSourceMethod = '/sys/power_now';
                 } else {
                     // Fallback: Calculate from voltage * current
                     power = formatNumber(Math.abs((voltageRaw * currentRaw) / 1000000), 2);
-                    debugLog.statusDetection.push({ time: Date.now(), event: 'Power calculated', value: power });
+                    powerSourceMethod = 'calculated (V×A)';
                 }
-                if (debugLog.statusDetection.length > 20) debugLog.statusDetection.shift();
+                
+                debugLog.powerSource.push({ 
+                    time: Date.now(), 
+                    method: powerSourceMethod, 
+                    value: power 
+                });
+                if (debugLog.powerSource.length > 20) debugLog.powerSource.shift();
                 
                 updateLiquid(capacity);
                 animateValue('capacity-value', capacity);
@@ -1038,19 +1054,19 @@
                 const statusBadge = document.getElementById('status-badge');
                 const statusText = document.getElementById('status-text');
                 const statusIcon = document.getElementById('status-icon');
-                const statusLower = status.toLowerCase();
+                const statusLower = lastStatus.toLowerCase();  // Use lastStatus
                 
                 const prevStatus = statusText.textContent;
-                if (prevStatus !== status) {
+                if (prevStatus !== lastStatus && lastStatus !== "Unknown") {
                     debugLog.statusChanges.push({
                         time: new Date().toISOString(),
                         event: 'Battery status changed',
                         from: prevStatus,
-                        to: status
+                        to: lastStatus
                     });
                 }
                 
-                statusText.textContent = status;
+                statusText.textContent = lastStatus;
                 statusBadge.className = 'status-badge';
                 
                 // FIXED: Check specificity order (most specific first)
@@ -1092,7 +1108,8 @@
                 // Log detection for debugging
                 debugLog.statusDetection.push({
                     time: Date.now(),
-                    rawStatus: status,
+                    rawStatus: data.status,  // Original from Android
+                    lastStatus: lastStatus,   // Fallback value used
                     statusLower: statusLower,
                     detected: detectedStatus,
                     chargingActive: chargingActive
@@ -1102,14 +1119,14 @@
                 // Toggle bubbles based on charging state
                 toggleBubbleSpawning(chargingActive);
                 
-                // Update voltage tile (dual mode)
+                // Update voltage tile (dual mode with noise filter)
                 updateVoltageTile(voltage, chargerVoltage, hasRoot, chargingActive);
                 
                 animateValue('current-value', current);
                 animateValue('power-value', power);
                 animateValue('temp-value', temperature);
                 
-                if (capacity > 0 && status !== 'Unknown') {
+                if (capacity > 0 && lastStatus !== 'Unknown') {
                     hideError();
                 }
                 
@@ -1159,9 +1176,15 @@
                 debugData += `Bubbles Active (Now): ${debugLog.bubbleStats.active}\n`;
                 debugData += `Spawn Interval: ${bubbleSpawnInterval ? '400ms' : 'Stopped'}\n\n`;
                 
+                debugData += '--- POWER CALCULATION LOG (Last 10) ---\n';
+                debugLog.powerSource.slice(-10).forEach(ps => {
+                    debugData += `[${new Date(ps.time).toLocaleTimeString()}] Method: ${ps.method} | Value: ${ps.value}W\n`;
+                });
+                debugData += '\n';
+                
                 debugData += '--- STATUS DETECTION LOG (Last 10) ---\n';
                 debugLog.statusDetection.slice(-10).forEach(det => {
-                    debugData += `[${new Date(det.time).toLocaleTimeString()}] Raw: "${det.rawStatus}" | Lower: "${det.statusLower}" | Detected: ${det.detected} | Charging: ${det.chargingActive}\n`;
+                    debugData += `[${new Date(det.time).toLocaleTimeString()}] Raw: "${det.rawStatus}" | Last: "${det.lastStatus}" | Lower: "${det.statusLower}" | Detected: ${det.detected} | Charging: ${det.chargingActive}\n`;
                 });
                 debugData += '\n';
                 
@@ -1182,7 +1205,8 @@
                 
                 debugData += '--- ROOT STATUS ---\n';
                 debugData += `Has Root: ${hasRoot}\n`;
-                debugData += `Voltage Tile Mode: ${document.getElementById('tile-voltage').classList.contains('charger-mode') ? 'Charger' : 'Battery'}\n\n`;
+                debugData += `Voltage Tile Mode: ${document.getElementById('tile-voltage').classList.contains('charger-mode') ? 'Charger' : 'Battery'}\n`;
+                debugData += `Charger Voltage (filtered): ${parseFloat(document.getElementById('voltage-value').textContent) > 5 ? 'Valid' : 'Noise/Disconnected'}\n\n`;
                 
                 if (debugLog.errors.length > 0) {
                     debugData += '--- ERROR LOG ---\n';
