@@ -334,6 +334,7 @@
             opacity: 0.8;
             position: relative;
             z-index: 10;
+            transition: all 0.3s var(--md-motion-emphasized);
         }
         
         .tile-value-wrapper {
@@ -445,6 +446,32 @@
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.8);
         }
         
+        /* Voltage Tile - Dual Mode (Battery Voltage / Charger Voltage) */
+        .tile-voltage {
+            transition: background 0.5s var(--md-motion-emphasized);
+        }
+        
+        .tile-voltage.charger-mode {
+            background: linear-gradient(
+                135deg,
+                var(--md-sys-color-tertiary-container) 0%,
+                var(--md-sys-color-secondary-container) 100%
+            );
+            box-shadow: 0 4px 16px rgba(239, 184, 200, 0.3);
+        }
+        
+        .tile-voltage.charger-mode .tile-label {
+            color: var(--md-sys-color-on-tertiary-container);
+        }
+        
+        .tile-voltage.charger-mode .tile-value {
+            color: var(--md-sys-color-on-tertiary-container);
+        }
+        
+        .tile-voltage.charger-mode .tile-unit {
+            color: var(--md-sys-color-on-tertiary-container);
+        }
+        
         /* Status Badge */
         .status-badge {
             display: inline-flex;
@@ -506,39 +533,6 @@
         .status-unknown {
             background: rgba(158, 158, 158, 0.25);
             color: #BDBDBD;
-        }
-        
-        /* Charger Tile */
-        .tile-charger {
-            grid-column: span 2;
-            background: linear-gradient(
-                90deg,
-                var(--md-sys-color-tertiary-container) 0%,
-                var(--md-sys-color-secondary-container) 50%,
-                var(--md-sys-color-tertiary-container) 100%
-            );
-            background-size: 200% 100%;
-            animation: scaleIn 0.5s var(--md-motion-emphasized-decel) 0.4s both,
-                       shimmerFlow 4s linear infinite;
-            box-shadow: 0 8px 24px rgba(239, 184, 200, 0.4);
-        }
-        
-        .tile-charger .tile-label {
-            color: var(--md-sys-color-on-tertiary-container);
-        }
-        
-        .tile-charger .tile-value {
-            color: var(--md-sys-color-on-tertiary-container);
-            font-size: 48px;
-        }
-        
-        .tile-charger .tile-unit {
-            color: var(--md-sys-color-on-tertiary-container);
-            opacity: 0.9;
-        }
-        
-        .tile-hidden {
-            display: none;
         }
         
         /* Action Buttons */
@@ -724,18 +718,9 @@
                 </div>
             </div>
             
-            <!-- Charger Voltage Tile (Root Only) -->
-            <div class="tile tile-charger tile-hidden" id="tile-charger">
-                <div class="tile-label">⚡ Charger</div>
-                <div class="tile-value-wrapper">
-                    <span class="tile-value" id="charger-value">--</span>
-                    <span class="tile-unit">V</span>
-                </div>
-            </div>
-            
-            <!-- Voltage Tile -->
-            <div class="tile" id="tile-voltage">
-                <div class="tile-label">Voltage</div>
+            <!-- Voltage Tile (Dual Mode: Battery / Charger) -->
+            <div class="tile tile-voltage" id="tile-voltage">
+                <div class="tile-label" id="voltage-label">Voltage</div>
                 <div class="tile-value-wrapper">
                     <span class="tile-value" id="voltage-value">--</span>
                     <span class="tile-unit">V</span>
@@ -810,7 +795,8 @@
             statusChanges: [],
             bubbleStats: { total: 0, active: 0 },
             performance: { avgUpdateTime: 0, totalTime: 0 },
-            errors: []
+            errors: [],
+            statusDetection: []  // Track status detection logic
         };
         
         // Format number untuk hide .0 decimal
@@ -947,7 +933,6 @@
                 badge.className = 'root-badge rooted';
                 icon.textContent = '🔓';
                 text.textContent = 'Rooted';
-                document.getElementById('tile-charger').classList.remove('tile-hidden');
             } else {
                 badge.className = 'root-badge non-rooted';
                 icon.textContent = '🔒';
@@ -964,6 +949,25 @@
             const color = getBatteryColor(percentage);
             const colorBefore = getBatteryColor(Math.min(100, percentage + 10));
             liquid.style.background = `linear-gradient(180deg, ${colorBefore} 0%, ${color} 100%)`;
+        }
+        
+        // Update voltage tile (dual mode: battery voltage / charger voltage)
+        function updateVoltageTile(batteryVoltage, chargerVoltage, isRooted, isCurrentlyCharging) {
+            const tile = document.getElementById('tile-voltage');
+            const label = document.getElementById('voltage-label');
+            const value = document.getElementById('voltage-value');
+            
+            // If rooted AND charging, show charger voltage
+            if (isRooted && isCurrentlyCharging && chargerVoltage > 0) {
+                tile.classList.add('charger-mode');
+                label.textContent = '⚡ Charger';
+                animateValue('voltage-value', chargerVoltage);
+            } else {
+                // Show battery voltage (normal mode)
+                tile.classList.remove('charger-mode');
+                label.textContent = 'Voltage';
+                animateValue('voltage-value', batteryVoltage);
+            }
         }
         
         function animateValue(elementId, newValue) {
@@ -995,6 +999,7 @@
                 const currentRaw = parseInt(data.current_now) || 0;
                 const tempRaw = parseInt(data.temp) || 0;
                 const chargerVoltageRaw = parseInt(data.charger_voltage) || 0;
+                const powerRaw = parseInt(data.power_now) || 0; // From /sys if available
                 
                 // Track battery history
                 debugLog.batteryHistory.push({
@@ -1011,13 +1016,25 @@
                 const voltage = formatNumber(voltageRaw / 1000, 2);
                 const current = Math.floor(currentRaw / 1000);
                 const temperature = formatNumber(tempRaw / 10, 1);
-                const power = formatNumber(Math.abs((voltageRaw * currentRaw) / 1000000), 2);
                 const chargerVoltage = formatNumber(chargerVoltageRaw / 1000, 2);
+                
+                // Power calculation: Use /sys value first, fallback to calculation
+                let power;
+                if (powerRaw > 0) {
+                    // Use direct /sys/class/power_supply/battery/power_now (in µW)
+                    power = formatNumber(powerRaw / 1000000, 2);
+                    debugLog.statusDetection.push({ time: Date.now(), event: 'Power from /sys', value: power });
+                } else {
+                    // Fallback: Calculate from voltage * current
+                    power = formatNumber(Math.abs((voltageRaw * currentRaw) / 1000000), 2);
+                    debugLog.statusDetection.push({ time: Date.now(), event: 'Power calculated', value: power });
+                }
+                if (debugLog.statusDetection.length > 20) debugLog.statusDetection.shift();
                 
                 updateLiquid(capacity);
                 animateValue('capacity-value', capacity);
                 
-                // Status badge with varied icons
+                // Status badge with FIXED detection logic
                 const statusBadge = document.getElementById('status-badge');
                 const statusText = document.getElementById('status-text');
                 const statusIcon = document.getElementById('status-icon');
@@ -1036,37 +1053,61 @@
                 statusText.textContent = status;
                 statusBadge.className = 'status-badge';
                 
-                // Check status and toggle bubbles (ONLY charging)
-                if (statusLower.includes('not charging')) {
+                // FIXED: Check specificity order (most specific first)
+                let detectedStatus = '';
+                let chargingActive = false;
+                
+                if (statusLower === 'not charging') {
+                    // Exact match: "Not charging"
                     statusBadge.classList.add('status-not-charging');
                     statusIcon.textContent = '➡️';  // Bypass icon
-                    toggleBubbleSpawning(false);
-                } else if (statusLower.includes('full')) {
+                    detectedStatus = 'not_charging';
+                    chargingActive = false;
+                } else if (statusLower === 'full') {
+                    // Exact match: "Full"
                     statusBadge.classList.add('status-full');
                     statusIcon.textContent = '✓';
-                    toggleBubbleSpawning(false);
-                } else if (statusLower.includes('charging')) {
+                    detectedStatus = 'full';
+                    chargingActive = false;
+                } else if (statusLower === 'charging') {
+                    // Exact match: "Charging"
                     statusBadge.classList.add('status-charging');
                     statusIcon.textContent = '⚡';  // Lightning
-                    toggleBubbleSpawning(true);  // ONLY charging = bubbles ON
-                } else if (statusLower.includes('discharging')) {
+                    detectedStatus = 'charging';
+                    chargingActive = true;
+                } else if (statusLower === 'discharging') {
+                    // Exact match: "Discharging"
                     statusBadge.classList.add('status-discharging');
                     statusIcon.textContent = '🔋';  // Battery drain icon
-                    toggleBubbleSpawning(false);
+                    detectedStatus = 'discharging';
+                    chargingActive = false;
                 } else {
+                    // Unknown
                     statusBadge.classList.add('status-unknown');
                     statusIcon.textContent = '❓';
-                    toggleBubbleSpawning(false);
+                    detectedStatus = 'unknown';
+                    chargingActive = false;
                 }
                 
-                animateValue('voltage-value', voltage);
+                // Log detection for debugging
+                debugLog.statusDetection.push({
+                    time: Date.now(),
+                    rawStatus: status,
+                    statusLower: statusLower,
+                    detected: detectedStatus,
+                    chargingActive: chargingActive
+                });
+                if (debugLog.statusDetection.length > 20) debugLog.statusDetection.shift();
+                
+                // Toggle bubbles based on charging state
+                toggleBubbleSpawning(chargingActive);
+                
+                // Update voltage tile (dual mode)
+                updateVoltageTile(voltage, chargerVoltage, hasRoot, chargingActive);
+                
                 animateValue('current-value', current);
                 animateValue('power-value', power);
                 animateValue('temp-value', temperature);
-                
-                if (hasRoot && chargerVoltageRaw > 0) {
-                    animateValue('charger-value', chargerVoltage);
-                }
                 
                 if (capacity > 0 && status !== 'Unknown') {
                     hideError();
@@ -1118,6 +1159,12 @@
                 debugData += `Bubbles Active (Now): ${debugLog.bubbleStats.active}\n`;
                 debugData += `Spawn Interval: ${bubbleSpawnInterval ? '400ms' : 'Stopped'}\n\n`;
                 
+                debugData += '--- STATUS DETECTION LOG (Last 10) ---\n';
+                debugLog.statusDetection.slice(-10).forEach(det => {
+                    debugData += `[${new Date(det.time).toLocaleTimeString()}] Raw: "${det.rawStatus}" | Lower: "${det.statusLower}" | Detected: ${det.detected} | Charging: ${det.chargingActive}\n`;
+                });
+                debugData += '\n';
+                
                 debugData += '--- BATTERY STATUS HISTORY ---\n';
                 const recent = debugLog.batteryHistory.slice(-10);
                 recent.forEach(entry => {
@@ -1135,7 +1182,7 @@
                 
                 debugData += '--- ROOT STATUS ---\n';
                 debugData += `Has Root: ${hasRoot}\n`;
-                debugData += `Charger Tile Visible: ${!document.getElementById('tile-charger').classList.contains('tile-hidden')}\n\n`;
+                debugData += `Voltage Tile Mode: ${document.getElementById('tile-voltage').classList.contains('charger-mode') ? 'Charger' : 'Battery'}\n\n`;
                 
                 if (debugLog.errors.length > 0) {
                     debugData += '--- ERROR LOG ---\n';
