@@ -40,12 +40,46 @@
             --md-motion-spring: cubic-bezier(0.5, 1.5, 0.5, 1);
         }
         
-        /* Android 16 QPR1 Keyframe Animations */
-        @keyframes ripple {
-            to {
-                transform: scale(2.5);
-                opacity: 0;
+        /* Water Wave Animation */
+        @keyframes wave {
+            0% { transform: translateX(0) translateY(0); }
+            50% { transform: translateX(-25%) translateY(-5px); }
+            100% { transform: translateX(0) translateY(0); }
+        }
+        
+        @keyframes wave2 {
+            0% { transform: translateX(0) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+            100% { transform: translateX(0) translateY(0); }
+        }
+        
+        /* Electric/Lightning Effect */
+        @keyframes electricPulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 2px #FFC107) drop-shadow(0 0 4px #FFEB3B);
+                transform: scale(1);
             }
+            10% {
+                filter: drop-shadow(0 0 8px #FFC107) drop-shadow(0 0 16px #FFEB3B) drop-shadow(0 0 24px #FFF9C4);
+                transform: scale(1.15);
+            }
+            20% {
+                filter: drop-shadow(0 0 2px #FFC107);
+                transform: scale(0.95);
+            }
+            30% {
+                filter: drop-shadow(0 0 12px #FFC107) drop-shadow(0 0 20px #FFEB3B);
+                transform: scale(1.1);
+            }
+            40% {
+                filter: drop-shadow(0 0 2px #FFC107);
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes electricFlicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
         }
         
         @keyframes shimmerFlow {
@@ -106,12 +140,6 @@
             50% { transform: scale(1.05); }
         }
         
-        @keyframes progressFill {
-            from {
-                stroke-dashoffset: 176;
-            }
-        }
-        
         * { 
             margin: 0; 
             padding: 0; 
@@ -135,7 +163,7 @@
             margin: 0 auto;
         }
         
-        /* Header with fluid animation */
+        /* Header */
         .app-header {
             margin-bottom: 32px;
             padding: 4px 0;
@@ -173,7 +201,7 @@
             transform: scale(0.95);
         }
         
-        /* Root Badge with glow */
+        /* Root Badge */
         .root-badge {
             padding: 8px 16px;
             border-radius: 20px;
@@ -203,7 +231,7 @@
             animation: rotatePulse 3s ease-in-out infinite;
         }
         
-        /* Tiles Grid with stagger */
+        /* Tiles Grid */
         .tiles-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -211,7 +239,7 @@
             margin-bottom: 24px;
         }
         
-        /* Interactive Tile Base */
+        /* Tile Base */
         .tile {
             background: var(--md-sys-color-surface-container-high);
             border-radius: 24px;
@@ -292,18 +320,20 @@
             opacity: 0.7;
         }
         
-        /* Hero Battery Tile */
+        /* Hero Battery Tile with Liquid */
         .tile-large {
             grid-column: span 2;
             background: linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, var(--md-sys-color-tertiary-container) 100%);
             padding: 28px;
-            min-height: 180px;
+            min-height: 200px;
             box-shadow: 0 8px 24px rgba(79, 55, 139, 0.4);
         }
         
         .tile-large .tile-label {
             color: var(--md-sys-color-on-primary-container);
             opacity: 0.9;
+            position: relative;
+            z-index: 10;
         }
         
         .tile-large .tile-value {
@@ -311,6 +341,8 @@
             color: var(--md-sys-color-on-primary-container);
             font-weight: 300;
             letter-spacing: -3px;
+            position: relative;
+            z-index: 10;
         }
         
         .tile-large .tile-unit {
@@ -319,35 +351,102 @@
             opacity: 0.8;
         }
         
-        /* Animated Progress Ring */
-        .battery-ring {
+        /* Liquid Water Container */
+        .liquid-container {
             position: absolute;
-            top: 24px;
-            right: 24px;
-            width: 72px;
-            height: 72px;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 0 24px 24px 0;
+            pointer-events: none;
         }
         
-        .battery-ring svg {
-            transform: rotate(-90deg);
+        .liquid {
+            position: absolute;
+            bottom: 0;
+            left: -50%;
+            width: 200%;
+            height: 0%;
+            background: linear-gradient(180deg, 
+                rgba(234, 221, 255, 0.4) 0%, 
+                rgba(234, 221, 255, 0.6) 100%);
+            transition: height 0.8s var(--md-motion-emphasized);
+            transform-origin: center bottom;
         }
         
-        .battery-ring-bg {
-            fill: none;
-            stroke: rgba(255, 255, 255, 0.15);
-            stroke-width: 5;
+        .liquid::before,
+        .liquid::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 0;
+            width: 200%;
+            height: 40px;
+            background: rgba(234, 221, 255, 0.5);
+            border-radius: 45%;
         }
         
-        .battery-ring-progress {
-            fill: none;
-            stroke: var(--md-sys-color-on-primary-container);
-            stroke-width: 5;
-            stroke-linecap: round;
-            transition: stroke-dashoffset 0.8s var(--md-motion-emphasized);
-            filter: drop-shadow(0 0 4px rgba(234, 221, 255, 0.6));
+        .liquid::before {
+            animation: wave 3s linear infinite;
         }
         
-        /* Charger Voltage Tile (Shimmer) */
+        .liquid::after {
+            animation: wave2 4s linear infinite;
+            opacity: 0.6;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 14px;
+            backdrop-filter: blur(12px);
+            transition: all 0.4s var(--md-motion-spring);
+            animation: slideInRight 0.6s var(--md-motion-emphasized-decel) 0.3s both;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .status-icon {
+            font-size: 18px;
+        }
+        
+        /* Electric effect for charging icon */
+        .status-charging .status-icon {
+            animation: electricPulse 2s ease-in-out infinite;
+        }
+        
+        .status-charging {
+            background: rgba(76, 175, 80, 0.3);
+            color: #81C784;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+        }
+        
+        .status-discharging {
+            background: rgba(244, 67, 54, 0.3);
+            color: #E57373;
+            box-shadow: 0 4px 16px rgba(244, 67, 54, 0.3);
+        }
+        
+        .status-full {
+            background: rgba(76, 175, 80, 0.3);
+            color: #81C784;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+        }
+        
+        .status-unknown {
+            background: rgba(158, 158, 158, 0.25);
+            color: #BDBDBD;
+        }
+        
+        /* Charger Tile */
         .tile-charger {
             grid-column: span 2;
             background: linear-gradient(
@@ -380,50 +479,7 @@
             display: none;
         }
         
-        /* Status Badge */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 16px;
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 14px;
-            backdrop-filter: blur(12px);
-            transition: all 0.4s var(--md-motion-spring);
-            animation: slideInRight 0.6s var(--md-motion-emphasized-decel) 0.3s both;
-        }
-        
-        .status-icon {
-            font-size: 18px;
-            animation: rotatePulse 2s ease-in-out infinite;
-        }
-        
-        .status-charging {
-            background: rgba(76, 175, 80, 0.3);
-            color: #81C784;
-            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
-        }
-        
-        .status-discharging {
-            background: rgba(244, 67, 54, 0.3);
-            color: #E57373;
-            box-shadow: 0 4px 16px rgba(244, 67, 54, 0.3);
-        }
-        
-        .status-full {
-            background: rgba(76, 175, 80, 0.3);
-            color: #81C784;
-            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
-        }
-        
-        .status-unknown {
-            background: rgba(158, 158, 158, 0.25);
-            color: #BDBDBD;
-        }
-        
-        /* Interactive Buttons */
+        /* Action Buttons */
         .action-buttons {
             display: flex;
             flex-direction: column;
@@ -552,7 +608,7 @@
             display: flex;
         }
         
-        /* Custom Scrollbar */
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 10px;
         }
@@ -588,7 +644,7 @@
         
         <!-- Tiles Grid -->
         <div class="tiles-grid">
-            <!-- Hero Battery Tile -->
+            <!-- Hero Battery Tile with Liquid -->
             <div class="tile tile-large" id="tile-capacity">
                 <div class="tile-label">Battery</div>
                 <div class="tile-value-wrapper">
@@ -600,13 +656,9 @@
                     <span id="status-text">--</span>
                 </div>
                 
-                <!-- Animated Progress Ring -->
-                <div class="battery-ring">
-                    <svg width="72" height="72" viewBox="0 0 72 72">
-                        <circle class="battery-ring-bg" cx="36" cy="36" r="32" />
-                        <circle class="battery-ring-progress" id="battery-ring" cx="36" cy="36" r="32" 
-                                stroke-dasharray="201" stroke-dashoffset="201" />
-                    </svg>
+                <!-- Liquid Water Animation -->
+                <div class="liquid-container">
+                    <div class="liquid" id="liquid"></div>
                 </div>
             </div>
             
@@ -684,6 +736,7 @@
         let debugData = '';
         let hasRoot = false;
         let previousValues = {};
+        let proximityData = { x: 0, y: 0 }; // Proximity tilt data
         
         function checkRootStatus() {
             try {
@@ -716,11 +769,42 @@
             }
         }
         
-        function updateBatteryRing(percentage) {
-            const ring = document.getElementById('battery-ring');
-            const circumference = 2 * Math.PI * 32;
-            const offset = circumference - (percentage / 100 * circumference);
-            ring.style.strokeDashoffset = offset;
+        // Update liquid level based on battery percentage
+        function updateLiquidLevel(percentage) {
+            const liquid = document.getElementById('liquid');
+            liquid.style.height = percentage + '%';
+        }
+        
+        // Apply proximity-based gravity effect to liquid
+        function applyProximityGravity(x, y) {
+            const liquid = document.getElementById('liquid');
+            // x and y are tilt values from proximity/accelerometer
+            // Apply transform to simulate gravity
+            const tiltX = x * 10; // Amplify for visible effect
+            const tiltY = y * 5;
+            liquid.style.transform = `translateX(${tiltX}px) translateY(${tiltY}px)`;
+        }
+        
+        // Try to get proximity/accelerometer data
+        function updateProximity() {
+            try {
+                // Try to get proximity data from Android interface
+                if (typeof Android !== 'undefined' && Android.getProximityData) {
+                    const proximityJson = Android.getProximityData();
+                    const data = JSON.parse(proximityJson);
+                    proximityData = data;
+                    applyProximityGravity(data.x || 0, data.y || 0);
+                }
+            } catch (e) {
+                // Fallback: use DeviceOrientation API if available
+                if (window.DeviceOrientationEvent) {
+                    window.addEventListener('deviceorientation', (event) => {
+                        const x = event.gamma / 90; // -1 to 1
+                        const y = event.beta / 90;  // -1 to 1
+                        applyProximityGravity(x, y);
+                    });
+                }
+            }
         }
         
         function animateValue(elementId, newValue) {
@@ -756,11 +840,13 @@
                 const power = (Math.abs((voltage * current) / 1000)).toFixed(1);
                 const chargerVoltage = (chargerVoltageRaw / 1000).toFixed(2);
                 
-                // Update with animations
-                animateValue('capacity-value', capacity);
-                updateBatteryRing(capacity);
+                // Update liquid level
+                updateLiquidLevel(capacity);
                 
-                // Status badge
+                // Update values with animations
+                animateValue('capacity-value', capacity);
+                
+                // Status badge with electric effect
                 const statusBadge = document.getElementById('status-badge');
                 const statusText = document.getElementById('status-text');
                 const statusIcon = document.getElementById('status-icon');
@@ -772,7 +858,7 @@
                     statusIcon.textContent = '❓';
                 } else if (status.toLowerCase().includes('charging')) {
                     statusBadge.classList.add('status-charging');
-                    statusIcon.textContent = '⚡';
+                    statusIcon.textContent = '⚡'; // Electric effect via CSS
                 } else if (status.toLowerCase().includes('discharging')) {
                     statusBadge.classList.add('status-discharging');
                     statusIcon.textContent = '🔋';
@@ -835,7 +921,6 @@
             
             try {
                 document.execCommand('copy');
-                const originalContent = document.getElementById('error-text').textContent;
                 showError('✅ Copied!');
                 setTimeout(hideError, 2500);
             } catch (e) {
@@ -845,13 +930,17 @@
             document.body.removeChild(textarea);
         }
         
+        // Initialize
         setTimeout(() => {
             checkRootStatus();
             updateBattery();
+            updateProximity();
         }, 300);
         
+        // Update loops
         setInterval(checkRootStatus, 2000);
         setInterval(updateBattery, 200);
+        setInterval(updateProximity, 100); // Update proximity frequently for smooth motion
     </script>
 </body>
 </html>
