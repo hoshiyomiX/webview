@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -7,7 +7,7 @@
     <title>Battery Monitor</title>
     <style>
         :root {
-            /* Material Design 3 - Dynamic Colors (Default fallback) */
+            /* Material Design 3 - Dynamic Colors */
             --md-sys-color-primary: #D0BCFF;
             --md-sys-color-on-primary: #371E73;
             --md-sys-color-primary-container: #4F378B;
@@ -33,17 +33,32 @@
             
             --md-sys-color-error: #F2B8B5;
             --md-sys-color-on-error: #601410;
-            
-            /* Elevation shadows */
-            --md-sys-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
-            --md-sys-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
-            --md-sys-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
         }
         
         * { 
             margin: 0; 
             padding: 0; 
             box-sizing: border-box; 
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(208, 188, 255, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(208, 188, 255, 0.6); }
         }
         
         body {
@@ -58,12 +73,20 @@
         .container {
             max-width: 480px;
             margin: 0 auto;
+            animation: fadeIn 0.5s ease-out;
         }
         
-        /* Material Design 3 Header */
+        /* Header with root badge */
         .app-header {
             margin-bottom: 24px;
             padding: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            flex: 1;
         }
         
         .app-title {
@@ -82,7 +105,35 @@
             display: inline-block;
         }
         
-        /* Material Design 3 Tiles Grid */
+        /* Root status badge */
+        .root-badge {
+            background: var(--md-sys-color-surface-variant);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            animation: fadeIn 0.5s ease-out 0.2s both;
+        }
+        
+        .root-badge.rooted {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            animation: fadeIn 0.5s ease-out 0.2s both, glow 2s ease-in-out infinite;
+        }
+        
+        .root-badge.non-rooted {
+            background: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface-variant);
+        }
+        
+        .root-icon {
+            font-size: 16px;
+        }
+        
+        /* Tiles Grid */
         .tiles-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -94,15 +145,23 @@
             background: var(--md-sys-color-surface-variant);
             border-radius: 16px;
             padding: 16px;
-            box-shadow: var(--md-sys-elevation-1);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
         }
         
+        .tile:nth-child(1) { animation-delay: 0.1s; }
+        .tile:nth-child(2) { animation-delay: 0.15s; }
+        .tile:nth-child(3) { animation-delay: 0.2s; }
+        .tile:nth-child(4) { animation-delay: 0.25s; }
+        .tile:nth-child(5) { animation-delay: 0.3s; }
+        .tile:nth-child(6) { animation-delay: 0.35s; }
+        
         .tile:active {
-            transform: scale(0.98);
-            box-shadow: var(--md-sys-elevation-2);
+            transform: scale(0.96);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
         
         .tile-label {
@@ -120,6 +179,7 @@
             color: var(--md-sys-color-on-surface);
             line-height: 1;
             font-variant-numeric: tabular-nums;
+            transition: color 0.3s ease;
         }
         
         .tile-unit {
@@ -129,10 +189,11 @@
             margin-left: 4px;
         }
         
-        /* Special tiles */
+        /* Large capacity tile with pulse animation */
         .tile-large {
             grid-column: span 2;
             background: var(--md-sys-color-primary-container);
+            animation: fadeIn 0.5s ease-out, pulse 3s ease-in-out infinite;
         }
         
         .tile-large .tile-label {
@@ -149,7 +210,37 @@
             opacity: 0.8;
         }
         
-        /* Status indicator */
+        /* Charger voltage tile (root only) */
+        .tile-charger {
+            grid-column: span 2;
+            background: linear-gradient(
+                90deg,
+                var(--md-sys-color-tertiary-container) 0%,
+                var(--md-sys-color-secondary-container) 100%
+            );
+            background-size: 200% 100%;
+            animation: fadeIn 0.5s ease-out 0.4s both, shimmer 3s linear infinite;
+        }
+        
+        .tile-charger .tile-label {
+            color: var(--md-sys-color-on-tertiary-container);
+        }
+        
+        .tile-charger .tile-value {
+            color: var(--md-sys-color-on-tertiary-container);
+            font-size: 40px;
+        }
+        
+        .tile-charger .tile-unit {
+            color: var(--md-sys-color-on-tertiary-container);
+            opacity: 0.9;
+        }
+        
+        .tile-hidden {
+            display: none;
+        }
+        
+        /* Status badge */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -159,6 +250,7 @@
             font-size: 14px;
             font-weight: 500;
             margin-top: 8px;
+            transition: all 0.3s ease;
         }
         
         .status-charging {
@@ -214,12 +306,12 @@
         .md-button-filled {
             background: var(--md-sys-color-primary);
             color: var(--md-sys-color-on-primary);
-            box-shadow: var(--md-sys-elevation-1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
         }
         
         .md-button-filled:active {
-            box-shadow: var(--md-sys-elevation-3);
-            transform: scale(0.98);
+            box-shadow: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
+            transform: scale(0.96);
         }
         
         .md-button-outlined {
@@ -230,6 +322,7 @@
         
         .md-button-outlined:active {
             background: rgba(208, 188, 255, 0.08);
+            transform: scale(0.96);
         }
         
         /* Debug output */
@@ -238,10 +331,11 @@
             background: var(--md-sys-color-surface-variant);
             border-radius: 16px;
             padding: 16px;
-            box-shadow: var(--md-sys-elevation-1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
             display: none;
             max-height: 400px;
             overflow-y: auto;
+            animation: fadeIn 0.3s ease-out;
         }
         
         .debug-card.show {
@@ -257,7 +351,7 @@
             word-break: break-all;
         }
         
-        /* Error message */
+        /* Error banner */
         .error-banner {
             margin-top: 16px;
             padding: 12px 16px;
@@ -267,19 +361,18 @@
             font-size: 13px;
             color: var(--md-sys-color-error);
             display: none;
+            animation: fadeIn 0.3s ease-out;
         }
         
         .error-banner.show {
             display: block;
         }
         
-        /* Icon styling */
         .icon {
             font-style: normal;
             font-size: 20px;
         }
         
-        /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -292,18 +385,20 @@
             background: var(--md-sys-color-outline-variant);
             border-radius: 4px;
         }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--md-sys-color-outline);
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
+        <!-- Header with root status -->
         <header class="app-header">
-            <h1 class="app-title">Battery Monitor</h1>
-            <a href="https://t.me/hoshiyomi_id" class="app-subtitle">@hoshiyomi_id</a>
+            <div class="header-left">
+                <h1 class="app-title">Battery Monitor</h1>
+                <a href="https://t.me/hoshiyomi_id" class="app-subtitle">@hoshiyomi_id</a>
+            </div>
+            <div class="root-badge non-rooted" id="root-badge">
+                <span class="root-icon" id="root-icon">🔒</span>
+                <span id="root-text">Non-Root</span>
+            </div>
         </header>
         
         <!-- Battery Stats Tiles -->
@@ -318,6 +413,15 @@
                 <div class="status-badge status-unknown" id="status-badge">
                     <span class="icon">⚡</span>
                     <span id="status-text">--</span>
+                </div>
+            </div>
+            
+            <!-- Charger voltage tile (root only) -->
+            <div class="tile tile-charger tile-hidden" id="tile-charger">
+                <div class="tile-label">⚡ Charger Voltage</div>
+                <div>
+                    <span class="tile-value" id="charger-value">--</span>
+                    <span class="tile-unit">V</span>
                 </div>
             </div>
             
@@ -381,6 +485,41 @@
 
     <script>
         let debugData = '';
+        let hasRoot = false;
+        
+        function checkRootStatus() {
+            try {
+                const statusJson = Android.getRootStatus();
+                const status = JSON.parse(statusJson);
+                
+                if (status.checked) {
+                    hasRoot = status.hasRoot;
+                    updateRootBadge(hasRoot);
+                }
+            } catch (e) {
+                console.error('Root check failed:', e);
+            }
+        }
+        
+        function updateRootBadge(rooted) {
+            const badge = document.getElementById('root-badge');
+            const icon = document.getElementById('root-icon');
+            const text = document.getElementById('root-text');
+            
+            if (rooted) {
+                badge.className = 'root-badge rooted';
+                icon.textContent = '🔓';
+                text.textContent = 'Rooted';
+                
+                // Show charger voltage tile
+                const chargerTile = document.getElementById('tile-charger');
+                chargerTile.classList.remove('tile-hidden');
+            } else {
+                badge.className = 'root-badge non-rooted';
+                icon.textContent = '🔒';
+                text.textContent = 'Non-Root';
+            }
+        }
         
         function updateBattery() {
             try {
@@ -398,23 +537,18 @@
                 const voltageRaw = parseInt(data.voltage) || 0;
                 const currentRaw = parseInt(data.current_now) || 0;
                 const tempRaw = parseInt(data.temp) || 0;
+                const chargerVoltageRaw = parseInt(data.charger_voltage) || 0;
                 
                 // Calculate values
                 const voltage = (voltageRaw / 1000).toFixed(2);
                 const current = Math.floor(currentRaw / 1000);
                 const temperature = (tempRaw / 10).toFixed(1);
                 const power = (Math.abs((voltage * current) / 1000)).toFixed(1);
+                const chargerVoltage = (chargerVoltageRaw / 1000).toFixed(2);
                 
                 // Update capacity tile
-                const capacityTile = document.getElementById('tile-capacity');
                 const capacityValue = document.getElementById('capacity-value');
                 capacityValue.textContent = capacity;
-                
-                if (capacity === 0) {
-                    capacityTile.classList.add('tile-error');
-                } else {
-                    capacityTile.classList.remove('tile-error');
-                }
                 
                 // Update status badge
                 const statusBadge = document.getElementById('status-badge');
@@ -432,31 +566,20 @@
                     statusBadge.classList.add('status-full');
                 }
                 
-                // Update voltage tile
-                const voltageTile = document.getElementById('tile-voltage');
-                const voltageValue = document.getElementById('voltage-value');
-                voltageValue.textContent = voltage;
-                
-                if (voltage == 0) {
-                    voltageTile.classList.add('tile-error');
-                } else {
-                    voltageTile.classList.remove('tile-error');
-                }
-                
-                // Update current tile
+                // Update tiles
+                document.getElementById('voltage-value').textContent = voltage;
                 document.getElementById('current-value').textContent = current;
-                
-                // Update power tile
                 document.getElementById('power-value').textContent = power;
-                
-                // Update temperature tile
                 document.getElementById('temp-value').textContent = temperature;
                 
-                // Show/hide error banner
+                // Update charger voltage (if rooted and charging)
+                if (hasRoot && chargerVoltageRaw > 0) {
+                    document.getElementById('charger-value').textContent = chargerVoltage;
+                }
+                
+                // Clear errors if data is good
                 if (capacity > 0 && status !== 'Unknown') {
                     hideError();
-                } else {
-                    showError('⚠️ Check debug log at /sdcard/battery_debug.txt');
                 }
                 
             } catch (e) {
@@ -482,8 +605,6 @@
                 const card = document.getElementById('debug-card');
                 output.textContent = debugData;
                 card.classList.add('show');
-                
-                // Scroll to debug card
                 card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } catch (e) {
                 showError('Error getting debug info: ' + e.message);
@@ -495,7 +616,6 @@
                 showDebug();
             }
             
-            // Create temporary textarea for copying
             const textarea = document.createElement('textarea');
             textarea.value = debugData;
             textarea.style.position = 'fixed';
@@ -505,18 +625,26 @@
             
             try {
                 document.execCommand('copy');
-                showError('✅ Debug info copied! Check /sdcard/battery_debug.txt');
+                showError('✅ Debug info copied!');
                 setTimeout(hideError, 3000);
             } catch (e) {
-                showError('❌ Failed to copy. Check /sdcard/battery_debug.txt manually');
+                showError('❌ Failed to copy');
             }
             
             document.body.removeChild(textarea);
         }
         
-        // Update every 200ms
+        // Initialize
+        setTimeout(() => {
+            checkRootStatus();
+            updateBattery();
+        }, 500);
+        
+        // Update root status every 2 seconds
+        setInterval(checkRootStatus, 2000);
+        
+        // Update battery every 200ms
         setInterval(updateBattery, 200);
-        setTimeout(updateBattery, 100);
     </script>
 </body>
 </html>
