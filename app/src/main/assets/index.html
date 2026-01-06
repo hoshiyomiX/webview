@@ -737,16 +737,11 @@
         let hasRoot = false;
         let previousValues = {};
         
-        // Liquid physics variables (realistic bottle simulation)
-        let liquidX = 0;          // Current X position
-        let liquidY = 0;          // Current Y position (for shake)
-        let liquidVelX = 0;       // Velocity X
-        let liquidVelY = 0;       // Velocity Y
-        let accelerationX = 0;    // Current acceleration
-        let accelerationY = 0;
-        const damping = 0.92;     // Friction/damping (0-1, higher = less friction)
-        const springStrength = 0.15;  // Return to center force
-        const maxDisplacement = 40;   // Maximum pixel displacement
+        // Simplified liquid physics - DIRECT TILT RESPONSE (NO BOUNCING)
+        let tiltGamma = 0;    // Left-right tilt
+        let tiltBeta = 0;     // Front-back tilt
+        let shakeX = 0;       // Shake effect X
+        let shakeY = 0;       // Shake effect Y
         
         // Format number untuk hide .0 decimal
         function formatNumber(value, decimals = 2) {
@@ -771,7 +766,6 @@
                 initMotionListener();
             }
             
-            // Also request orientation for tilt
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
                     .then(permissionState => {
@@ -785,7 +779,7 @@
             }
         }
         
-        // Initialize motion listener for shake/acceleration
+        // Initialize motion listener for shake detection
         function initMotionListener() {
             if (window.DeviceMotionEvent) {
                 window.addEventListener('devicemotion', handleMotion, true);
@@ -799,66 +793,58 @@
             }
         }
         
-        // Handle device motion (acceleration from shaking)
+        // Handle device motion (shake detection only)
         function handleMotion(event) {
             if (event.accelerationIncludingGravity) {
-                // Get acceleration (m/s²)
                 const accel = event.accelerationIncludingGravity;
                 
-                // Apply acceleration to liquid velocity
-                // Scale down and invert for natural feeling
-                accelerationX = (accel.x || 0) * -0.5;
-                accelerationY = (accel.y || 0) * 0.5;
+                // Light shake effect (decays quickly)
+                const newShakeX = (accel.x || 0) * -0.3;
+                const newShakeY = (accel.y || 0) * 0.3;
+                
+                // Apply shake (will decay in update loop)
+                shakeX = newShakeX;
+                shakeY = newShakeY;
             }
         }
         
-        // Handle device orientation (for tilt-based movement)
-        let tiltGamma = 0;
-        let tiltBeta = 0;
-        
+        // Handle device orientation (DIRECT TILT MAPPING)
         function handleOrientation(event) {
-            // gamma: left to right (-90 to 90)
-            // beta: front to back (-180 to 180)
-            tiltGamma = event.gamma || 0;
-            tiltBeta = event.beta || 0;
+            tiltGamma = event.gamma || 0;  // Left-right (-90 to 90)
+            tiltBeta = event.beta || 0;    // Front-back (-180 to 180)
         }
         
-        // Physics simulation loop for realistic liquid movement
-        function updateLiquidPhysics() {
-            // Apply tilt-based acceleration
-            const tiltForceX = (tiltGamma / 90) * 2;  // Normalize and amplify
-            const tiltForceY = ((tiltBeta - 45) / 90) * 1.5;  // Offset beta by 45 for natural upright position
-            
-            // Combine acceleration from shake and tilt
-            liquidVelX += accelerationX + tiltForceX;
-            liquidVelY += accelerationY + tiltForceY;
-            
-            // Spring force to return to center
-            liquidVelX -= liquidX * springStrength;
-            liquidVelY -= liquidY * springStrength;
-            
-            // Apply damping (friction)
-            liquidVelX *= damping;
-            liquidVelY *= damping;
-            
-            // Update position
-            liquidX += liquidVelX;
-            liquidY += liquidVelY;
-            
-            // Clamp to max displacement
-            liquidX = Math.max(-maxDisplacement, Math.min(maxDisplacement, liquidX));
-            liquidY = Math.max(-maxDisplacement, Math.min(maxDisplacement, liquidY));
-            
-            // Apply to DOM
+        // Update liquid position - DIRECT & RESPONSIVE (NO BOUNCING)
+        function updateLiquidPosition() {
             const liquid = document.getElementById('liquid');
-            if (liquid) {
-                liquid.style.transform = `translate(${liquidX}px, ${liquidY}px)`;
-            }
+            if (!liquid) return;
+            
+            // Direct tilt-based position (NO PHYSICS, NO SPRING, NO DAMPING)
+            // Gamma: -90 (left) to +90 (right)
+            // Beta: -180 to +180, normalize around 0 for upright position
+            
+            let targetX = (tiltGamma / 90) * 35;  // Max 35px left/right
+            let targetY = ((tiltBeta - 0) / 90) * 20;  // Max 20px up/down
+            
+            // Add small shake effect (decays)
+            targetX += shakeX;
+            targetY += shakeY;
+            
+            // Decay shake
+            shakeX *= 0.85;
+            shakeY *= 0.85;
+            
+            // Clamp to reasonable bounds
+            targetX = Math.max(-40, Math.min(40, targetX));
+            targetY = Math.max(-25, Math.min(25, targetY));
+            
+            // Apply DIRECTLY (instant response to tilt)
+            liquid.style.transform = `translate(${targetX}px, ${targetY}px)`;
         }
         
-        // Start physics loop
-        function startPhysicsLoop() {
-            setInterval(updateLiquidPhysics, 16); // ~60fps
+        // Start update loop
+        function startLiquidLoop() {
+            setInterval(updateLiquidPosition, 16); // ~60fps
         }
         
         // Get color based on battery percentage (Red 0% -> Green 100%)
@@ -915,10 +901,8 @@
         function updateLiquid(percentage) {
             const liquid = document.getElementById('liquid');
             
-            // Update height
             liquid.style.height = percentage + '%';
             
-            // Update color based on percentage
             const color = getBatteryColor(percentage);
             const colorBefore = getBatteryColor(Math.min(100, percentage + 10));
             liquid.style.background = `linear-gradient(180deg, ${colorBefore} 0%, ${color} 100%)`;
@@ -951,42 +935,41 @@
                 const tempRaw = parseInt(data.temp) || 0;
                 const chargerVoltageRaw = parseInt(data.charger_voltage) || 0;
                 
-                // Format values - hide .0 decimals
+                // Format values
                 const voltage = formatNumber(voltageRaw / 1000, 2);
                 const current = Math.floor(currentRaw / 1000);
                 const temperature = formatNumber(tempRaw / 10, 1);
                 const power = formatNumber(Math.abs((voltageRaw * currentRaw) / 1000000), 2);
                 const chargerVoltage = formatNumber(chargerVoltageRaw / 1000, 2);
                 
-                // Update liquid with dynamic color
                 updateLiquid(capacity);
-                
-                // Update values
                 animateValue('capacity-value', capacity);
                 
-                // Status badge with bypass charging icon
+                // Status badge - FIX ORDER (check "Not charging" BEFORE "charging")
                 const statusBadge = document.getElementById('status-badge');
                 const statusText = document.getElementById('status-text');
                 const statusIcon = document.getElementById('status-icon');
-                statusText.textContent = status;
+                const statusLower = status.toLowerCase();
                 
+                statusText.textContent = status;
                 statusBadge.className = 'status-badge';
-                if (status === 'Unknown') {
-                    statusBadge.classList.add('status-unknown');
-                    statusIcon.textContent = '❓';
-                } else if (status.toLowerCase().includes('charging')) {
-                    statusBadge.classList.add('status-charging');
-                    statusIcon.textContent = '⚡';
-                } else if (status.toLowerCase().includes('not charging')) {
-                    // Bypass charging icon
+                
+                // CHECK "not charging" FIRST (before generic "charging")
+                if (statusLower.includes('not charging')) {
                     statusBadge.classList.add('status-not-charging');
-                    statusIcon.textContent = '➡️';
-                } else if (status.toLowerCase().includes('discharging')) {
-                    statusBadge.classList.add('status-discharging');
-                    statusIcon.textContent = '🔋';
-                } else if (status.toLowerCase().includes('full')) {
+                    statusIcon.textContent = '➡️';  // Bypass icon
+                } else if (statusLower.includes('full')) {
                     statusBadge.classList.add('status-full');
                     statusIcon.textContent = '✓';
+                } else if (statusLower.includes('charging')) {
+                    statusBadge.classList.add('status-charging');
+                    statusIcon.textContent = '⚡';  // Lightning
+                } else if (statusLower.includes('discharging')) {
+                    statusBadge.classList.add('status-discharging');
+                    statusIcon.textContent = '🔋';
+                } else {
+                    statusBadge.classList.add('status-unknown');
+                    statusIcon.textContent = '❓';
                 }
                 
                 animateValue('voltage-value', voltage);
@@ -1021,15 +1004,12 @@
         function showDebug() {
             try {
                 debugData = Android.getDebugInfo();
-                debugData += '\n\n--- LIQUID PHYSICS DATA ---\n';
-                debugData += `Position X: ${liquidX.toFixed(2)}px\n`;
-                debugData += `Position Y: ${liquidY.toFixed(2)}px\n`;
-                debugData += `Velocity X: ${liquidVelX.toFixed(2)}\n`;
-                debugData += `Velocity Y: ${liquidVelY.toFixed(2)}\n`;
-                debugData += `Acceleration X: ${accelerationX.toFixed(2)}\n`;
-                debugData += `Acceleration Y: ${accelerationY.toFixed(2)}\n`;
-                debugData += `Tilt Gamma: ${tiltGamma.toFixed(2)}\u00b0\n`;
-                debugData += `Tilt Beta: ${tiltBeta.toFixed(2)}\u00b0\n`;
+                debugData += '\n\n--- LIQUID TILT DATA ---\n';
+                debugData += `Tilt Gamma (L/R): ${tiltGamma.toFixed(2)}\u00b0\n`;
+                debugData += `Tilt Beta (F/B): ${tiltBeta.toFixed(2)}\u00b0\n`;
+                debugData += `Shake X: ${shakeX.toFixed(2)}\n`;
+                debugData += `Shake Y: ${shakeY.toFixed(2)}\n`;
+                debugData += `\nLiquid Movement: DIRECT (no bouncing)\n`;
                 
                 const output = document.getElementById('debug-output');
                 const card = document.getElementById('debug-card');
@@ -1067,7 +1047,7 @@
             checkRootStatus();
             updateBattery();
             requestMotionPermission();
-            startPhysicsLoop();
+            startLiquidLoop();
         }, 300);
         
         // Update loops
