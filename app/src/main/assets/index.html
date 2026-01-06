@@ -53,20 +53,24 @@
             100% { transform: translateX(0) translateY(0); }
         }
         
-        /* Charging Bubble Effect (Seperti Cas Aki) */
-        @keyframes bubble {
+        /* Charging Bubble Effect (Random spawn) */
+        @keyframes bubbleRise {
             0% {
-                transform: translateY(0) scale(0);
+                transform: translateY(0) translateX(0) scale(0);
                 opacity: 0;
             }
-            10% {
+            5% {
                 opacity: 1;
+                transform: translateY(-10px) translateX(0) scale(1);
             }
-            90% {
-                opacity: 0.7;
+            50% {
+                opacity: 0.8;
+            }
+            95% {
+                opacity: 0.3;
             }
             100% {
-                transform: translateY(-150px) scale(1);
+                transform: translateY(-180px) translateX(var(--drift-x, 0)) scale(0.8);
                 opacity: 0;
             }
         }
@@ -92,6 +96,30 @@
             40% {
                 filter: drop-shadow(0 0 2px #FFC107);
                 transform: scale(1);
+            }
+        }
+        
+        /* Discharging drain effect */
+        @keyframes drainPulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 2px #F44336) drop-shadow(0 0 4px #E57373);
+                transform: scale(1);
+            }
+            50% {
+                filter: drop-shadow(0 0 8px #F44336) drop-shadow(0 0 12px #E57373);
+                transform: scale(1.08);
+            }
+        }
+        
+        /* Bypass icon pulse */
+        @keyframes bypassPulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 2px #2196F3) drop-shadow(0 0 4px #64B5F6);
+                transform: scale(1);
+            }
+            50% {
+                filter: drop-shadow(0 0 8px #2196F3) drop-shadow(0 0 12px #64B5F6);
+                transform: scale(1.08);
             }
         }
         
@@ -241,7 +269,6 @@
         
         .root-icon {
             font-size: 16px;
-            /* NO rotation animation */
         }
         
         /* Tiles Grid */
@@ -408,29 +435,15 @@
             opacity: 0.5;
         }
         
-        /* Charging Bubbles (Elektrolisis Effect) */
+        /* Random Bubbles */
         .bubble {
             position: absolute;
-            bottom: 10%;
-            width: 8px;
-            height: 8px;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.3) 100%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.4) 100%);
             border-radius: 50%;
-            animation: bubble 2.5s ease-in infinite;
+            animation: bubbleRise 3s ease-out forwards;
             pointer-events: none;
-            box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.8);
         }
-        
-        .bubble:nth-child(1) { left: 20%; animation-delay: 0s; }
-        .bubble:nth-child(2) { left: 35%; animation-delay: 0.4s; width: 6px; height: 6px; }
-        .bubble:nth-child(3) { left: 50%; animation-delay: 0.8s; width: 10px; height: 10px; }
-        .bubble:nth-child(4) { left: 65%; animation-delay: 1.2s; width: 7px; height: 7px; }
-        .bubble:nth-child(5) { left: 80%; animation-delay: 1.6s; width: 9px; height: 9px; }
-        .bubble:nth-child(6) { left: 28%; animation-delay: 2s; width: 5px; height: 5px; }
-        .bubble:nth-child(7) { left: 42%; animation-delay: 0.6s; width: 8px; height: 8px; }
-        .bubble:nth-child(8) { left: 58%; animation-delay: 1s; width: 6px; height: 6px; }
-        .bubble:nth-child(9) { left: 72%; animation-delay: 1.4s; width: 7px; height: 7px; }
-        .bubble:nth-child(10) { left: 88%; animation-delay: 1.8s; width: 9px; height: 9px; }
         
         /* Status Badge */
         .status-badge {
@@ -456,6 +469,14 @@
         /* Electric effect for charging icon */
         .status-charging .status-icon {
             animation: electricPulse 2s ease-in-out infinite;
+        }
+        
+        .status-discharging .status-icon {
+            animation: drainPulse 2.5s ease-in-out infinite;
+        }
+        
+        .status-not-charging .status-icon {
+            animation: bypassPulse 2.5s ease-in-out infinite;
         }
         
         .status-charging {
@@ -610,7 +631,7 @@
             border-radius: 24px;
             padding: 24px;
             display: none;
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
             animation: fadeInUp 0.5s var(--md-motion-emphasized);
             border: 1px solid var(--md-sys-color-outline-variant);
@@ -623,8 +644,8 @@
         
         .debug-card pre {
             font-family: 'Roboto Mono', 'SF Mono', monospace;
-            font-size: 11px;
-            line-height: 1.7;
+            font-size: 10px;
+            line-height: 1.6;
             color: var(--md-sys-color-on-surface-variant);
             white-space: pre-wrap;
             word-break: break-all;
@@ -688,21 +709,8 @@
             <!-- Hero Battery Tile with Liquid -->
             <div class="tile tile-large" id="tile-capacity">
                 <!-- Liquid Water Animation -->
-                <div class="liquid-container">
+                <div class="liquid-container" id="liquid-container">
                     <div class="liquid" id="liquid"></div>
-                    <!-- Charging Bubbles (Hidden by default, shown when charging) -->
-                    <div id="bubbles-container" style="display: none;">
-                        <div class="bubble"></div>
-                        <div class="bubble"></div>
-                        <div class="bubble"></div>
-                        <div class="bubble"></div>
-                        <div class="bubble"></div>
-                        <div class="bubble"></div>
-                        <div class="bubble"></div>
-                        <div class="bubble"></div>
-                        <div class="bubble"></div>
-                        <div class="bubble"></div>
-                    </div>
                 </div>
                 
                 <div class="tile-label">Battery</div>
@@ -791,6 +799,19 @@
         let hasRoot = false;
         let previousValues = {};
         let isCharging = false;
+        let bubbleSpawnInterval = null;
+        let bubbleCount = 0;
+        
+        // Advanced debug logging
+        const debugLog = {
+            updates: 0,
+            lastUpdate: Date.now(),
+            batteryHistory: [],
+            statusChanges: [],
+            bubbleStats: { total: 0, active: 0 },
+            performance: { avgUpdateTime: 0, totalTime: 0 },
+            errors: []
+        };
         
         // Format number untuk hide .0 decimal
         function formatNumber(value, decimals = 2) {
@@ -804,6 +825,7 @@
         // Retry root access (clickable badge)
         function retryRootAccess() {
             try {
+                debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Root retry requested' });
                 if (typeof Android !== 'undefined' && typeof Android.requestRootAccess === 'function') {
                     Android.requestRootAccess();
                     showError('🔓 Root permission requested...');
@@ -816,7 +838,61 @@
                     setTimeout(hideError, 2000);
                 }
             } catch (e) {
+                debugLog.errors.push({ time: new Date().toISOString(), error: e.message });
                 console.error('Root retry failed:', e);
+            }
+        }
+        
+        // Random bubble spawner (ONLY when charging)
+        function spawnRandomBubble() {
+            if (!isCharging) return;
+            
+            const container = document.getElementById('liquid-container');
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            
+            // Random properties
+            const size = 5 + Math.random() * 10; // 5-15px
+            const left = 15 + Math.random() * 70; // 15%-85%
+            const bottom = 5 + Math.random() * 10; // 5%-15%
+            const drift = (Math.random() - 0.5) * 40; // -20px to +20px horizontal drift
+            const duration = 2.5 + Math.random() * 1.5; // 2.5-4s
+            
+            bubble.style.width = size + 'px';
+            bubble.style.height = size + 'px';
+            bubble.style.left = left + '%';
+            bubble.style.bottom = bottom + '%';
+            bubble.style.setProperty('--drift-x', drift + 'px');
+            bubble.style.animationDuration = duration + 's';
+            
+            container.appendChild(bubble);
+            bubbleCount++;
+            debugLog.bubbleStats.total++;
+            debugLog.bubbleStats.active++;
+            
+            // Remove after animation
+            setTimeout(() => {
+                bubble.remove();
+                bubbleCount--;
+                debugLog.bubbleStats.active--;
+            }, duration * 1000);
+        }
+        
+        // Start/Stop bubble spawning
+        function toggleBubbleSpawning(active) {
+            if (active && !bubbleSpawnInterval) {
+                debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Bubble spawning started' });
+                bubbleSpawnInterval = setInterval(spawnRandomBubble, 400); // Spawn every 400ms
+                isCharging = true;
+            } else if (!active && bubbleSpawnInterval) {
+                debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Bubble spawning stopped' });
+                clearInterval(bubbleSpawnInterval);
+                bubbleSpawnInterval = null;
+                isCharging = false;
+                // Clear existing bubbles
+                document.querySelectorAll('.bubble').forEach(b => b.remove());
+                bubbleCount = 0;
+                debugLog.bubbleStats.active = 0;
             }
         }
         
@@ -845,10 +921,19 @@
                 const status = JSON.parse(statusJson);
                 
                 if (status.checked) {
+                    if (hasRoot !== status.hasRoot) {
+                        debugLog.statusChanges.push({ 
+                            time: new Date().toISOString(), 
+                            event: 'Root status changed',
+                            from: hasRoot,
+                            to: status.hasRoot
+                        });
+                    }
                     hasRoot = status.hasRoot;
                     updateRootBadge(hasRoot);
                 }
             } catch (e) {
+                debugLog.errors.push({ time: new Date().toISOString(), error: 'Root check: ' + e.message });
                 console.error('Root check failed:', e);
             }
         }
@@ -881,18 +966,6 @@
             liquid.style.background = `linear-gradient(180deg, ${colorBefore} 0%, ${color} 100%)`;
         }
         
-        // Toggle charging bubbles
-        function toggleChargingBubbles(charging) {
-            const bubblesContainer = document.getElementById('bubbles-container');
-            if (charging) {
-                bubblesContainer.style.display = 'block';
-                isCharging = true;
-            } else {
-                bubblesContainer.style.display = 'none';
-                isCharging = false;
-            }
-        }
-        
         function animateValue(elementId, newValue) {
             const element = document.getElementById(elementId);
             if (previousValues[elementId] !== newValue) {
@@ -904,12 +977,15 @@
         }
         
         function updateBattery() {
+            const startTime = performance.now();
+            
             try {
                 const jsonData = Android.getBatteryData();
                 const data = JSON.parse(jsonData);
                 
                 if (data.error) {
                     showError('Error: ' + data.error);
+                    debugLog.errors.push({ time: new Date().toISOString(), error: data.error });
                     return;
                 }
                 
@@ -919,6 +995,17 @@
                 const currentRaw = parseInt(data.current_now) || 0;
                 const tempRaw = parseInt(data.temp) || 0;
                 const chargerVoltageRaw = parseInt(data.charger_voltage) || 0;
+                
+                // Track battery history
+                debugLog.batteryHistory.push({
+                    time: new Date().toISOString(),
+                    capacity,
+                    voltage: voltageRaw,
+                    current: currentRaw,
+                    temp: tempRaw,
+                    status
+                });
+                if (debugLog.batteryHistory.length > 50) debugLog.batteryHistory.shift();
                 
                 // Format values
                 const voltage = formatNumber(voltageRaw / 1000, 2);
@@ -930,36 +1017,46 @@
                 updateLiquid(capacity);
                 animateValue('capacity-value', capacity);
                 
-                // Status badge
+                // Status badge with varied icons
                 const statusBadge = document.getElementById('status-badge');
                 const statusText = document.getElementById('status-text');
                 const statusIcon = document.getElementById('status-icon');
                 const statusLower = status.toLowerCase();
                 
+                const prevStatus = statusText.textContent;
+                if (prevStatus !== status) {
+                    debugLog.statusChanges.push({
+                        time: new Date().toISOString(),
+                        event: 'Battery status changed',
+                        from: prevStatus,
+                        to: status
+                    });
+                }
+                
                 statusText.textContent = status;
                 statusBadge.className = 'status-badge';
                 
-                // Check status and toggle bubbles
+                // Check status and toggle bubbles (ONLY charging)
                 if (statusLower.includes('not charging')) {
                     statusBadge.classList.add('status-not-charging');
-                    statusIcon.textContent = '➡️';
-                    toggleChargingBubbles(false);
+                    statusIcon.textContent = '➡️';  // Bypass icon
+                    toggleBubbleSpawning(false);
                 } else if (statusLower.includes('full')) {
                     statusBadge.classList.add('status-full');
                     statusIcon.textContent = '✓';
-                    toggleChargingBubbles(false);
+                    toggleBubbleSpawning(false);
                 } else if (statusLower.includes('charging')) {
                     statusBadge.classList.add('status-charging');
-                    statusIcon.textContent = '⚡';
-                    toggleChargingBubbles(true);  // Show bubbles when charging
+                    statusIcon.textContent = '⚡';  // Lightning
+                    toggleBubbleSpawning(true);  // ONLY charging = bubbles ON
                 } else if (statusLower.includes('discharging')) {
                     statusBadge.classList.add('status-discharging');
-                    statusIcon.textContent = '🔋';
-                    toggleChargingBubbles(false);
+                    statusIcon.textContent = '🔋';  // Battery drain icon
+                    toggleBubbleSpawning(false);
                 } else {
                     statusBadge.classList.add('status-unknown');
                     statusIcon.textContent = '❓';
-                    toggleChargingBubbles(false);
+                    toggleBubbleSpawning(false);
                 }
                 
                 animateValue('voltage-value', voltage);
@@ -975,7 +1072,15 @@
                     hideError();
                 }
                 
+                // Performance tracking
+                const updateTime = performance.now() - startTime;
+                debugLog.updates++;
+                debugLog.performance.totalTime += updateTime;
+                debugLog.performance.avgUpdateTime = debugLog.performance.totalTime / debugLog.updates;
+                debugLog.lastUpdate = Date.now();
+                
             } catch (e) {
+                debugLog.errors.push({ time: new Date().toISOString(), error: 'Update failed: ' + e.message });
                 showError('Error: ' + e.message);
             }
         }
@@ -993,10 +1098,55 @@
         
         function showDebug() {
             try {
-                debugData = Android.getDebugInfo();
-                debugData += '\n\n--- UI STATUS ---\n';
-                debugData += `Charging Bubbles: ${isCharging ? 'Active' : 'Inactive'}\n`;
-                debugData += `Root Badge: ${hasRoot ? 'Rooted' : 'Non-Root (Click to retry)'}\n`;
+                // Advanced debug info
+                debugData = '========== ADVANCED DEBUG LOG ==========\n\n';
+                debugData += '--- SYSTEM INFO ---\n';
+                debugData += `Timestamp: ${new Date().toISOString()}\n`;
+                debugData += `User Agent: ${navigator.userAgent}\n`;
+                debugData += `Screen: ${window.screen.width}x${window.screen.height}\n`;
+                debugData += `Viewport: ${window.innerWidth}x${window.innerHeight}\n\n`;
+                
+                debugData += '--- PERFORMANCE STATS ---\n';
+                debugData += `Total Updates: ${debugLog.updates}\n`;
+                debugData += `Avg Update Time: ${debugLog.performance.avgUpdateTime.toFixed(2)}ms\n`;
+                debugData += `Last Update: ${new Date(debugLog.lastUpdate).toLocaleTimeString()}\n`;
+                debugData += `Uptime: ${((Date.now() - (debugLog.lastUpdate - debugLog.updates * 200)) / 1000).toFixed(0)}s\n\n`;
+                
+                debugData += '--- BUBBLE STATS ---\n';
+                debugData += `Charging Active: ${isCharging}\n`;
+                debugData += `Bubbles Spawned (Total): ${debugLog.bubbleStats.total}\n`;
+                debugData += `Bubbles Active (Now): ${debugLog.bubbleStats.active}\n`;
+                debugData += `Spawn Interval: ${bubbleSpawnInterval ? '400ms' : 'Stopped'}\n\n`;
+                
+                debugData += '--- BATTERY STATUS HISTORY ---\n';
+                const recent = debugLog.batteryHistory.slice(-10);
+                recent.forEach(entry => {
+                    debugData += `[${new Date(entry.time).toLocaleTimeString()}] ${entry.capacity}% | ${(entry.voltage/1000).toFixed(2)}V | ${(entry.current/1000).toFixed(0)}mA | ${(entry.temp/10).toFixed(1)}°C | ${entry.status}\n`;
+                });
+                debugData += '\n';
+                
+                debugData += '--- STATUS CHANGES LOG ---\n';
+                debugLog.statusChanges.slice(-10).forEach(change => {
+                    debugData += `[${new Date(change.time).toLocaleTimeString()}] ${change.event}`;
+                    if (change.from !== undefined) debugData += ` (${change.from} → ${change.to})`;
+                    debugData += '\n';
+                });
+                debugData += '\n';
+                
+                debugData += '--- ROOT STATUS ---\n';
+                debugData += `Has Root: ${hasRoot}\n`;
+                debugData += `Charger Tile Visible: ${!document.getElementById('tile-charger').classList.contains('tile-hidden')}\n\n`;
+                
+                if (debugLog.errors.length > 0) {
+                    debugData += '--- ERROR LOG ---\n';
+                    debugLog.errors.slice(-5).forEach(err => {
+                        debugData += `[${new Date(err.time).toLocaleTimeString()}] ${err.error}\n`;
+                    });
+                    debugData += '\n';
+                }
+                
+                debugData += '--- RAW ANDROID DATA ---\n';
+                debugData += Android.getDebugInfo();
                 
                 const output = document.getElementById('debug-output');
                 const card = document.getElementById('debug-card');
@@ -1005,6 +1155,7 @@
                 setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 150);
             } catch (e) {
                 showError('Error: ' + e.message);
+                debugLog.errors.push({ time: new Date().toISOString(), error: 'Debug show failed: ' + e.message });
             }
         }
         
