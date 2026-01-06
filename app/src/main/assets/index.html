@@ -472,25 +472,24 @@
             color: var(--md-sys-color-on-tertiary-container);
         }
         
-        /* Status Badge */
-        .status-badge {
+        /* Status Text (plain, no badge/frame) */
+        .status-text {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 16px;
-            border-radius: 16px;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             margin-top: 14px;
-            backdrop-filter: blur(12px);
             transition: all 0.4s var(--md-motion-spring);
             animation: slideInRight 0.6s var(--md-motion-emphasized-decel) 0.3s both;
             position: relative;
             z-index: 10;
+            color: var(--md-sys-color-on-primary-container);
+            opacity: 0.9;
         }
         
         .status-icon {
-            font-size: 18px;
+            font-size: 20px;
         }
         
         /* Electric effect for charging icon */
@@ -504,35 +503,6 @@
         
         .status-not-charging .status-icon {
             animation: bypassPulse 2.5s ease-in-out infinite;
-        }
-        
-        .status-charging {
-            background: rgba(76, 175, 80, 0.3);
-            color: #81C784;
-            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
-        }
-        
-        .status-discharging {
-            background: rgba(244, 67, 54, 0.3);
-            color: #E57373;
-            box-shadow: 0 4px 16px rgba(244, 67, 54, 0.3);
-        }
-        
-        .status-not-charging {
-            background: rgba(33, 150, 243, 0.3);
-            color: #64B5F6;
-            box-shadow: 0 4px 16px rgba(33, 150, 243, 0.3);
-        }
-        
-        .status-full {
-            background: rgba(76, 175, 80, 0.3);
-            color: #81C784;
-            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
-        }
-        
-        .status-unknown {
-            background: rgba(158, 158, 158, 0.25);
-            color: #BDBDBD;
         }
         
         /* Action Buttons */
@@ -712,18 +682,10 @@
                     <span class="tile-value" id="capacity-value">--</span>
                     <span class="tile-unit">%</span>
                 </div>
-                <div class="status-badge status-unknown" id="status-badge">
+                <!-- Plain status text (no badge) -->
+                <div class="status-text" id="status-text">
                     <span class="status-icon" id="status-icon">⚡</span>
-                    <span id="status-text">--</span>
-                </div>
-            </div>
-            
-            <!-- Voltage Tile (Dual Mode: Battery / Charger) -->
-            <div class="tile tile-voltage" id="tile-voltage">
-                <div class="tile-label" id="voltage-label">Voltage</div>
-                <div class="tile-value-wrapper">
-                    <span class="tile-value" id="voltage-value">--</span>
-                    <span class="tile-unit">V</span>
+                    <span id="status-label">--</span>
                 </div>
             </div>
             
@@ -745,9 +707,18 @@
                 </div>
             </div>
             
+            <!-- Voltage Tile (Dual Mode: Battery / Charger) -->
+            <div class="tile tile-voltage" id="tile-voltage">
+                <div class="tile-label" id="voltage-label">Voltage</div>
+                <div class="tile-value-wrapper">
+                    <span class="tile-value" id="voltage-value">--</span>
+                    <span class="tile-unit">V</span>
+                </div>
+            </div>
+            
             <!-- Temperature Tile -->
             <div class="tile" id="tile-temp">
-                <div class="tile-label">Temp</div>
+                <div class="tile-label">Temperature</div>
                 <div class="tile-value-wrapper">
                     <span class="tile-value" id="temp-value">--</span>
                     <span class="tile-unit">°C</span>
@@ -801,13 +772,16 @@
             powerSource: []  // Track power calculation source
         };
         
-        // Format number untuk hide .0 decimal
-        function formatNumber(value, decimals = 2) {
+        // Format number: max 2 digits, 1 decimal, hide .0
+        function formatNumber(value, decimals = 1) {
             const num = parseFloat(value);
             if (isNaN(num)) return value;
             
-            const fixed = num.toFixed(decimals);
-            return fixed.replace(/\.0+$/, '');
+            // Limit to 2 digits before decimal (0-99.9)
+            const limited = Math.min(99.9, num);
+            const fixed = limited.toFixed(decimals);
+            // Remove .0 decimal
+            return fixed.replace(/\.0$/, '');
         }
         
         // Retry root access (clickable badge)
@@ -1028,15 +1002,16 @@
                 const chargerVoltage = formatNumber(chargerVoltageRaw / 1000, 2);
                 
                 // Power calculation: Use /sys value first, fallback to calculation
+                // Format: max 2 digits, 1 decimal, hide .0
                 let power;
                 let powerSourceMethod = '';
                 if (powerRaw > 0) {
                     // Use direct /sys/class/power_supply/battery/power_now (in µW)
-                    power = formatNumber(powerRaw / 1000000, 2);
+                    power = formatNumber(powerRaw / 1000000, 1);
                     powerSourceMethod = '/sys/power_now';
                 } else {
                     // Fallback: Calculate from voltage * current
-                    power = formatNumber(Math.abs((voltageRaw * currentRaw) / 1000000), 2);
+                    power = formatNumber(Math.abs((voltageRaw * currentRaw) / 1000000), 1);
                     powerSourceMethod = 'calculated (V×A)';
                 }
                 
@@ -1050,13 +1025,13 @@
                 updateLiquid(capacity);
                 animateValue('capacity-value', capacity);
                 
-                // Status badge with FIXED detection logic
-                const statusBadge = document.getElementById('status-badge');
+                // Status text (plain, no badge)
                 const statusText = document.getElementById('status-text');
+                const statusLabel = document.getElementById('status-label');
                 const statusIcon = document.getElementById('status-icon');
                 const statusLower = lastStatus.toLowerCase();  // Use lastStatus
                 
-                const prevStatus = statusText.textContent;
+                const prevStatus = statusLabel.textContent;
                 if (prevStatus !== lastStatus && lastStatus !== "Unknown") {
                     debugLog.statusChanges.push({
                         time: new Date().toISOString(),
@@ -1066,40 +1041,40 @@
                     });
                 }
                 
-                statusText.textContent = lastStatus;
-                statusBadge.className = 'status-badge';
+                statusLabel.textContent = lastStatus;
+                statusText.className = 'status-text';
                 
                 // FIXED: Check specificity order (most specific first)
                 let detectedStatus = '';
                 let chargingActive = false;
                 
                 if (statusLower === 'not charging') {
-                    // Exact match: "Not charging"
-                    statusBadge.classList.add('status-not-charging');
-                    statusIcon.textContent = '➡️';  // Bypass icon
+                    // Exact match: "Not charging" - Chipset bypass icon
+                    statusText.classList.add('status-not-charging');
+                    statusIcon.textContent = '🔶';  // Chipset icon
                     detectedStatus = 'not_charging';
                     chargingActive = false;
                 } else if (statusLower === 'full') {
                     // Exact match: "Full"
-                    statusBadge.classList.add('status-full');
+                    statusText.classList.add('status-full');
                     statusIcon.textContent = '✓';
                     detectedStatus = 'full';
                     chargingActive = false;
                 } else if (statusLower === 'charging') {
                     // Exact match: "Charging"
-                    statusBadge.classList.add('status-charging');
+                    statusText.classList.add('status-charging');
                     statusIcon.textContent = '⚡';  // Lightning
                     detectedStatus = 'charging';
                     chargingActive = true;
                 } else if (statusLower === 'discharging') {
-                    // Exact match: "Discharging"
-                    statusBadge.classList.add('status-discharging');
-                    statusIcon.textContent = '🔋';  // Battery drain icon
+                    // Exact match: "Discharging" - Unplug icon
+                    statusText.classList.add('status-discharging');
+                    statusIcon.textContent = '🔌';  // Unplug icon
                     detectedStatus = 'discharging';
                     chargingActive = false;
                 } else {
                     // Unknown
-                    statusBadge.classList.add('status-unknown');
+                    statusText.classList.add('status-unknown');
                     statusIcon.textContent = '❓';
                     detectedStatus = 'unknown';
                     chargingActive = false;
