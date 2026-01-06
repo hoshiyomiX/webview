@@ -1,88 +1,148 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <meta name="theme-color" content="#1C1B1F">
     <title>Battery Monitor</title>
     <style>
         :root {
             /* Material Design 3 - Dynamic Colors */
             --md-sys-color-primary: #D0BCFF;
-            --md-sys-color-on-primary: #371E73;
+            --md-sys-color-on-primary: #381E72;
             --md-sys-color-primary-container: #4F378B;
             --md-sys-color-on-primary-container: #EADDFF;
-            
             --md-sys-color-secondary: #CCC2DC;
-            --md-sys-color-on-secondary: #332D41;
             --md-sys-color-secondary-container: #4A4458;
             --md-sys-color-on-secondary-container: #E8DEF8;
-            
             --md-sys-color-tertiary: #EFB8C8;
-            --md-sys-color-on-tertiary: #492532;
             --md-sys-color-tertiary-container: #633B48;
             --md-sys-color-on-tertiary-container: #FFD8E4;
-            
             --md-sys-color-surface: #1C1B1F;
-            --md-sys-color-surface-variant: #49454F;
-            --md-sys-color-on-surface: #E6E1E5;
+            --md-sys-color-surface-dim: #141316;
+            --md-sys-color-surface-bright: #3B383E;
+            --md-sys-color-surface-container: #211F26;
+            --md-sys-color-surface-container-high: #2B2930;
+            --md-sys-color-surface-container-highest: #36343B;
+            --md-sys-color-on-surface: #E6E0E9;
             --md-sys-color-on-surface-variant: #CAC4D0;
-            
             --md-sys-color-outline: #938F99;
             --md-sys-color-outline-variant: #49454F;
-            
             --md-sys-color-error: #F2B8B5;
             --md-sys-color-on-error: #601410;
+            --md-sys-color-error-container: #8C1D18;
+            
+            /* Android 16 QPR1 Motion Tokens */
+            --md-motion-emphasized: cubic-bezier(0.2, 0, 0, 1);
+            --md-motion-emphasized-decel: cubic-bezier(0.05, 0.7, 0.1, 1);
+            --md-motion-emphasized-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
+            --md-motion-standard: cubic-bezier(0.2, 0, 0, 1);
+            --md-motion-spring: cubic-bezier(0.5, 1.5, 0.5, 1);
+        }
+        
+        /* Android 16 QPR1 Keyframe Animations */
+        @keyframes ripple {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes shimmerFlow {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(32px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 0 0 12px rgba(208, 188, 255, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 24px rgba(208, 188, 255, 0.6);
+            }
+        }
+        
+        @keyframes rotatePulse {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes valueChange {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes progressFill {
+            from {
+                stroke-dashoffset: 176;
+            }
         }
         
         * { 
             margin: 0; 
             padding: 0; 
-            box-sizing: border-box; 
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-        
-        @keyframes shimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 5px rgba(208, 188, 255, 0.3); }
-            50% { box-shadow: 0 0 20px rgba(208, 188, 255, 0.6); }
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
             background: var(--md-sys-color-surface);
             color: var(--md-sys-color-on-surface);
-            font-family: 'Roboto', -apple-system, system-ui, sans-serif;
-            padding: 16px;
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px 16px;
             overflow-y: auto;
+            overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
         }
         
         .container {
             max-width: 480px;
             margin: 0 auto;
-            animation: fadeIn 0.5s ease-out;
         }
         
-        /* Header with root badge */
+        /* Header with fluid animation */
         .app-header {
-            margin-bottom: 24px;
-            padding: 8px 0;
+            margin-bottom: 32px;
+            padding: 4px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            animation: fadeInUp 0.6s var(--md-motion-emphasized-decel);
         }
         
         .header-left {
@@ -90,136 +150,216 @@
         }
         
         .app-title {
-            font-size: 28px;
+            font-size: 34px;
             font-weight: 500;
-            color: var(--md-sys-color-on-surface);
-            letter-spacing: 0;
-            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, var(--md-sys-color-on-surface) 0%, var(--md-sys-color-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .app-subtitle {
             font-size: 14px;
             color: var(--md-sys-color-on-surface-variant);
-            font-weight: 400;
             text-decoration: none;
             display: inline-block;
+            transition: all 0.3s var(--md-motion-emphasized);
         }
         
-        /* Root status badge */
+        .app-subtitle:active {
+            color: var(--md-sys-color-primary);
+            transform: scale(0.95);
+        }
+        
+        /* Root Badge with glow */
         .root-badge {
-            background: var(--md-sys-color-surface-variant);
             padding: 8px 16px;
             border-radius: 20px;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 6px;
-            animation: fadeIn 0.5s ease-out 0.2s both;
+            transition: all 0.4s var(--md-motion-spring);
+            animation: scaleIn 0.5s var(--md-motion-emphasized-decel) 0.2s both;
         }
         
         .root-badge.rooted {
             background: rgba(76, 175, 80, 0.2);
-            color: #4CAF50;
-            animation: fadeIn 0.5s ease-out 0.2s both, glow 2s ease-in-out infinite;
+            color: #81C784;
+            animation: scaleIn 0.5s var(--md-motion-emphasized-decel) 0.2s both,
+                       pulseGlow 2s ease-in-out infinite;
         }
         
         .root-badge.non-rooted {
-            background: var(--md-sys-color-surface-variant);
+            background: var(--md-sys-color-surface-container-high);
             color: var(--md-sys-color-on-surface-variant);
         }
         
         .root-icon {
             font-size: 16px;
+            animation: rotatePulse 3s ease-in-out infinite;
         }
         
-        /* Tiles Grid */
+        /* Tiles Grid with stagger */
         .tiles-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 24px;
         }
         
+        /* Interactive Tile Base */
         .tile {
-            background: var(--md-sys-color-surface-variant);
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--md-sys-color-surface-container-high);
+            border-radius: 24px;
+            padding: 20px;
             position: relative;
             overflow: hidden;
-            animation: fadeIn 0.5s ease-out;
+            cursor: pointer;
+            transition: all 0.4s var(--md-motion-emphasized);
+            animation: scaleIn 0.5s var(--md-motion-emphasized-decel);
         }
         
-        .tile:nth-child(1) { animation-delay: 0.1s; }
-        .tile:nth-child(2) { animation-delay: 0.15s; }
-        .tile:nth-child(3) { animation-delay: 0.2s; }
-        .tile:nth-child(4) { animation-delay: 0.25s; }
-        .tile:nth-child(5) { animation-delay: 0.3s; }
-        .tile:nth-child(6) { animation-delay: 0.35s; }
+        .tile::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--md-sys-color-primary) 0%, transparent 70%);
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s var(--md-motion-emphasized);
+        }
+        
+        .tile:active::before {
+            width: 200%;
+            height: 200%;
+            opacity: 0.15;
+        }
         
         .tile:active {
-            transform: scale(0.96);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            transform: scale(0.95);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         }
         
+        /* Stagger animations */
+        .tile:nth-child(1) { animation-delay: 0ms; }
+        .tile:nth-child(2) { animation-delay: 80ms; }
+        .tile:nth-child(3) { animation-delay: 160ms; }
+        .tile:nth-child(4) { animation-delay: 240ms; }
+        .tile:nth-child(5) { animation-delay: 320ms; }
+        .tile:nth-child(6) { animation-delay: 400ms; }
+        
         .tile-label {
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 11px;
+            font-weight: 700;
             color: var(--md-sys-color-on-surface-variant);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
+            letter-spacing: 1.2px;
+            margin-bottom: 12px;
+            opacity: 0.8;
+        }
+        
+        .tile-value-wrapper {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
         }
         
         .tile-value {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 400;
             color: var(--md-sys-color-on-surface);
             line-height: 1;
             font-variant-numeric: tabular-nums;
-            transition: color 0.3s ease;
+            transition: all 0.3s var(--md-motion-spring);
+        }
+        
+        .tile-value.updating {
+            animation: valueChange 0.4s var(--md-motion-spring);
         }
         
         .tile-unit {
             font-size: 18px;
             font-weight: 400;
             color: var(--md-sys-color-on-surface-variant);
-            margin-left: 4px;
+            opacity: 0.7;
         }
         
-        /* Large capacity tile with pulse animation */
+        /* Hero Battery Tile */
         .tile-large {
             grid-column: span 2;
-            background: var(--md-sys-color-primary-container);
-            animation: fadeIn 0.5s ease-out, pulse 3s ease-in-out infinite;
+            background: linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, var(--md-sys-color-tertiary-container) 100%);
+            padding: 28px;
+            min-height: 180px;
+            box-shadow: 0 8px 24px rgba(79, 55, 139, 0.4);
         }
         
         .tile-large .tile-label {
             color: var(--md-sys-color-on-primary-container);
+            opacity: 0.9;
         }
         
         .tile-large .tile-value {
-            font-size: 56px;
+            font-size: 72px;
             color: var(--md-sys-color-on-primary-container);
+            font-weight: 300;
+            letter-spacing: -3px;
         }
         
         .tile-large .tile-unit {
+            font-size: 32px;
             color: var(--md-sys-color-on-primary-container);
             opacity: 0.8;
         }
         
-        /* Charger voltage tile (root only) */
+        /* Animated Progress Ring */
+        .battery-ring {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 72px;
+            height: 72px;
+        }
+        
+        .battery-ring svg {
+            transform: rotate(-90deg);
+        }
+        
+        .battery-ring-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.15);
+            stroke-width: 5;
+        }
+        
+        .battery-ring-progress {
+            fill: none;
+            stroke: var(--md-sys-color-on-primary-container);
+            stroke-width: 5;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.8s var(--md-motion-emphasized);
+            filter: drop-shadow(0 0 4px rgba(234, 221, 255, 0.6));
+        }
+        
+        /* Charger Voltage Tile (Shimmer) */
         .tile-charger {
             grid-column: span 2;
             background: linear-gradient(
                 90deg,
                 var(--md-sys-color-tertiary-container) 0%,
-                var(--md-sys-color-secondary-container) 100%
+                var(--md-sys-color-secondary-container) 50%,
+                var(--md-sys-color-tertiary-container) 100%
             );
             background-size: 200% 100%;
-            animation: fadeIn 0.5s ease-out 0.4s both, shimmer 3s linear infinite;
+            animation: scaleIn 0.5s var(--md-motion-emphasized-decel) 0.4s both,
+                       shimmerFlow 4s linear infinite;
+            box-shadow: 0 8px 24px rgba(239, 184, 200, 0.4);
         }
         
         .tile-charger .tile-label {
@@ -228,7 +368,7 @@
         
         .tile-charger .tile-value {
             color: var(--md-sys-color-on-tertiary-container);
-            font-size: 40px;
+            font-size: 48px;
         }
         
         .tile-charger .tile-unit {
@@ -240,102 +380,144 @@
             display: none;
         }
         
-        /* Status badge */
+        /* Status Badge */
         .status-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 4px 12px;
-            border-radius: 8px;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 16px;
             font-size: 14px;
-            font-weight: 500;
-            margin-top: 8px;
-            transition: all 0.3s ease;
+            font-weight: 600;
+            margin-top: 14px;
+            backdrop-filter: blur(12px);
+            transition: all 0.4s var(--md-motion-spring);
+            animation: slideInRight 0.6s var(--md-motion-emphasized-decel) 0.3s both;
+        }
+        
+        .status-icon {
+            font-size: 18px;
+            animation: rotatePulse 2s ease-in-out infinite;
         }
         
         .status-charging {
-            background: rgba(76, 175, 80, 0.2);
-            color: #4CAF50;
+            background: rgba(76, 175, 80, 0.3);
+            color: #81C784;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
         }
         
         .status-discharging {
-            background: rgba(244, 67, 54, 0.2);
-            color: #F44336;
+            background: rgba(244, 67, 54, 0.3);
+            color: #E57373;
+            box-shadow: 0 4px 16px rgba(244, 67, 54, 0.3);
         }
         
         .status-full {
-            background: rgba(76, 175, 80, 0.2);
-            color: #4CAF50;
+            background: rgba(76, 175, 80, 0.3);
+            color: #81C784;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
         }
         
         .status-unknown {
-            background: rgba(158, 158, 158, 0.2);
-            color: #9E9E9E;
+            background: rgba(158, 158, 158, 0.25);
+            color: #BDBDBD;
         }
         
-        /* Error state */
-        .tile-error .tile-value {
-            color: var(--md-sys-color-error);
-        }
-        
-        /* Action buttons */
+        /* Interactive Buttons */
         .action-buttons {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            margin-top: 16px;
+            gap: 14px;
+            margin-top: 24px;
+            animation: fadeInUp 0.7s var(--md-motion-emphasized) 0.5s both;
         }
         
         .md-button {
             width: 100%;
-            height: 48px;
+            height: 56px;
             border: none;
-            border-radius: 24px;
-            font-size: 14px;
-            font-weight: 500;
-            letter-spacing: 0.1px;
+            border-radius: 28px;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: inherit;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s var(--md-motion-emphasized);
+        }
+        
+        .md-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            transition: all 0.6s var(--md-motion-emphasized);
+        }
+        
+        .md-button:active::before {
+            width: 300%;
+            height: 300%;
+            opacity: 0.2;
+        }
+        
+        .md-button:active {
+            transform: scale(0.94);
         }
         
         .md-button-filled {
-            background: var(--md-sys-color-primary);
+            background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-tertiary) 100%);
             color: var(--md-sys-color-on-primary);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 20px rgba(208, 188, 255, 0.4);
         }
         
         .md-button-filled:active {
-            box-shadow: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
-            transform: scale(0.96);
+            box-shadow: 0 12px 32px rgba(208, 188, 255, 0.6);
         }
         
         .md-button-outlined {
             background: transparent;
             color: var(--md-sys-color-primary);
-            border: 1px solid var(--md-sys-color-outline);
+            border: 2px solid var(--md-sys-color-outline);
         }
         
         .md-button-outlined:active {
-            background: rgba(208, 188, 255, 0.08);
-            transform: scale(0.96);
+            background: rgba(208, 188, 255, 0.12);
+            border-color: var(--md-sys-color-primary);
         }
         
-        /* Debug output */
+        .icon {
+            font-style: normal;
+            font-size: 22px;
+            transition: transform 0.3s var(--md-motion-spring);
+        }
+        
+        .md-button:active .icon {
+            transform: scale(1.2) rotate(10deg);
+        }
+        
+        /* Debug Card */
         .debug-card {
-            margin-top: 16px;
-            background: var(--md-sys-color-surface-variant);
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+            margin-top: 24px;
+            background: var(--md-sys-color-surface-container);
+            border-radius: 24px;
+            padding: 24px;
             display: none;
             max-height: 400px;
             overflow-y: auto;
-            animation: fadeIn 0.3s ease-out;
+            animation: fadeInUp 0.5s var(--md-motion-emphasized);
+            border: 1px solid var(--md-sys-color-outline-variant);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
         
         .debug-card.show {
@@ -343,38 +525,36 @@
         }
         
         .debug-card pre {
-            font-family: 'Roboto Mono', 'Courier New', monospace;
+            font-family: 'Roboto Mono', 'SF Mono', monospace;
             font-size: 11px;
-            line-height: 1.5;
+            line-height: 1.7;
             color: var(--md-sys-color-on-surface-variant);
             white-space: pre-wrap;
             word-break: break-all;
         }
         
-        /* Error banner */
+        /* Error Banner */
         .error-banner {
-            margin-top: 16px;
-            padding: 12px 16px;
-            background: rgba(242, 184, 181, 0.15);
-            border-radius: 12px;
-            border-left: 4px solid var(--md-sys-color-error);
-            font-size: 13px;
-            color: var(--md-sys-color-error);
+            margin-top: 20px;
+            padding: 18px 24px;
+            background: var(--md-sys-color-error-container);
+            border-radius: 20px;
+            border-left: 5px solid var(--md-sys-color-error);
+            font-size: 14px;
+            color: var(--md-sys-color-on-error);
             display: none;
-            animation: fadeIn 0.3s ease-out;
+            align-items: center;
+            gap: 14px;
+            animation: slideInRight 0.5s var(--md-motion-emphasized);
         }
         
         .error-banner.show {
-            display: block;
+            display: flex;
         }
         
-        .icon {
-            font-style: normal;
-            font-size: 20px;
-        }
-        
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
         }
         
         ::-webkit-scrollbar-track {
@@ -383,13 +563,18 @@
         
         ::-webkit-scrollbar-thumb {
             background: var(--md-sys-color-outline-variant);
-            border-radius: 4px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--md-sys-color-outline);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header with root status -->
+        <!-- Header -->
         <header class="app-header">
             <div class="header-left">
                 <h1 class="app-title">Battery Monitor</h1>
@@ -401,61 +586,70 @@
             </div>
         </header>
         
-        <!-- Battery Stats Tiles -->
+        <!-- Tiles Grid -->
         <div class="tiles-grid">
-            <!-- Large capacity tile -->
+            <!-- Hero Battery Tile -->
             <div class="tile tile-large" id="tile-capacity">
                 <div class="tile-label">Battery</div>
-                <div>
+                <div class="tile-value-wrapper">
                     <span class="tile-value" id="capacity-value">--</span>
                     <span class="tile-unit">%</span>
                 </div>
                 <div class="status-badge status-unknown" id="status-badge">
-                    <span class="icon">⚡</span>
+                    <span class="status-icon" id="status-icon">⚡</span>
                     <span id="status-text">--</span>
+                </div>
+                
+                <!-- Animated Progress Ring -->
+                <div class="battery-ring">
+                    <svg width="72" height="72" viewBox="0 0 72 72">
+                        <circle class="battery-ring-bg" cx="36" cy="36" r="32" />
+                        <circle class="battery-ring-progress" id="battery-ring" cx="36" cy="36" r="32" 
+                                stroke-dasharray="201" stroke-dashoffset="201" />
+                    </svg>
                 </div>
             </div>
             
-            <!-- Charger voltage tile (root only) -->
+            <!-- Charger Voltage Tile (Root Only) -->
             <div class="tile tile-charger tile-hidden" id="tile-charger">
-                <div class="tile-label">⚡ Charger Voltage</div>
-                <div>
+                <div class="tile-label">⚡ Charger</div>
+                <div class="tile-value-wrapper">
                     <span class="tile-value" id="charger-value">--</span>
                     <span class="tile-unit">V</span>
                 </div>
             </div>
             
-            <!-- Voltage tile -->
+            <!-- Voltage Tile -->
             <div class="tile" id="tile-voltage">
                 <div class="tile-label">Voltage</div>
-                <div>
+                <div class="tile-value-wrapper">
                     <span class="tile-value" id="voltage-value">--</span>
                     <span class="tile-unit">V</span>
                 </div>
             </div>
             
-            <!-- Current tile -->
+            <!-- Current Tile -->
             <div class="tile" id="tile-current">
                 <div class="tile-label">Current</div>
-                <div>
+                <div class="tile-value-wrapper">
                     <span class="tile-value" id="current-value">--</span>
                     <span class="tile-unit">mA</span>
                 </div>
             </div>
             
-            <!-- Power tile -->
+            <!-- Power Tile -->
             <div class="tile" id="tile-power">
                 <div class="tile-label">Power</div>
-                <div>
+                <div class="tile-value-wrapper">
                     <span class="tile-value" id="power-value">--</span>
                     <span class="tile-unit">W</span>
                 </div>
             </div>
             
-            <!-- Temperature tile -->
+            <!-- Temperature Tile -->
             <div class="tile" id="tile-temp">
                 <div class="tile-label">Temp</div>
-                <div>
+                <div class="tile-value-wrapper">
                     <span class="tile-value" id="temp-value">--</span>
                     <span class="tile-unit">°C</span>
                 </div>
@@ -475,9 +669,12 @@
         </div>
         
         <!-- Error Banner -->
-        <div class="error-banner" id="error-banner"></div>
+        <div class="error-banner" id="error-banner">
+            <span class="icon">⚠️</span>
+            <span id="error-text"></span>
+        </div>
         
-        <!-- Debug Output -->
+        <!-- Debug Card -->
         <div class="debug-card" id="debug-card">
             <pre id="debug-output"></pre>
         </div>
@@ -486,6 +683,7 @@
     <script>
         let debugData = '';
         let hasRoot = false;
+        let previousValues = {};
         
         function checkRootStatus() {
             try {
@@ -510,15 +708,29 @@
                 badge.className = 'root-badge rooted';
                 icon.textContent = '🔓';
                 text.textContent = 'Rooted';
-                
-                // Show charger voltage tile
-                const chargerTile = document.getElementById('tile-charger');
-                chargerTile.classList.remove('tile-hidden');
+                document.getElementById('tile-charger').classList.remove('tile-hidden');
             } else {
                 badge.className = 'root-badge non-rooted';
                 icon.textContent = '🔒';
                 text.textContent = 'Non-Root';
             }
+        }
+        
+        function updateBatteryRing(percentage) {
+            const ring = document.getElementById('battery-ring');
+            const circumference = 2 * Math.PI * 32;
+            const offset = circumference - (percentage / 100 * circumference);
+            ring.style.strokeDashoffset = offset;
+        }
+        
+        function animateValue(elementId, newValue) {
+            const element = document.getElementById(elementId);
+            if (previousValues[elementId] !== newValue) {
+                element.classList.add('updating');
+                setTimeout(() => element.classList.remove('updating'), 400);
+            }
+            element.textContent = newValue;
+            previousValues[elementId] = newValue;
         }
         
         function updateBattery() {
@@ -531,7 +743,6 @@
                     return;
                 }
                 
-                // Parse data
                 const capacity = parseInt(data.capacity) || 0;
                 const status = data.status || "Unknown";
                 const voltageRaw = parseInt(data.voltage) || 0;
@@ -539,45 +750,46 @@
                 const tempRaw = parseInt(data.temp) || 0;
                 const chargerVoltageRaw = parseInt(data.charger_voltage) || 0;
                 
-                // Calculate values
                 const voltage = (voltageRaw / 1000).toFixed(2);
                 const current = Math.floor(currentRaw / 1000);
                 const temperature = (tempRaw / 10).toFixed(1);
                 const power = (Math.abs((voltage * current) / 1000)).toFixed(1);
                 const chargerVoltage = (chargerVoltageRaw / 1000).toFixed(2);
                 
-                // Update capacity tile
-                const capacityValue = document.getElementById('capacity-value');
-                capacityValue.textContent = capacity;
+                // Update with animations
+                animateValue('capacity-value', capacity);
+                updateBatteryRing(capacity);
                 
-                // Update status badge
+                // Status badge
                 const statusBadge = document.getElementById('status-badge');
                 const statusText = document.getElementById('status-text');
+                const statusIcon = document.getElementById('status-icon');
                 statusText.textContent = status;
                 
                 statusBadge.className = 'status-badge';
                 if (status === 'Unknown') {
                     statusBadge.classList.add('status-unknown');
+                    statusIcon.textContent = '❓';
                 } else if (status.toLowerCase().includes('charging')) {
                     statusBadge.classList.add('status-charging');
+                    statusIcon.textContent = '⚡';
                 } else if (status.toLowerCase().includes('discharging')) {
                     statusBadge.classList.add('status-discharging');
+                    statusIcon.textContent = '🔋';
                 } else if (status.toLowerCase().includes('full')) {
                     statusBadge.classList.add('status-full');
+                    statusIcon.textContent = '✓';
                 }
                 
-                // Update tiles
-                document.getElementById('voltage-value').textContent = voltage;
-                document.getElementById('current-value').textContent = current;
-                document.getElementById('power-value').textContent = power;
-                document.getElementById('temp-value').textContent = temperature;
+                animateValue('voltage-value', voltage);
+                animateValue('current-value', current);
+                animateValue('power-value', power);
+                animateValue('temp-value', temperature);
                 
-                // Update charger voltage (if rooted and charging)
                 if (hasRoot && chargerVoltageRaw > 0) {
-                    document.getElementById('charger-value').textContent = chargerVoltage;
+                    animateValue('charger-value', chargerVoltage);
                 }
                 
-                // Clear errors if data is good
                 if (capacity > 0 && status !== 'Unknown') {
                     hideError();
                 }
@@ -589,13 +801,13 @@
         
         function showError(message) {
             const banner = document.getElementById('error-banner');
-            banner.textContent = message;
+            const text = document.getElementById('error-text');
+            text.textContent = message;
             banner.classList.add('show');
         }
         
         function hideError() {
-            const banner = document.getElementById('error-banner');
-            banner.classList.remove('show');
+            document.getElementById('error-banner').classList.remove('show');
         }
         
         function showDebug() {
@@ -605,16 +817,14 @@
                 const card = document.getElementById('debug-card');
                 output.textContent = debugData;
                 card.classList.add('show');
-                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 150);
             } catch (e) {
-                showError('Error getting debug info: ' + e.message);
+                showError('Error: ' + e.message);
             }
         }
         
         function copyDebug() {
-            if (!debugData) {
-                showDebug();
-            }
+            if (!debugData) showDebug();
             
             const textarea = document.createElement('textarea');
             textarea.value = debugData;
@@ -625,8 +835,9 @@
             
             try {
                 document.execCommand('copy');
-                showError('✅ Debug info copied!');
-                setTimeout(hideError, 3000);
+                const originalContent = document.getElementById('error-text').textContent;
+                showError('✅ Copied!');
+                setTimeout(hideError, 2500);
             } catch (e) {
                 showError('❌ Failed to copy');
             }
@@ -634,16 +845,12 @@
             document.body.removeChild(textarea);
         }
         
-        // Initialize
         setTimeout(() => {
             checkRootStatus();
             updateBattery();
-        }, 500);
+        }, 300);
         
-        // Update root status every 2 seconds
         setInterval(checkRootStatus, 2000);
-        
-        // Update battery every 200ms
         setInterval(updateBattery, 200);
     </script>
 </body>
