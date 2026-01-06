@@ -53,6 +53,24 @@
             100% { transform: translateX(0) translateY(0); }
         }
         
+        /* Charging Bubble Effect (Seperti Cas Aki) */
+        @keyframes bubble {
+            0% {
+                transform: translateY(0) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-150px) scale(1);
+                opacity: 0;
+            }
+        }
+        
         /* Electric/Lightning Effect */
         @keyframes electricPulse {
             0%, 100% {
@@ -111,12 +129,6 @@
             50% {
                 box-shadow: 0 0 24px rgba(208, 188, 255, 0.6);
             }
-        }
-        
-        @keyframes rotatePulse {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.1); }
-            100% { transform: rotate(360deg) scale(1); }
         }
         
         @keyframes slideInRight {
@@ -196,7 +208,7 @@
             transform: scale(0.95);
         }
         
-        /* Root Badge */
+        /* Root Badge - CLICKABLE */
         .root-badge {
             padding: 8px 16px;
             border-radius: 20px;
@@ -205,8 +217,10 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            cursor: pointer;
             transition: all 0.4s var(--md-motion-spring);
             animation: scaleIn 0.5s var(--md-motion-emphasized-decel) 0.2s both;
+            user-select: none;
         }
         
         .root-badge.rooted {
@@ -221,9 +235,13 @@
             color: var(--md-sys-color-on-surface-variant);
         }
         
+        .root-badge:active {
+            transform: scale(0.92);
+        }
+        
         .root-icon {
             font-size: 16px;
-            animation: rotatePulse 3s ease-in-out infinite;
+            /* NO rotation animation */
         }
         
         /* Tiles Grid */
@@ -346,7 +364,7 @@
             opacity: 0.8;
         }
         
-        /* Liquid Water Container - FULL SCALE */
+        /* Liquid Water Container */
         .liquid-container {
             position: absolute;
             top: 0;
@@ -367,7 +385,6 @@
             height: 0%;
             transition: height 0.8s var(--md-motion-emphasized), background 0.5s ease;
             transform-origin: center bottom;
-            will-change: transform, height;
         }
         
         .liquid::before,
@@ -390,6 +407,30 @@
             animation: wave2 4s linear infinite;
             opacity: 0.5;
         }
+        
+        /* Charging Bubbles (Elektrolisis Effect) */
+        .bubble {
+            position: absolute;
+            bottom: 10%;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.3) 100%);
+            border-radius: 50%;
+            animation: bubble 2.5s ease-in infinite;
+            pointer-events: none;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+        }
+        
+        .bubble:nth-child(1) { left: 20%; animation-delay: 0s; }
+        .bubble:nth-child(2) { left: 35%; animation-delay: 0.4s; width: 6px; height: 6px; }
+        .bubble:nth-child(3) { left: 50%; animation-delay: 0.8s; width: 10px; height: 10px; }
+        .bubble:nth-child(4) { left: 65%; animation-delay: 1.2s; width: 7px; height: 7px; }
+        .bubble:nth-child(5) { left: 80%; animation-delay: 1.6s; width: 9px; height: 9px; }
+        .bubble:nth-child(6) { left: 28%; animation-delay: 2s; width: 5px; height: 5px; }
+        .bubble:nth-child(7) { left: 42%; animation-delay: 0.6s; width: 8px; height: 8px; }
+        .bubble:nth-child(8) { left: 58%; animation-delay: 1s; width: 6px; height: 6px; }
+        .bubble:nth-child(9) { left: 72%; animation-delay: 1.4s; width: 7px; height: 7px; }
+        .bubble:nth-child(10) { left: 88%; animation-delay: 1.8s; width: 9px; height: 9px; }
         
         /* Status Badge */
         .status-badge {
@@ -636,7 +677,7 @@
                 <h1 class="app-title">Battery Monitor</h1>
                 <a href="https://t.me/hoshiyomi_id" class="app-subtitle">@hoshiyomi_id</a>
             </div>
-            <div class="root-badge non-rooted" id="root-badge">
+            <div class="root-badge non-rooted" id="root-badge" onclick="retryRootAccess()">
                 <span class="root-icon" id="root-icon">🔒</span>
                 <span id="root-text">Non-Root</span>
             </div>
@@ -646,9 +687,22 @@
         <div class="tiles-grid">
             <!-- Hero Battery Tile with Liquid -->
             <div class="tile tile-large" id="tile-capacity">
-                <!-- Liquid Water Animation (FULL SCALE) -->
+                <!-- Liquid Water Animation -->
                 <div class="liquid-container">
                     <div class="liquid" id="liquid"></div>
+                    <!-- Charging Bubbles (Hidden by default, shown when charging) -->
+                    <div id="bubbles-container" style="display: none;">
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                    </div>
                 </div>
                 
                 <div class="tile-label">Battery</div>
@@ -736,12 +790,7 @@
         let debugData = '';
         let hasRoot = false;
         let previousValues = {};
-        
-        // Simplified liquid physics - DIRECT TILT RESPONSE (NO BOUNCING)
-        let tiltGamma = 0;    // Left-right tilt
-        let tiltBeta = 0;     // Front-back tilt
-        let shakeX = 0;       // Shake effect X
-        let shakeY = 0;       // Shake effect Y
+        let isCharging = false;
         
         // Format number untuk hide .0 decimal
         function formatNumber(value, decimals = 2) {
@@ -752,99 +801,23 @@
             return fixed.replace(/\.0+$/, '');
         }
         
-        // Request permissions for motion sensors
-        function requestMotionPermission() {
-            if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-                DeviceMotionEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            initMotionListener();
-                        }
-                    })
-                    .catch(console.error);
-            } else {
-                initMotionListener();
+        // Retry root access (clickable badge)
+        function retryRootAccess() {
+            try {
+                if (typeof Android !== 'undefined' && typeof Android.requestRootAccess === 'function') {
+                    Android.requestRootAccess();
+                    showError('🔓 Root permission requested...');
+                    setTimeout(() => {
+                        hideError();
+                        checkRootStatus();
+                    }, 1500);
+                } else {
+                    showError('⚠️ Root access not available');
+                    setTimeout(hideError, 2000);
+                }
+            } catch (e) {
+                console.error('Root retry failed:', e);
             }
-            
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            initOrientationListener();
-                        }
-                    })
-                    .catch(console.error);
-            } else {
-                initOrientationListener();
-            }
-        }
-        
-        // Initialize motion listener for shake detection
-        function initMotionListener() {
-            if (window.DeviceMotionEvent) {
-                window.addEventListener('devicemotion', handleMotion, true);
-            }
-        }
-        
-        // Initialize orientation listener for tilt
-        function initOrientationListener() {
-            if (window.DeviceOrientationEvent) {
-                window.addEventListener('deviceorientation', handleOrientation, true);
-            }
-        }
-        
-        // Handle device motion (shake detection only)
-        function handleMotion(event) {
-            if (event.accelerationIncludingGravity) {
-                const accel = event.accelerationIncludingGravity;
-                
-                // Light shake effect (decays quickly)
-                const newShakeX = (accel.x || 0) * -0.3;
-                const newShakeY = (accel.y || 0) * 0.3;
-                
-                // Apply shake (will decay in update loop)
-                shakeX = newShakeX;
-                shakeY = newShakeY;
-            }
-        }
-        
-        // Handle device orientation (DIRECT TILT MAPPING)
-        function handleOrientation(event) {
-            tiltGamma = event.gamma || 0;  // Left-right (-90 to 90)
-            tiltBeta = event.beta || 0;    // Front-back (-180 to 180)
-        }
-        
-        // Update liquid position - DIRECT & RESPONSIVE (NO BOUNCING)
-        function updateLiquidPosition() {
-            const liquid = document.getElementById('liquid');
-            if (!liquid) return;
-            
-            // Direct tilt-based position (NO PHYSICS, NO SPRING, NO DAMPING)
-            // Gamma: -90 (left) to +90 (right)
-            // Beta: -180 to +180, normalize around 0 for upright position
-            
-            let targetX = (tiltGamma / 90) * 35;  // Max 35px left/right
-            let targetY = ((tiltBeta - 0) / 90) * 20;  // Max 20px up/down
-            
-            // Add small shake effect (decays)
-            targetX += shakeX;
-            targetY += shakeY;
-            
-            // Decay shake
-            shakeX *= 0.85;
-            shakeY *= 0.85;
-            
-            // Clamp to reasonable bounds
-            targetX = Math.max(-40, Math.min(40, targetX));
-            targetY = Math.max(-25, Math.min(25, targetY));
-            
-            // Apply DIRECTLY (instant response to tilt)
-            liquid.style.transform = `translate(${targetX}px, ${targetY}px)`;
-        }
-        
-        // Start update loop
-        function startLiquidLoop() {
-            setInterval(updateLiquidPosition, 16); // ~60fps
         }
         
         // Get color based on battery percentage (Red 0% -> Green 100%)
@@ -908,6 +881,18 @@
             liquid.style.background = `linear-gradient(180deg, ${colorBefore} 0%, ${color} 100%)`;
         }
         
+        // Toggle charging bubbles
+        function toggleChargingBubbles(charging) {
+            const bubblesContainer = document.getElementById('bubbles-container');
+            if (charging) {
+                bubblesContainer.style.display = 'block';
+                isCharging = true;
+            } else {
+                bubblesContainer.style.display = 'none';
+                isCharging = false;
+            }
+        }
+        
         function animateValue(elementId, newValue) {
             const element = document.getElementById(elementId);
             if (previousValues[elementId] !== newValue) {
@@ -945,7 +930,7 @@
                 updateLiquid(capacity);
                 animateValue('capacity-value', capacity);
                 
-                // Status badge - FIX ORDER (check "Not charging" BEFORE "charging")
+                // Status badge
                 const statusBadge = document.getElementById('status-badge');
                 const statusText = document.getElementById('status-text');
                 const statusIcon = document.getElementById('status-icon');
@@ -954,22 +939,27 @@
                 statusText.textContent = status;
                 statusBadge.className = 'status-badge';
                 
-                // CHECK "not charging" FIRST (before generic "charging")
+                // Check status and toggle bubbles
                 if (statusLower.includes('not charging')) {
                     statusBadge.classList.add('status-not-charging');
-                    statusIcon.textContent = '➡️';  // Bypass icon
+                    statusIcon.textContent = '➡️';
+                    toggleChargingBubbles(false);
                 } else if (statusLower.includes('full')) {
                     statusBadge.classList.add('status-full');
                     statusIcon.textContent = '✓';
+                    toggleChargingBubbles(false);
                 } else if (statusLower.includes('charging')) {
                     statusBadge.classList.add('status-charging');
-                    statusIcon.textContent = '⚡';  // Lightning
+                    statusIcon.textContent = '⚡';
+                    toggleChargingBubbles(true);  // Show bubbles when charging
                 } else if (statusLower.includes('discharging')) {
                     statusBadge.classList.add('status-discharging');
                     statusIcon.textContent = '🔋';
+                    toggleChargingBubbles(false);
                 } else {
                     statusBadge.classList.add('status-unknown');
                     statusIcon.textContent = '❓';
+                    toggleChargingBubbles(false);
                 }
                 
                 animateValue('voltage-value', voltage);
@@ -1004,12 +994,9 @@
         function showDebug() {
             try {
                 debugData = Android.getDebugInfo();
-                debugData += '\n\n--- LIQUID TILT DATA ---\n';
-                debugData += `Tilt Gamma (L/R): ${tiltGamma.toFixed(2)}\u00b0\n`;
-                debugData += `Tilt Beta (F/B): ${tiltBeta.toFixed(2)}\u00b0\n`;
-                debugData += `Shake X: ${shakeX.toFixed(2)}\n`;
-                debugData += `Shake Y: ${shakeY.toFixed(2)}\n`;
-                debugData += `\nLiquid Movement: DIRECT (no bouncing)\n`;
+                debugData += '\n\n--- UI STATUS ---\n';
+                debugData += `Charging Bubbles: ${isCharging ? 'Active' : 'Inactive'}\n`;
+                debugData += `Root Badge: ${hasRoot ? 'Rooted' : 'Non-Root (Click to retry)'}\n`;
                 
                 const output = document.getElementById('debug-output');
                 const card = document.getElementById('debug-card');
@@ -1046,8 +1033,6 @@
         setTimeout(() => {
             checkRootStatus();
             updateBattery();
-            requestMotionPermission();
-            startLiquidLoop();
         }, 300);
         
         // Update loops
