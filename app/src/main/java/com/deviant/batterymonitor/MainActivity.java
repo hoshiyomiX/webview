@@ -1,4 +1,4 @@
-package com.example.app;
+package com.deviant.batterymonitor;
 
 import android.os.Bundle;
 import android.webkit.WebView;
