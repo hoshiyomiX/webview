@@ -38,6 +38,21 @@
             --md-motion-emphasized-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
             --md-motion-standard: cubic-bezier(0.2, 0, 0, 1);
             --md-motion-spring: cubic-bezier(0.5, 1.5, 0.5, 1);
+            
+            /* Ambient breathing color (dynamic based on battery level) */
+            --ambient-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* 🌟 NEW: Idle Ambient Breathing Animation */
+        @keyframes ambientBreathing {
+            0%, 100% { 
+                box-shadow: 0 -2px 20px var(--ambient-color);
+                opacity: 0.6;
+            }
+            50% { 
+                box-shadow: 0 -4px 40px var(--ambient-color);
+                opacity: 0.8;
+            }
         }
         
         /* Charging Bubble Effect (Random spawn) */
@@ -65,23 +80,23 @@
         /* Electric/Lightning Effect */
         @keyframes electricPulse {
             0%, 100% {
-                filter: drop-shadow(0 0 2px #FFC107) drop-shadow(0 0 4px #FFEB3B);
+                filter: brightness(0) invert(1) drop-shadow(0 0 2px #FFC107) drop-shadow(0 0 4px #FFEB3B);
                 transform: scale(1);
             }
             10% {
-                filter: drop-shadow(0 0 8px #FFC107) drop-shadow(0 0 16px #FFEB3B) drop-shadow(0 0 24px #FFF9C4);
+                filter: brightness(0) invert(1) drop-shadow(0 0 8px #FFC107) drop-shadow(0 0 16px #FFEB3B) drop-shadow(0 0 24px #FFF9C4);
                 transform: scale(1.15);
             }
             20% {
-                filter: drop-shadow(0 0 2px #FFC107);
+                filter: brightness(0) invert(1) drop-shadow(0 0 2px #FFC107);
                 transform: scale(0.95);
             }
             30% {
-                filter: drop-shadow(0 0 12px #FFC107) drop-shadow(0 0 20px #FFEB3B);
+                filter: brightness(0) invert(1) drop-shadow(0 0 12px #FFC107) drop-shadow(0 0 20px #FFEB3B);
                 transform: scale(1.1);
             }
             40% {
-                filter: drop-shadow(0 0 2px #FFC107);
+                filter: brightness(0) invert(1) drop-shadow(0 0 2px #FFC107);
                 transform: scale(1);
             }
         }
@@ -89,11 +104,11 @@
         /* Discharging drain effect */
         @keyframes drainPulse {
             0%, 100% {
-                filter: drop-shadow(0 0 2px #F44336) drop-shadow(0 0 4px #E57373);
+                filter: brightness(0) invert(1) drop-shadow(0 0 2px #F44336) drop-shadow(0 0 4px #E57373);
                 transform: scale(1);
             }
             50% {
-                filter: drop-shadow(0 0 8px #F44336) drop-shadow(0 0 12px #E57373);
+                filter: brightness(0) invert(1) drop-shadow(0 0 8px #F44336) drop-shadow(0 0 12px #E57373);
                 transform: scale(1.08);
             }
         }
@@ -101,11 +116,11 @@
         /* Bypass icon pulse */
         @keyframes bypassPulse {
             0%, 100% {
-                filter: drop-shadow(0 0 2px #2196F3) drop-shadow(0 0 4px #64B5F6);
+                filter: brightness(0) invert(1) drop-shadow(0 0 2px #2196F3) drop-shadow(0 0 4px #64B5F6);
                 transform: scale(1);
             }
             50% {
-                filter: drop-shadow(0 0 8px #2196F3) drop-shadow(0 0 12px #64B5F6);
+                filter: brightness(0) invert(1) drop-shadow(0 0 8px #2196F3) drop-shadow(0 0 12px #64B5F6);
                 transform: scale(1.08);
             }
         }
@@ -383,9 +398,13 @@
             box-shadow: 0 8px 24px rgba(79, 55, 139, 0.4);
         }
         
+        /* 🌟 NEW: Larger "Battery" label */
         .tile-large .tile-label {
+            font-size: 18px;
             color: var(--md-sys-color-on-primary-container);
             opacity: 0.9;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
         
         .tile-large .tile-value {
@@ -422,7 +441,22 @@
             height: 0%;
             transition: height 0.8s cubic-bezier(0.4, 0.0, 0.2, 1), background 0.5s ease;
             transform-origin: center bottom;
-            /* NO pseudo-elements, NO animations - just clean gradient fill */
+        }
+        
+        /* 🌟 NEW: Idle ambient breathing effect */
+        .liquid.idle-mode::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--ambient-color) 50%, 
+                transparent 100%);
+            animation: ambientBreathing 4s ease-in-out infinite;
+            border-radius: 24px 24px 0 0;
         }
         
         /* Random Bubbles */
@@ -469,7 +503,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-size: 12px;
+            font-size: 14px; /* 🌟 NEW: Enlarged from 12px */
             font-weight: 600;
             transition: all 0.4s var(--md-motion-spring);
             animation: slideInBottom 0.6s var(--md-motion-emphasized-decel) 0.3s both;
@@ -478,12 +512,14 @@
             opacity: 0.9;
         }
         
-        /* Status Icon IMG - Material Design 3 */
+        /* 🌟 NEW: Status Icon - WHITE COLOR (follows text) */
         .status-icon-img {
-            width: 16px;
-            height: 16px;
+            width: 18px; /* Slightly larger */
+            height: 18px;
             display: inline-block;
             vertical-align: middle;
+            filter: brightness(0) invert(1); /* Pure white */
+            opacity: 0.9;
         }
         
         /* Electric effect for charging icon */
@@ -745,7 +781,7 @@
     </style>
 </head>
 <body>
-    <!-- Root Permission Modal -->
+    <!-- (HTML sama seperti sebelumnya, hanya update di JavaScript) -->
     <div class="modal-overlay" id="root-modal">
         <div class="modal">
             <div class="modal-icon">🔐</div>
@@ -761,7 +797,6 @@
     </div>
     
     <div class="container">
-        <!-- Header -->
         <header class="app-header">
             <div class="header-left">
                 <h1 class="app-title">devBattery Monitor</h1>
@@ -776,11 +811,8 @@
             </div>
         </header>
         
-        <!-- Tiles Grid -->
         <div class="tiles-grid">
-            <!-- Hero Battery Tile with Liquid -->
             <div class="tile tile-large" id="tile-capacity">
-                <!-- Simple Liquid Fill (NO WAVES) -->
                 <div class="liquid-container" id="liquid-container">
                     <div class="liquid" id="liquid"></div>
                 </div>
@@ -790,14 +822,12 @@
                     <span class="tile-value" id="capacity-value">--</span>
                     <span class="tile-unit">%</span>
                 </div>
-                <!-- Status text (bottom-right corner) -->
                 <div class="status-text" id="status-text">
                     <img src="icons/charging.svg" class="status-icon-img" id="status-icon-img" alt="Status">
                     <span id="status-label">--</span>
                 </div>
             </div>
             
-            <!-- Current Tile -->
             <div class="tile" id="tile-current">
                 <div class="tile-label">Current</div>
                 <div class="tile-value-wrapper">
@@ -806,7 +836,6 @@
                 </div>
             </div>
             
-            <!-- Power Tile -->
             <div class="tile" id="tile-power">
                 <div class="tile-label">Power</div>
                 <div class="tile-value-wrapper">
@@ -815,7 +844,6 @@
                 </div>
             </div>
             
-            <!-- Voltage Tile (Dual Mode: Battery / Charger) -->
             <div class="tile tile-voltage" id="tile-voltage">
                 <div class="tile-label" id="voltage-label">Voltage</div>
                 <div class="tile-value-wrapper">
@@ -824,7 +852,6 @@
                 </div>
             </div>
             
-            <!-- Temperature Tile -->
             <div class="tile" id="tile-temp">
                 <div class="tile-label">Temperature</div>
                 <div class="tile-value-wrapper">
@@ -834,7 +861,6 @@
             </div>
         </div>
         
-        <!-- Action Buttons -->
         <div class="action-buttons">
             <button class="md-button md-button-filled" onclick="showDebug()">
                 <span class="icon">🔍</span>
@@ -846,13 +872,11 @@
             </button>
         </div>
         
-        <!-- Error Banner -->
         <div class="error-banner" id="error-banner">
             <span class="icon">⚠️</span>
             <span id="error-text"></span>
         </div>
         
-        <!-- Debug Card -->
         <div class="debug-card" id="debug-card">
             <pre id="debug-output"></pre>
         </div>
@@ -883,10 +907,9 @@
             themeChanges: []
         };
         
-        console.log('[INIT] ✅ Simple liquid fill loaded (NO waves)');
+        console.log('[INIT] ✅ UI improvements loaded');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
-        // 🎨 THEME MANAGEMENT - NOW WITH ANDROID BRIDGE
         function applyTheme(theme) {
             const root = document.documentElement;
             const prevTheme = currentTheme;
@@ -958,7 +981,6 @@
             }
         }
         
-        // ✅ USE ANDROID JAVASCRIPT BRIDGE FOR THEME DETECTION
         try {
             if (typeof Android !== 'undefined' && typeof Android.getSystemTheme === 'function') {
                 const systemTheme = Android.getSystemTheme();
@@ -971,7 +993,6 @@
                     source: 'Android.getSystemTheme()'
                 });
             } else {
-                // Fallback: force dark theme
                 applyTheme('dark');
                 console.log('[THEME] ⚠️ Android Bridge not available, using dark fallback');
             }
@@ -979,9 +1000,6 @@
             applyTheme('dark');
             console.log('[THEME] ❌ Error accessing Android Bridge:', e.message);
         }
-        
-        // Remove unreliable matchMedia listener
-        // (MainActivity.onConfigurationChanged will call applyTheme directly)
         
         function formatPower(value) {
             const num = parseFloat(value);
@@ -1102,6 +1120,19 @@
             return `rgba(${r}, ${g}, ${b}, 0.75)`;
         }
         
+        // 🌟 NEW: Get ambient breathing color based on battery level
+        function getAmbientColor(percentage) {
+            if (percentage < 20) {
+                return 'rgba(244, 67, 54, 0.6)'; // Red
+            } else if (percentage < 50) {
+                return 'rgba(255, 152, 0, 0.6)'; // Orange
+            } else if (percentage < 80) {
+                return 'rgba(255, 235, 59, 0.6)'; // Yellow
+            } else {
+                return 'rgba(76, 175, 80, 0.6)'; // Green
+            }
+        }
+        
         function checkRootStatus() {
             try {
                 const statusJson = Android.getRootStatus();
@@ -1148,8 +1179,8 @@
             }
         }
         
-        // Simple liquid update - NO WAVES
-        function updateLiquid(percentage) {
+        // 🌟 UPDATED: Add idle mode class for ambient breathing
+        function updateLiquid(percentage, idleMode = false) {
             const liquid = document.getElementById('liquid');
             currentCapacity = percentage;
             
@@ -1163,6 +1194,15 @@
                 ${colorBefore} 0%, 
                 ${colorMid} 50%, 
                 ${color} 100%)`;
+            
+            // 🌟 NEW: Toggle idle mode for ambient breathing
+            if (idleMode) {
+                liquid.classList.add('idle-mode');
+                const ambientColor = getAmbientColor(percentage);
+                document.documentElement.style.setProperty('--ambient-color', ambientColor);
+            } else {
+                liquid.classList.remove('idle-mode');
+            }
         }
         
         function updateVoltageTile(batteryVoltage, chargerVoltage, isRooted, isCurrentlyCharging) {
@@ -1253,7 +1293,6 @@
                 });
                 if (debugLog.powerSource.length > 20) debugLog.powerSource.shift();
                 
-                updateLiquid(capacity);
                 animateValue('capacity-value', capacity);
                 
                 const statusText = document.getElementById('status-text');
@@ -1276,32 +1315,38 @@
                 
                 let detectedStatus = '';
                 let chargingActive = false;
+                let idleMode = false;
                 
                 if (statusLower === 'not charging') {
                     statusText.classList.add('status-not-charging');
                     statusIconImg.src = 'icons/not-charging.svg';
                     detectedStatus = 'not_charging';
                     chargingActive = false;
+                    idleMode = true; // 🌟 Ambient breathing ON
                 } else if (statusLower === 'full') {
                     statusText.classList.add('status-full');
                     statusIconImg.src = 'icons/full.svg';
                     detectedStatus = 'full';
                     chargingActive = false;
+                    idleMode = true; // 🌟 Ambient breathing ON
                 } else if (statusLower === 'charging') {
                     statusText.classList.add('status-charging');
                     statusIconImg.src = 'icons/charging.svg';
                     detectedStatus = 'charging';
                     chargingActive = true;
+                    idleMode = false; // Bubbles ON instead
                 } else if (statusLower === 'discharging') {
                     statusText.classList.add('status-discharging');
                     statusIconImg.src = 'icons/discharging.svg';
                     detectedStatus = 'discharging';
                     chargingActive = false;
+                    idleMode = true; // 🌟 Ambient breathing ON
                 } else {
                     statusText.classList.add('status-unknown');
                     statusIconImg.src = 'icons/not-charging.svg';
                     detectedStatus = 'unknown';
                     chargingActive = false;
+                    idleMode = false;
                 }
                 
                 debugLog.statusDetection.push({
@@ -1315,6 +1360,7 @@
                 if (debugLog.statusDetection.length > 20) debugLog.statusDetection.shift();
                 
                 toggleBubbleSpawning(chargingActive);
+                updateLiquid(capacity, idleMode); // 🌟 Pass idle mode flag
                 updateVoltageTile(voltage, chargerVoltage, hasRoot, chargingActive);
                 
                 animateValue('current-value', current);
@@ -1364,6 +1410,11 @@
                 debugData += `Last Update: ${new Date(debugLog.lastUpdate).toLocaleTimeString()}\n`;
                 debugData += `Update Interval: 1000ms (1s)\n`;
                 debugData += `Uptime: ${((Date.now() - (debugLog.lastUpdate - debugLog.updates * 1000)) / 1000).toFixed(0)}s\n\n`;
+                
+                debugData += '--- ANIMATION STATUS ---\n';
+                debugData += `Charging Bubbles: ${isCharging ? 'Active' : 'Stopped'}\n`;
+                debugData += `Idle Ambient Breathing: ${document.getElementById('liquid').classList.contains('idle-mode') ? 'Active' : 'Stopped'}\n`;
+                debugData += `Current Ambient Color: ${getComputedStyle(document.documentElement).getPropertyValue('--ambient-color')}\n\n`;
                 
                 debugData += '--- LIQUID FILL INFO ---\n';
                 debugData += `Wave Animations: DISABLED (simple fill only)\n`;
