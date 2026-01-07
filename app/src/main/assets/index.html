@@ -907,7 +907,7 @@
             themeChanges: []
         };
         
-        console.log('[INIT] ✅ Power calculation fixed - uses charger voltage when rooted & charging');
+        console.log('[INIT] ✅ Bubble rise distance: -12px (perfect alignment)');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
         function applyTheme(theme) {
@@ -1053,7 +1053,7 @@
             }
         }
         
-        // 🌟 REFINED: Bubble fade aligned to liquid surface
+        // 🔧 FIXED: Bubble rise distance -12px (perfect alignment)
         function spawnRandomBubble() {
             if (!isCharging) return;
             
@@ -1071,9 +1071,9 @@
             const drift = (Math.random() - 0.5) * 40; // -20px to +20px
             const duration = 2.5 + Math.random() * 1.5; // 2.5-4s
             
-            // 🌟 FIXED: Reduce 8px so bubble fades AT liquid surface, not over
+            // 🔧 FIXED: -12px offset for perfect fade at liquid surface
             const containerHeight = 200; // Tile height in px
-            const riseDistance = (currentCapacity * (containerHeight / 100)) - 8;
+            const riseDistance = (currentCapacity * (containerHeight / 100)) - 12;
             
             // Apply styles
             bubble.style.width = size + 'px';
@@ -1413,7 +1413,7 @@
                 debugData += `Spawn Position: Bottom 0-3%\n`;
                 debugData += `Current Capacity: ${currentCapacity}%\n`;
                 debugData += `Liquid Height: ${currentCapacity}% of tile\n`;
-                debugData += `Rise Distance: ${(currentCapacity * 2) - 8}px (${currentCapacity}% - 8px offset)\n`;
+                debugData += `Rise Distance: ${(currentCapacity * 2) - 12}px (${currentCapacity}% - 12px offset)\n`;
                 debugData += `Charging Active: ${isCharging}\n`;
                 debugData += `Bubbles Active: ${debugLog.bubbleStats.active}\n\n`;
                 
