@@ -255,6 +255,14 @@
             transform: scale(0.95);
         }
         
+        /* Telegram Icon */
+        .telegram-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
         /* Root Badge - CLICKABLE */
         .root-badge {
             padding: 8px 16px;
@@ -515,7 +523,7 @@
             color: var(--md-sys-color-on-tertiary-container);
         }
         
-        /* Status Text (bottom-right corner) */
+        /* Status Text (bottom-right corner) - ADJUSTED FONT SIZE 3:2 ratio */
         .status-text {
             position: absolute;
             bottom: 20px;
@@ -523,7 +531,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-size: 16px;
+            font-size: 48px; /* 72px * 2/3 = 48px (3:2 ratio) */
             font-weight: 600;
             transition: all 0.4s var(--md-motion-spring);
             animation: slideInBottom 0.6s var(--md-motion-emphasized-decel) 0.3s both;
@@ -532,20 +540,24 @@
             opacity: 0.9;
         }
         
-        .status-icon {
-            font-size: 20px;
+        /* Status Icon IMG */
+        .status-icon-img {
+            width: 32px;
+            height: 32px;
+            display: inline-block;
+            vertical-align: middle;
         }
         
         /* Electric effect for charging icon */
-        .status-charging .status-icon {
+        .status-charging .status-icon-img {
             animation: electricPulse 2s ease-in-out infinite;
         }
         
-        .status-discharging .status-icon {
+        .status-discharging .status-icon-img {
             animation: drainPulse 2.5s ease-in-out infinite;
         }
         
-        .status-not-charging .status-icon {
+        .status-not-charging .status-icon-img {
             animation: bypassPulse 2.5s ease-in-out infinite;
         }
         
@@ -816,7 +828,7 @@
             <div class="header-left">
                 <h1 class="app-title">devBattery Monitor</h1>
                 <a href="https://t.me/hoshiyomi_id" class="app-subtitle">
-                    <span>✈️</span>
+                    <img src="icons/telegram.svg" class="telegram-icon" alt="Telegram">
                     <span>t.me/hoshiyomi_id</span>
                 </a>
             </div>
@@ -842,7 +854,7 @@
                 </div>
                 <!-- Status text (bottom-right corner) -->
                 <div class="status-text" id="status-text">
-                    <span class="status-icon" id="status-icon">⚡</span>
+                    <img src="icons/charging.svg" class="status-icon-img" id="status-icon-img" alt="Status">
                     <span id="status-label">--</span>
                 </div>
             </div>
@@ -928,8 +940,12 @@
             performance: { avgUpdateTime: 0, totalTime: 0 },
             errors: [],
             statusDetection: [],
-            powerSource: []
+            powerSource: [],
+            waveAnimation: [] // NEW: Track wave animation state
         };
+        
+        // WAVE DEBUG: Initialize wave animation monitoring
+        console.log('[WAVE] Initializing wave animation monitoring...');
         
         // Power formatting with precision based on magnitude
         function formatPower(value) {
@@ -1109,14 +1125,53 @@
             }
         }
         
+        // WAVE DEBUG: Enhanced liquid update with detailed logging
         function updateLiquid(percentage) {
             const liquid = document.getElementById('liquid');
             const container = document.getElementById('liquid-container');
             
             currentCapacity = percentage; // Store for bubble calculations
             
+            // Set liquid height
             liquid.style.height = percentage + '%';
             container.style.setProperty('--liquid-height', percentage + '%');
+            
+            // Get computed styles to verify animations
+            const liquidBefore = window.getComputedStyle(liquid, '::before');
+            const liquidAfter = window.getComputedStyle(liquid, '::after');
+            const containerBefore = window.getComputedStyle(container, '::before');
+            
+            // Log wave animation state
+            const waveState = {
+                time: Date.now(),
+                capacity: percentage,
+                liquidHeight: liquid.style.height,
+                containerLiquidHeight: container.style.getPropertyValue('--liquid-height'),
+                animations: {
+                    liquidBefore: liquidBefore.animation || 'unknown',
+                    liquidAfter: liquidAfter.animation || 'unknown',
+                    containerBefore: containerBefore.animation || 'unknown'
+                },
+                transforms: {
+                    liquidBefore: liquidBefore.transform,
+                    liquidAfter: liquidAfter.transform,
+                    containerBefore: containerBefore.transform
+                }
+            };
+            
+            debugLog.waveAnimation.push(waveState);
+            if (debugLog.waveAnimation.length > 10) debugLog.waveAnimation.shift();
+            
+            console.log('[WAVE] Liquid updated:', {
+                capacity: percentage + '%',
+                liquidHeight: liquid.style.height,
+                cssVarHeight: container.style.getPropertyValue('--liquid-height'),
+                waveAnimations: {
+                    wave1: '3s linear infinite (::before)',
+                    wave2: '4s linear infinite (::after)',
+                    wave3: '5s linear infinite (container::before)'
+                }
+            });
             
             const color = getBatteryColor(percentage);
             const colorBefore = getBatteryColor(Math.min(100, percentage + 10));
@@ -1222,7 +1277,7 @@
                 
                 const statusText = document.getElementById('status-text');
                 const statusLabel = document.getElementById('status-label');
-                const statusIcon = document.getElementById('status-icon');
+                const statusIconImg = document.getElementById('status-icon-img');
                 const statusLower = lastStatus.toLowerCase();
                 
                 const prevStatus = statusLabel.textContent;
@@ -1243,27 +1298,27 @@
                 
                 if (statusLower === 'not charging') {
                     statusText.classList.add('status-not-charging');
-                    statusIcon.textContent = '🔶';
+                    statusIconImg.src = 'icons/not-charging.svg';
                     detectedStatus = 'not_charging';
                     chargingActive = false;
                 } else if (statusLower === 'full') {
                     statusText.classList.add('status-full');
-                    statusIcon.textContent = '✓';
+                    statusIconImg.src = 'icons/full.svg';
                     detectedStatus = 'full';
                     chargingActive = false;
                 } else if (statusLower === 'charging') {
                     statusText.classList.add('status-charging');
-                    statusIcon.textContent = '⚡';
+                    statusIconImg.src = 'icons/charging.svg';
                     detectedStatus = 'charging';
                     chargingActive = true;
                 } else if (statusLower === 'discharging') {
                     statusText.classList.add('status-discharging');
-                    statusIcon.textContent = '🔌';
+                    statusIconImg.src = 'icons/discharging.svg';
                     detectedStatus = 'discharging';
                     chargingActive = false;
                 } else {
                     statusText.classList.add('status-unknown');
-                    statusIcon.textContent = '❓';
+                    statusIconImg.src = 'icons/not-charging.svg';
                     detectedStatus = 'unknown';
                     chargingActive = false;
                 }
@@ -1328,6 +1383,15 @@
                 debugData += `Last Update: ${new Date(debugLog.lastUpdate).toLocaleTimeString()}\n`;
                 debugData += `Update Interval: 1000ms (1s)\n`;
                 debugData += `Uptime: ${((Date.now() - (debugLog.lastUpdate - debugLog.updates * 1000)) / 1000).toFixed(0)}s\n\n`;
+                
+                debugData += '--- WAVE ANIMATION LOG (Last 5) ---\n';
+                debugLog.waveAnimation.slice(-5).forEach(wave => {
+                    debugData += `[${new Date(wave.time).toLocaleTimeString()}] Capacity: ${wave.capacity}%\n`;
+                    debugData += `  Liquid Height: ${wave.liquidHeight}\n`;
+                    debugData += `  CSS Var: ${wave.containerLiquidHeight}\n`;
+                    debugData += `  Animations: ${JSON.stringify(wave.animations)}\n`;
+                });
+                debugData += '\n';
                 
                 debugData += '--- BUBBLE STATS ---\n';
                 debugData += `Charging Active: ${isCharging}\n`;
@@ -1417,12 +1481,36 @@
         
         // Initialize
         setTimeout(() => {
+            console.log('[WAVE] Starting battery monitoring...');
             checkRootStatus();
             updateBattery();
         }, 300);
         
         setInterval(checkRootStatus, 2000);
         setInterval(updateBattery, 1000);
+        
+        // WAVE DEBUG: Monitor animation frames
+        let frameCount = 0;
+        function checkWaveAnimations() {
+            frameCount++;
+            if (frameCount % 60 === 0) { // Log every 60 frames (~1 second)
+                const liquid = document.getElementById('liquid');
+                const container = document.getElementById('liquid-container');
+                
+                console.log('[WAVE] Animation frame check:', {
+                    frame: frameCount,
+                    liquidHeight: liquid.style.height,
+                    cssVar: container.style.getPropertyValue('--liquid-height'),
+                    animationRunning: {
+                        wave: 'wave 3s linear infinite',
+                        wave2: 'wave2 4s linear infinite',
+                        wave3: 'wave3 5s linear infinite'
+                    }
+                });
+            }
+            requestAnimationFrame(checkWaveAnimations);
+        }
+        requestAnimationFrame(checkWaveAnimations);
     </script>
 </body>
 </html>
