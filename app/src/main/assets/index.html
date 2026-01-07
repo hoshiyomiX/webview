@@ -40,13 +40,824 @@
             --md-motion-spring: cubic-bezier(0.5, 1.5, 0.5, 1);
         }
         
-        /* (Keeping all existing CSS - too long to repeat here)
-           ... same styles as before ...
-        */
+        /* Charging Bubble Effect (Random spawn) */
+        @keyframes bubbleRise {
+            0% {
+                transform: translateY(0) translateX(0) scale(0);
+                opacity: 0;
+            }
+            5% {
+                opacity: 1;
+                transform: translateY(-10px) translateX(0) scale(1);
+            }
+            50% {
+                opacity: 0.8;
+            }
+            95% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(var(--rise-distance, -180px)) translateX(var(--drift-x, 0)) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        /* Electric/Lightning Effect */
+        @keyframes electricPulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 2px #FFC107) drop-shadow(0 0 4px #FFEB3B);
+                transform: scale(1);
+            }
+            10% {
+                filter: drop-shadow(0 0 8px #FFC107) drop-shadow(0 0 16px #FFEB3B) drop-shadow(0 0 24px #FFF9C4);
+                transform: scale(1.15);
+            }
+            20% {
+                filter: drop-shadow(0 0 2px #FFC107);
+                transform: scale(0.95);
+            }
+            30% {
+                filter: drop-shadow(0 0 12px #FFC107) drop-shadow(0 0 20px #FFEB3B);
+                transform: scale(1.1);
+            }
+            40% {
+                filter: drop-shadow(0 0 2px #FFC107);
+                transform: scale(1);
+            }
+        }
+        
+        /* Discharging drain effect */
+        @keyframes drainPulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 2px #F44336) drop-shadow(0 0 4px #E57373);
+                transform: scale(1);
+            }
+            50% {
+                filter: drop-shadow(0 0 8px #F44336) drop-shadow(0 0 12px #E57373);
+                transform: scale(1.08);
+            }
+        }
+        
+        /* Bypass icon pulse */
+        @keyframes bypassPulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 2px #2196F3) drop-shadow(0 0 4px #64B5F6);
+                transform: scale(1);
+            }
+            50% {
+                filter: drop-shadow(0 0 8px #2196F3) drop-shadow(0 0 12px #64B5F6);
+                transform: scale(1.08);
+            }
+        }
+        
+        @keyframes shimmerFlow {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(32px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 0 0 12px rgba(208, 188, 255, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 24px rgba(208, 188, 255, 0.6);
+            }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideInBottom {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes valueChange {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px 16px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .app-header {
+            margin-bottom: 32px;
+            padding: 4px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeInUp 0.6s var(--md-motion-emphasized-decel);
+        }
+        
+        .header-left {
+            flex: 1;
+        }
+        
+        .app-title {
+            font-size: 34px;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, var(--md-sys-color-on-surface) 0%, var(--md-sys-color-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .app-subtitle {
+            font-size: 14px;
+            color: var(--md-sys-color-on-surface-variant);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s var(--md-motion-emphasized);
+        }
+        
+        .app-subtitle:active {
+            color: var(--md-sys-color-primary);
+            transform: scale(0.95);
+        }
+        
+        /* Telegram Icon */
+        .telegram-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        /* Root Badge - CLICKABLE */
+        .root-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.4s var(--md-motion-spring);
+            animation: scaleIn 0.5s var(--md-motion-emphasized-decel) 0.2s both;
+            user-select: none;
+        }
+        
+        .root-badge.rooted {
+            background: rgba(76, 175, 80, 0.2);
+            color: #81C784;
+            animation: scaleIn 0.5s var(--md-motion-emphasized-decel) 0.2s both,
+                       pulseGlow 2s ease-in-out infinite;
+        }
+        
+        .root-badge.non-rooted {
+            background: var(--md-sys-color-surface-container-high);
+            color: var(--md-sys-color-on-surface-variant);
+        }
+        
+        .root-badge:active {
+            transform: scale(0.92);
+        }
+        
+        .root-icon {
+            font-size: 16px;
+        }
+        
+        /* Tiles Grid */
+        .tiles-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        /* Tile Base */
+        .tile {
+            background: var(--md-sys-color-surface-container-high);
+            border-radius: 24px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s var(--md-motion-emphasized);
+            animation: scaleIn 0.5s var(--md-motion-emphasized-decel);
+        }
+        
+        .tile::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--md-sys-color-primary) 0%, transparent 70%);
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s var(--md-motion-emphasized);
+        }
+        
+        .tile:active::before {
+            width: 200%;
+            height: 200%;
+            opacity: 0.15;
+        }
+        
+        .tile:active {
+            transform: scale(0.95);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Stagger animations */
+        .tile:nth-child(1) { animation-delay: 0ms; }
+        .tile:nth-child(2) { animation-delay: 80ms; }
+        .tile:nth-child(3) { animation-delay: 160ms; }
+        .tile:nth-child(4) { animation-delay: 240ms; }
+        .tile:nth-child(5) { animation-delay: 320ms; }
+        .tile:nth-child(6) { animation-delay: 400ms; }
+        
+        .tile-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--md-sys-color-on-surface-variant);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 12px;
+            opacity: 0.8;
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s var(--md-motion-emphasized);
+        }
+        
+        .tile-value-wrapper {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .tile-value {
+            font-size: 36px;
+            font-weight: 400;
+            color: var(--md-sys-color-on-surface);
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            transition: all 0.3s var(--md-motion-spring);
+        }
+        
+        .tile-value.updating {
+            animation: valueChange 0.4s var(--md-motion-spring);
+        }
+        
+        .tile-unit {
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--md-sys-color-on-surface-variant);
+            opacity: 0.7;
+        }
+        
+        /* Hero Battery Tile with Liquid */
+        .tile-large {
+            grid-column: span 2;
+            background: linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, var(--md-sys-color-tertiary-container) 100%);
+            padding: 28px;
+            min-height: 200px;
+            box-shadow: 0 8px 24px rgba(79, 55, 139, 0.4);
+        }
+        
+        .tile-large .tile-label {
+            color: var(--md-sys-color-on-primary-container);
+            opacity: 0.9;
+        }
+        
+        .tile-large .tile-value {
+            font-size: 72px;
+            color: var(--md-sys-color-on-primary-container);
+            font-weight: 300;
+            letter-spacing: -3px;
+        }
+        
+        .tile-large .tile-unit {
+            font-size: 32px;
+            color: var(--md-sys-color-on-primary-container);
+            opacity: 0.8;
+        }
+        
+        /* 🎨 SIMPLE LIQUID FILL - NO WAVE ANIMATIONS */
+        .liquid-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 24px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .liquid {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            transition: height 0.8s cubic-bezier(0.4, 0.0, 0.2, 1), background 0.5s ease;
+            transform-origin: center bottom;
+            /* NO pseudo-elements, NO animations - just clean gradient fill */
+        }
+        
+        /* Random Bubbles */
+        .bubble {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.4) 100%);
+            border-radius: 50%;
+            animation: bubbleRise 3s ease-out forwards;
+            pointer-events: none;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.8);
+        }
+        
+        /* Voltage Tile - Dual Mode (Battery Voltage / Charger Voltage) */
+        .tile-voltage {
+            transition: background 0.5s var(--md-motion-emphasized);
+        }
+        
+        .tile-voltage.charger-mode {
+            background: linear-gradient(
+                135deg,
+                var(--md-sys-color-tertiary-container) 0%,
+                var(--md-sys-color-secondary-container) 100%
+            );
+            box-shadow: 0 4px 16px rgba(239, 184, 200, 0.3);
+        }
+        
+        .tile-voltage.charger-mode .tile-label {
+            color: var(--md-sys-color-on-tertiary-container);
+        }
+        
+        .tile-voltage.charger-mode .tile-value {
+            color: var(--md-sys-color-on-tertiary-container);
+        }
+        
+        .tile-voltage.charger-mode .tile-unit {
+            color: var(--md-sys-color-on-tertiary-container);
+        }
+        
+        /* Status Text (bottom-right corner) */
+        .status-text {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.4s var(--md-motion-spring);
+            animation: slideInBottom 0.6s var(--md-motion-emphasized-decel) 0.3s both;
+            z-index: 10;
+            color: var(--md-sys-color-on-primary-container);
+            opacity: 0.9;
+        }
+        
+        /* Status Icon IMG - Material Design 3 */
+        .status-icon-img {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        /* Electric effect for charging icon */
+        .status-charging .status-icon-img {
+            animation: electricPulse 2s ease-in-out infinite;
+        }
+        
+        .status-discharging .status-icon-img {
+            animation: drainPulse 2.5s ease-in-out infinite;
+        }
+        
+        .status-not-charging .status-icon-img {
+            animation: bypassPulse 2.5s ease-in-out infinite;
+        }
+        
+        /* Root Permission Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s var(--md-motion-emphasized);
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal {
+            background: var(--md-sys-color-surface-container-highest);
+            border-radius: 28px;
+            padding: 28px;
+            max-width: 340px;
+            width: 90%;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+            animation: scaleIn 0.4s var(--md-motion-emphasized-decel);
+        }
+        
+        .modal-icon {
+            font-size: 56px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--md-sys-color-on-surface);
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        
+        .modal-message {
+            font-size: 14px;
+            color: var(--md-sys-color-on-surface-variant);
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .modal-button {
+            flex: 1;
+            height: 48px;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s var(--md-motion-emphasized);
+        }
+        
+        .modal-button-primary {
+            background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-tertiary) 100%);
+            color: var(--md-sys-color-on-primary);
+            box-shadow: 0 4px 12px rgba(208, 188, 255, 0.4);
+        }
+        
+        .modal-button-primary:active {
+            transform: scale(0.95);
+            box-shadow: 0 8px 20px rgba(208, 188, 255, 0.6);
+        }
+        
+        .modal-button-secondary {
+            background: transparent;
+            color: var(--md-sys-color-primary);
+            border: 2px solid var(--md-sys-color-outline);
+        }
+        
+        .modal-button-secondary:active {
+            transform: scale(0.95);
+            background: rgba(208, 188, 255, 0.12);
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 24px;
+            animation: fadeInUp 0.7s var(--md-motion-emphasized) 0.5s both;
+        }
+        
+        .md-button {
+            width: 100%;
+            height: 56px;
+            border: none;
+            border-radius: 28px;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s var(--md-motion-emphasized);
+        }
+        
+        .md-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            transition: all 0.6s var(--md-motion-emphasized);
+        }
+        
+        .md-button:active::before {
+            width: 300%;
+            height: 300%;
+            opacity: 0.2;
+        }
+        
+        .md-button:active {
+            transform: scale(0.94);
+        }
+        
+        .md-button-filled {
+            background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-tertiary) 100%);
+            color: var(--md-sys-color-on-primary);
+            box-shadow: 0 6px 20px rgba(208, 188, 255, 0.4);
+        }
+        
+        .md-button-filled:active {
+            box-shadow: 0 12px 32px rgba(208, 188, 255, 0.6);
+        }
+        
+        .md-button-outlined {
+            background: transparent;
+            color: var(--md-sys-color-primary);
+            border: 2px solid var(--md-sys-color-outline);
+        }
+        
+        .md-button-outlined:active {
+            background: rgba(208, 188, 255, 0.12);
+            border-color: var(--md-sys-color-primary);
+        }
+        
+        .icon {
+            font-style: normal;
+            font-size: 22px;
+            transition: transform 0.3s var(--md-motion-spring);
+        }
+        
+        .md-button:active .icon {
+            transform: scale(1.2) rotate(10deg);
+        }
+        
+        /* Debug Card */
+        .debug-card {
+            margin-top: 24px;
+            background: var(--md-sys-color-surface-container);
+            border-radius: 24px;
+            padding: 24px;
+            display: none;
+            max-height: 500px;
+            overflow-y: auto;
+            animation: fadeInUp 0.5s var(--md-motion-emphasized);
+            border: 1px solid var(--md-sys-color-outline-variant);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .debug-card.show {
+            display: block;
+        }
+        
+        .debug-card pre {
+            font-family: 'Roboto Mono', 'SF Mono', monospace;
+            font-size: 10px;
+            line-height: 1.6;
+            color: var(--md-sys-color-on-surface-variant);
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        /* Error Banner */
+        .error-banner {
+            margin-top: 20px;
+            padding: 18px 24px;
+            background: var(--md-sys-color-error-container);
+            border-radius: 20px;
+            border-left: 5px solid var(--md-sys-color-error);
+            font-size: 14px;
+            color: var(--md-sys-color-on-error);
+            display: none;
+            align-items: center;
+            gap: 14px;
+            animation: slideInRight 0.5s var(--md-motion-emphasized);
+        }
+        
+        .error-banner.show {
+            display: flex;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--md-sys-color-outline-variant);
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--md-sys-color-outline);
+        }
     </style>
 </head>
 <body>
-    <!-- (HTML content sama seperti sebelumnya) -->
+    <!-- Root Permission Modal -->
+    <div class="modal-overlay" id="root-modal">
+        <div class="modal">
+            <div class="modal-icon">🔐</div>
+            <div class="modal-title">Root Access Required</div>
+            <div class="modal-message">
+                Advanced features like charger voltage monitoring require root access. Would you like to grant root permission?
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button modal-button-secondary" onclick="dismissRootModal()">Later</button>
+                <button class="modal-button modal-button-primary" onclick="requestRootFromModal()">Grant Root</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1 class="app-title">devBattery Monitor</h1>
+                <a href="https://t.me/hoshiyomi_id" class="app-subtitle">
+                    <img src="icons/telegram.svg" class="telegram-icon" alt="Telegram">
+                    <span>t.me/hoshiyomi_id</span>
+                </a>
+            </div>
+            <div class="root-badge non-rooted" id="root-badge" onclick="retryRootAccess()">
+                <span class="root-icon" id="root-icon">🔒</span>
+                <span id="root-text">Non-Root</span>
+            </div>
+        </header>
+        
+        <!-- Tiles Grid -->
+        <div class="tiles-grid">
+            <!-- Hero Battery Tile with Liquid -->
+            <div class="tile tile-large" id="tile-capacity">
+                <!-- Simple Liquid Fill (NO WAVES) -->
+                <div class="liquid-container" id="liquid-container">
+                    <div class="liquid" id="liquid"></div>
+                </div>
+                
+                <div class="tile-label">Battery</div>
+                <div class="tile-value-wrapper">
+                    <span class="tile-value" id="capacity-value">--</span>
+                    <span class="tile-unit">%</span>
+                </div>
+                <!-- Status text (bottom-right corner) -->
+                <div class="status-text" id="status-text">
+                    <img src="icons/charging.svg" class="status-icon-img" id="status-icon-img" alt="Status">
+                    <span id="status-label">--</span>
+                </div>
+            </div>
+            
+            <!-- Current Tile -->
+            <div class="tile" id="tile-current">
+                <div class="tile-label">Current</div>
+                <div class="tile-value-wrapper">
+                    <span class="tile-value" id="current-value">--</span>
+                    <span class="tile-unit">mA</span>
+                </div>
+            </div>
+            
+            <!-- Power Tile -->
+            <div class="tile" id="tile-power">
+                <div class="tile-label">Power</div>
+                <div class="tile-value-wrapper">
+                    <span class="tile-value" id="power-value">--</span>
+                    <span class="tile-unit">W</span>
+                </div>
+            </div>
+            
+            <!-- Voltage Tile (Dual Mode: Battery / Charger) -->
+            <div class="tile tile-voltage" id="tile-voltage">
+                <div class="tile-label" id="voltage-label">Voltage</div>
+                <div class="tile-value-wrapper">
+                    <span class="tile-value" id="voltage-value">--</span>
+                    <span class="tile-unit">V</span>
+                </div>
+            </div>
+            
+            <!-- Temperature Tile -->
+            <div class="tile" id="tile-temp">
+                <div class="tile-label">Temperature</div>
+                <div class="tile-value-wrapper">
+                    <span class="tile-value" id="temp-value">--</span>
+                    <span class="tile-unit">°C</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="md-button md-button-filled" onclick="showDebug()">
+                <span class="icon">🔍</span>
+                <span>Show Debug Info</span>
+            </button>
+            <button class="md-button md-button-outlined" onclick="copyDebug()">
+                <span class="icon">📋</span>
+                <span>Copy to Clipboard</span>
+            </button>
+        </div>
+        
+        <!-- Error Banner -->
+        <div class="error-banner" id="error-banner">
+            <span class="icon">⚠️</span>
+            <span id="error-text"></span>
+        </div>
+        
+        <!-- Debug Card -->
+        <div class="debug-card" id="debug-card">
+            <pre id="debug-output"></pre>
+        </div>
+    </div>
+
     <script>
         let debugData = '';
         let hasRoot = false;
@@ -172,7 +983,493 @@
         // Remove unreliable matchMedia listener
         // (MainActivity.onConfigurationChanged will call applyTheme directly)
         
-        // ... (rest of JavaScript code sama seperti sebelumnya)
+        function formatPower(value) {
+            const num = parseFloat(value);
+            if (isNaN(num)) return value;
+            const capped = Math.min(99.9, num);
+            if (capped < 10) {
+                return capped.toFixed(2).replace(/\.00$/, '');
+            } else {
+                return capped.toFixed(1).replace(/\.0$/, '');
+            }
+        }
+        
+        function formatNumber(value, decimals = 1) {
+            const num = parseFloat(value);
+            if (isNaN(num)) return value;
+            const limited = Math.min(99.9, num);
+            const fixed = limited.toFixed(decimals);
+            return fixed.replace(/\.0$/, '');
+        }
+        
+        function showRootModal() {
+            document.getElementById('root-modal').classList.add('show');
+        }
+        
+        function dismissRootModal() {
+            document.getElementById('root-modal').classList.remove('show');
+        }
+        
+        function requestRootFromModal() {
+            dismissRootModal();
+            retryRootAccess();
+        }
+        
+        function retryRootAccess() {
+            try {
+                debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Root retry requested' });
+                if (typeof Android !== 'undefined' && typeof Android.requestRootAccess === 'function') {
+                    Android.requestRootAccess();
+                    showError('🔓 Root permission requested...');
+                    setTimeout(() => {
+                        hideError();
+                        checkRootStatus();
+                    }, 1500);
+                } else {
+                    showError('⚠️ Root access not available');
+                    setTimeout(hideError, 2000);
+                }
+            } catch (e) {
+                debugLog.errors.push({ time: new Date().toISOString(), error: e.message });
+                console.error('Root retry failed:', e);
+            }
+        }
+        
+        function spawnRandomBubble() {
+            if (!isCharging) return;
+            
+            const container = document.getElementById('liquid-container');
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            
+            const size = 5 + Math.random() * 10;
+            const left = 15 + Math.random() * 70;
+            const bottom = 5 + Math.random() * 10;
+            const drift = (Math.random() - 0.5) * 40;
+            const duration = 2.5 + Math.random() * 1.5;
+            const containerHeight = 200;
+            const riseDistance = (100 - currentCapacity) * (containerHeight / 100);
+            
+            bubble.style.width = size + 'px';
+            bubble.style.height = size + 'px';
+            bubble.style.left = left + '%';
+            bubble.style.bottom = bottom + '%';
+            bubble.style.setProperty('--drift-x', drift + 'px');
+            bubble.style.setProperty('--rise-distance', `-${riseDistance}px`);
+            bubble.style.animationDuration = duration + 's';
+            
+            container.appendChild(bubble);
+            bubbleCount++;
+            debugLog.bubbleStats.total++;
+            debugLog.bubbleStats.active++;
+            
+            setTimeout(() => {
+                bubble.remove();
+                bubbleCount--;
+                debugLog.bubbleStats.active--;
+            }, duration * 1000);
+        }
+        
+        function toggleBubbleSpawning(active) {
+            if (active && !bubbleSpawnInterval) {
+                debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Bubble spawning started' });
+                bubbleSpawnInterval = setInterval(spawnRandomBubble, 400);
+                isCharging = true;
+            } else if (!active && bubbleSpawnInterval) {
+                debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Bubble spawning stopped' });
+                clearInterval(bubbleSpawnInterval);
+                bubbleSpawnInterval = null;
+                isCharging = false;
+                document.querySelectorAll('.bubble').forEach(b => b.remove());
+                bubbleCount = 0;
+                debugLog.bubbleStats.active = 0;
+            }
+        }
+        
+        function getBatteryColor(percentage) {
+            let r, g, b;
+            if (percentage < 50) {
+                const ratio = percentage / 50;
+                r = 244;
+                g = Math.floor(67 + (244 - 67) * ratio);
+                b = 54;
+            } else {
+                const ratio = (percentage - 50) / 50;
+                r = Math.floor(244 - (244 - 76) * ratio);
+                g = Math.floor(244 - (244 - 175) * ratio);
+                b = Math.floor(54 + (80 - 54) * ratio);
+            }
+            return `rgba(${r}, ${g}, ${b}, 0.75)`;
+        }
+        
+        function checkRootStatus() {
+            try {
+                const statusJson = Android.getRootStatus();
+                const status = JSON.parse(statusJson);
+                
+                if (status.checked) {
+                    const prevRoot = hasRoot;
+                    hasRoot = status.hasRoot;
+                    
+                    if (!rootModalShown && !hasRoot) {
+                        rootModalShown = true;
+                        setTimeout(() => showRootModal(), 1000);
+                    }
+                    
+                    if (prevRoot !== hasRoot) {
+                        debugLog.statusChanges.push({ 
+                            time: new Date().toISOString(), 
+                            event: 'Root status changed',
+                            from: prevRoot,
+                            to: hasRoot
+                        });
+                    }
+                    updateRootBadge(hasRoot);
+                }
+            } catch (e) {
+                debugLog.errors.push({ time: new Date().toISOString(), error: 'Root check: ' + e.message });
+                console.error('Root check failed:', e);
+            }
+        }
+        
+        function updateRootBadge(rooted) {
+            const badge = document.getElementById('root-badge');
+            const icon = document.getElementById('root-icon');
+            const text = document.getElementById('root-text');
+            
+            if (rooted) {
+                badge.className = 'root-badge rooted';
+                icon.textContent = '🔓';
+                text.textContent = 'Rooted';
+            } else {
+                badge.className = 'root-badge non-rooted';
+                icon.textContent = '🔒';
+                text.textContent = 'Non-Root';
+            }
+        }
+        
+        // Simple liquid update - NO WAVES
+        function updateLiquid(percentage) {
+            const liquid = document.getElementById('liquid');
+            currentCapacity = percentage;
+            
+            liquid.style.height = percentage + '%';
+            
+            const color = getBatteryColor(percentage);
+            const colorBefore = getBatteryColor(Math.min(100, percentage + 12));
+            const colorMid = getBatteryColor(Math.min(100, percentage + 6));
+            
+            liquid.style.background = `linear-gradient(180deg, 
+                ${colorBefore} 0%, 
+                ${colorMid} 50%, 
+                ${color} 100%)`;
+        }
+        
+        function updateVoltageTile(batteryVoltage, chargerVoltage, isRooted, isCurrentlyCharging) {
+            const tile = document.getElementById('tile-voltage');
+            const label = document.getElementById('voltage-label');
+            const validChargerVoltage = chargerVoltage >= 1.0 ? chargerVoltage : 0;
+            
+            if (isRooted && isCurrentlyCharging && validChargerVoltage > 0) {
+                tile.classList.add('charger-mode');
+                label.textContent = '⚡ Charger';
+                animateValue('voltage-value', validChargerVoltage);
+            } else {
+                tile.classList.remove('charger-mode');
+                label.textContent = 'Voltage';
+                animateValue('voltage-value', batteryVoltage);
+            }
+        }
+        
+        function animateValue(elementId, newValue) {
+            const element = document.getElementById(elementId);
+            if (previousValues[elementId] !== newValue) {
+                element.classList.add('updating');
+                setTimeout(() => element.classList.remove('updating'), 400);
+            }
+            element.textContent = newValue;
+            previousValues[elementId] = newValue;
+        }
+        
+        function updateBattery() {
+            const startTime = performance.now();
+            
+            try {
+                const jsonData = Android.getBatteryData();
+                const data = JSON.parse(jsonData);
+                
+                if (data.error) {
+                    showError('Error: ' + data.error);
+                    debugLog.errors.push({ time: new Date().toISOString(), error: data.error });
+                    return;
+                }
+                
+                const capacity = parseInt(data.capacity) || 0;
+                const status = data.status || lastStatus || "Unknown";
+                const voltageRaw = parseInt(data.voltage) || 0;
+                const currentRaw = parseInt(data.current_now) || 0;
+                const tempRaw = parseInt(data.temp) || 0;
+                const chargerVoltageRaw = parseInt(data.charger_voltage) || 0;
+                const powerRaw = parseInt(data.power_now) || 0;
+                
+                if (status !== "Unknown" && status !== "undefined" && status) {
+                    lastStatus = status;
+                }
+                
+                debugLog.batteryHistory.push({
+                    time: new Date().toISOString(),
+                    capacity,
+                    voltage: voltageRaw,
+                    current: currentRaw,
+                    temp: tempRaw,
+                    status: lastStatus
+                });
+                if (debugLog.batteryHistory.length > 50) debugLog.batteryHistory.shift();
+                
+                const voltage = formatNumber(voltageRaw / 1000, 2);
+                const current = Math.floor(currentRaw / 1000);
+                const temperature = formatNumber(tempRaw / 10, 1);
+                const chargerVoltage = formatNumber(chargerVoltageRaw / 1000, 2);
+                
+                let power;
+                let powerSourceMethod = '';
+                
+                if (hasRoot && powerRaw > 0) {
+                    power = formatPower(powerRaw / 1000000);
+                    powerSourceMethod = '/sys/power_now (root)';
+                } else {
+                    power = formatPower(Math.abs((voltageRaw * currentRaw) / 1000000000));
+                    powerSourceMethod = 'calculated (V×A)';
+                }
+                
+                debugLog.powerSource.push({ 
+                    time: Date.now(), 
+                    method: powerSourceMethod, 
+                    value: power,
+                    hasRoot: hasRoot,
+                    powerRaw: powerRaw,
+                    voltageRaw: voltageRaw,
+                    currentRaw: currentRaw
+                });
+                if (debugLog.powerSource.length > 20) debugLog.powerSource.shift();
+                
+                updateLiquid(capacity);
+                animateValue('capacity-value', capacity);
+                
+                const statusText = document.getElementById('status-text');
+                const statusLabel = document.getElementById('status-label');
+                const statusIconImg = document.getElementById('status-icon-img');
+                const statusLower = lastStatus.toLowerCase();
+                
+                const prevStatus = statusLabel.textContent;
+                if (prevStatus !== lastStatus && lastStatus !== "Unknown") {
+                    debugLog.statusChanges.push({
+                        time: new Date().toISOString(),
+                        event: 'Battery status changed',
+                        from: prevStatus,
+                        to: lastStatus
+                    });
+                }
+                
+                statusLabel.textContent = lastStatus;
+                statusText.className = 'status-text';
+                
+                let detectedStatus = '';
+                let chargingActive = false;
+                
+                if (statusLower === 'not charging') {
+                    statusText.classList.add('status-not-charging');
+                    statusIconImg.src = 'icons/not-charging.svg';
+                    detectedStatus = 'not_charging';
+                    chargingActive = false;
+                } else if (statusLower === 'full') {
+                    statusText.classList.add('status-full');
+                    statusIconImg.src = 'icons/full.svg';
+                    detectedStatus = 'full';
+                    chargingActive = false;
+                } else if (statusLower === 'charging') {
+                    statusText.classList.add('status-charging');
+                    statusIconImg.src = 'icons/charging.svg';
+                    detectedStatus = 'charging';
+                    chargingActive = true;
+                } else if (statusLower === 'discharging') {
+                    statusText.classList.add('status-discharging');
+                    statusIconImg.src = 'icons/discharging.svg';
+                    detectedStatus = 'discharging';
+                    chargingActive = false;
+                } else {
+                    statusText.classList.add('status-unknown');
+                    statusIconImg.src = 'icons/not-charging.svg';
+                    detectedStatus = 'unknown';
+                    chargingActive = false;
+                }
+                
+                debugLog.statusDetection.push({
+                    time: Date.now(),
+                    rawStatus: data.status,
+                    lastStatus: lastStatus,
+                    statusLower: statusLower,
+                    detected: detectedStatus,
+                    chargingActive: chargingActive
+                });
+                if (debugLog.statusDetection.length > 20) debugLog.statusDetection.shift();
+                
+                toggleBubbleSpawning(chargingActive);
+                updateVoltageTile(voltage, chargerVoltage, hasRoot, chargingActive);
+                
+                animateValue('current-value', current);
+                animateValue('power-value', power);
+                animateValue('temp-value', temperature);
+                
+                if (capacity > 0 && lastStatus !== 'Unknown') {
+                    hideError();
+                }
+                
+                const updateTime = performance.now() - startTime;
+                debugLog.updates++;
+                debugLog.performance.totalTime += updateTime;
+                debugLog.performance.avgUpdateTime = debugLog.performance.totalTime / debugLog.updates;
+                debugLog.lastUpdate = Date.now();
+                
+            } catch (e) {
+                debugLog.errors.push({ time: new Date().toISOString(), error: 'Update failed: ' + e.message });
+                showError('Error: ' + e.message);
+            }
+        }
+        
+        function showError(message) {
+            const banner = document.getElementById('error-banner');
+            const text = document.getElementById('error-text');
+            text.textContent = message;
+            banner.classList.add('show');
+        }
+        
+        function hideError() {
+            document.getElementById('error-banner').classList.remove('show');
+        }
+        
+        function showDebug() {
+            try {
+                debugData = '========== ADVANCED DEBUG LOG ==========\n\n';
+                debugData += '--- SYSTEM INFO ---\n';
+                debugData += `Timestamp: ${new Date().toISOString()}\n`;
+                debugData += `User Agent: ${navigator.userAgent}\n`;
+                debugData += `Screen: ${window.screen.width}x${window.screen.height}\n`;
+                debugData += `Viewport: ${window.innerWidth}x${window.innerHeight}\n`;
+                debugData += `Current Theme: ${currentTheme}\n\n`;
+                
+                debugData += '--- PERFORMANCE STATS ---\n';
+                debugData += `Total Updates: ${debugLog.updates}\n`;
+                debugData += `Avg Update Time: ${debugLog.performance.avgUpdateTime.toFixed(2)}ms\n`;
+                debugData += `Last Update: ${new Date(debugLog.lastUpdate).toLocaleTimeString()}\n`;
+                debugData += `Update Interval: 1000ms (1s)\n`;
+                debugData += `Uptime: ${((Date.now() - (debugLog.lastUpdate - debugLog.updates * 1000)) / 1000).toFixed(0)}s\n\n`;
+                
+                debugData += '--- LIQUID FILL INFO ---\n';
+                debugData += `Wave Animations: DISABLED (simple fill only)\n`;
+                debugData += `Current Capacity: ${currentCapacity}%\n`;
+                debugData += `Fill Type: Clean gradient (no waves)\n\n`;
+                
+                debugData += '--- THEME CHANGES ---\n';
+                debugLog.themeChanges.slice(-5).forEach(change => {
+                    debugData += `[${new Date(change.time).toLocaleTimeString()}] ${change.from} → ${change.to} (${change.source})\n`;
+                });
+                debugData += '\n';
+                
+                debugData += '--- BUBBLE STATS ---\n';
+                debugData += `Charging Active: ${isCharging}\n`;
+                debugData += `Bubbles Spawned (Total): ${debugLog.bubbleStats.total}\n`;
+                debugData += `Bubbles Active (Now): ${debugLog.bubbleStats.active}\n`;
+                debugData += `Spawn Interval: ${bubbleSpawnInterval ? '400ms' : 'Stopped'}\n`;
+                debugData += `Current Capacity: ${currentCapacity}%\n`;
+                debugData += `Bubble Rise Distance: ${(100 - currentCapacity) * 2}px\n\n`;
+                
+                debugData += '--- POWER CALCULATION LOG (Last 10) ---\n';
+                debugLog.powerSource.slice(-10).forEach(ps => {
+                    debugData += `[${new Date(ps.time).toLocaleTimeString()}] ${ps.method}\n`;
+                    debugData += `  Root: ${ps.hasRoot} | powerRaw: ${ps.powerRaw} µW\n`;
+                    debugData += `  V: ${ps.voltageRaw} mV | I: ${ps.currentRaw} µA\n`;
+                    debugData += `  Result: ${ps.value}W\n`;
+                });
+                debugData += '\n';
+                
+                debugData += '--- STATUS DETECTION LOG (Last 10) ---\n';
+                debugLog.statusDetection.slice(-10).forEach(det => {
+                    debugData += `[${new Date(det.time).toLocaleTimeString()}] Raw: "${det.rawStatus}" | Last: "${det.lastStatus}" | Lower: "${det.statusLower}" | Detected: ${det.detected} | Charging: ${det.chargingActive}\n`;
+                });
+                debugData += '\n';
+                
+                debugData += '--- BATTERY STATUS HISTORY ---\n';
+                const recent = debugLog.batteryHistory.slice(-10);
+                recent.forEach(entry => {
+                    debugData += `[${new Date(entry.time).toLocaleTimeString()}] ${entry.capacity}% | ${(entry.voltage/1000).toFixed(2)}V | ${(entry.current/1000).toFixed(0)}mA | ${(entry.temp/10).toFixed(1)}°C | ${entry.status}\n`;
+                });
+                debugData += '\n';
+                
+                debugData += '--- STATUS CHANGES LOG ---\n';
+                debugLog.statusChanges.slice(-10).forEach(change => {
+                    debugData += `[${new Date(change.time).toLocaleTimeString()}] ${change.event}`;
+                    if (change.from !== undefined) debugData += ` (${change.from} → ${change.to})`;
+                    debugData += '\n';
+                });
+                debugData += '\n';
+                
+                debugData += '--- ROOT STATUS ---\n';
+                debugData += `Has Root: ${hasRoot}\n`;
+                debugData += `Voltage Tile Mode: ${document.getElementById('tile-voltage').classList.contains('charger-mode') ? 'Charger' : 'Battery'}\n`;
+                debugData += `Charger Voltage (filtered): ${parseFloat(document.getElementById('voltage-value').textContent) > 5 ? 'Valid' : 'Noise/Disconnected'}\n\n`;
+                
+                if (debugLog.errors.length > 0) {
+                    debugData += '--- ERROR LOG ---\n';
+                    debugLog.errors.slice(-5).forEach(err => {
+                        debugData += `[${new Date(err.time).toLocaleTimeString()}] ${err.error}\n`;
+                    });
+                    debugData += '\n';
+                }
+                
+                debugData += '--- RAW ANDROID DATA ---\n';
+                debugData += Android.getDebugInfo();
+                
+                const output = document.getElementById('debug-output');
+                const card = document.getElementById('debug-card');
+                output.textContent = debugData;
+                card.classList.add('show');
+                setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 150);
+            } catch (e) {
+                showError('Error: ' + e.message);
+                debugLog.errors.push({ time: new Date().toISOString(), error: 'Debug show failed: ' + e.message });
+            }
+        }
+        
+        function copyDebug() {
+            if (!debugData) showDebug();
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = debugData;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                showError('✅ Copied!');
+                setTimeout(hideError, 2500);
+            } catch (e) {
+                showError('❌ Failed to copy');
+            }
+            
+            document.body.removeChild(textarea);
+        }
+        
+        setTimeout(() => {
+            console.log('[INIT] 🚀 Starting battery monitoring...');
+            checkRootStatus();
+            updateBattery();
+        }, 300);
+        
+        setInterval(checkRootStatus, 2000);
+        setInterval(updateBattery, 1000);
     </script>
 </body>
 </html>
