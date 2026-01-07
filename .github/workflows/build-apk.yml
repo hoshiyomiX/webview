@@ -5,11 +5,13 @@ on:
     branches: 
       - battery-monitor
       - master
+      - checkpoint
       - main
   pull_request:
     branches:
       - battery-monitor
       - master
+      - checkpoint
       - main
   workflow_dispatch:
     inputs:
