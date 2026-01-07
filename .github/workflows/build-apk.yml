@@ -4,11 +4,13 @@ on:
   push:
     branches: 
       - battery-monitor
+      - battery-monitor-css-enhanced
       - master
       - main
   pull_request:
     branches:
       - battery-monitor
+      - battery-monitor-css-enhanced
       - master
       - main
   workflow_dispatch:
@@ -16,9 +18,10 @@ on:
       branch:
         description: 'Branch to build'
         required: true
-        default: 'master'
+        default: 'battery-monitor-css-enhanced'
         type: choice
         options:
+          - battery-monitor-css-enhanced
           - battery-monitor
           - master
           - main
