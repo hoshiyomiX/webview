@@ -470,7 +470,7 @@
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.8);
         }
         
-        /* Voltage Tile - Dual Mode (Battery Voltage / Charger Voltage) */
+        /* ⚡ HYBRID Voltage Tile - Visual indicator for charger mode */
         .tile-voltage {
             transition: background 0.5s var(--md-motion-emphasized);
         }
@@ -845,7 +845,7 @@
             </div>
             
             <div class="tile tile-voltage" id="tile-voltage">
-                <div class="tile-label" id="voltage-label">Voltage</div>
+                <div class="tile-label">Voltage</div>
                 <div class="tile-value-wrapper">
                     <span class="tile-value" id="voltage-value">--</span>
                     <span class="tile-unit">V</span>
@@ -904,10 +904,12 @@
             errors: [],
             statusDetection: [],
             powerSource: [],
+            voltageSource: [],
             themeChanges: []
         };
         
-        console.log('[INIT] ✅ Bubble rise distance: -12px (perfect alignment)');
+        console.log('[INIT] ✅ Hybrid voltage tile - unified display');
+        console.log('[VOLTAGE] 🔌 Prefer: Rooted + Charging = Charger voltage, else Battery voltage');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
         function applyTheme(theme) {
@@ -1211,20 +1213,36 @@
             }
         }
         
+        // ⚡ HYBRID Voltage Tile - Unified display with smart source switching
         function updateVoltageTile(batteryVoltage, chargerVoltage, isRooted, isCurrentlyCharging) {
             const tile = document.getElementById('tile-voltage');
-            const label = document.getElementById('voltage-label');
             const validChargerVoltage = chargerVoltage >= 1.0 ? chargerVoltage : 0;
             
+            let displayVoltage, voltageSource;
+            
+            // Priority system: Rooted + Charging = Charger voltage, else Battery voltage
             if (isRooted && isCurrentlyCharging && validChargerVoltage > 0) {
+                displayVoltage = validChargerVoltage;
+                voltageSource = 'charger (/sys)';
                 tile.classList.add('charger-mode');
-                label.textContent = '⚡ Charger';
-                animateValue('voltage-value', validChargerVoltage);
             } else {
+                displayVoltage = batteryVoltage;
+                voltageSource = 'battery (API)';
                 tile.classList.remove('charger-mode');
-                label.textContent = 'Voltage';
-                animateValue('voltage-value', batteryVoltage);
             }
+            
+            animateValue('voltage-value', displayVoltage);
+            
+            debugLog.voltageSource.push({
+                time: Date.now(),
+                source: voltageSource,
+                value: displayVoltage,
+                batteryV: batteryVoltage,
+                chargerV: validChargerVoltage,
+                rooted: isRooted,
+                charging: isCurrentlyCharging
+            });
+            if (debugLog.voltageSource.length > 20) debugLog.voltageSource.shift();
         }
         
         function animateValue(elementId, newValue) {
@@ -1409,6 +1427,14 @@
         function showDebug() {
             try {
                 debugData = '========== ADVANCED DEBUG LOG ==========\n\n';
+                debugData += '--- HYBRID VOLTAGE TILE ---\n';
+                debugLog.voltageSource.slice(-10).forEach(vs => {
+                    debugData += `[${new Date(vs.time).toLocaleTimeString()}] Source: ${vs.source}\n`;
+                    debugData += `  Display: ${vs.value}V | Battery: ${vs.batteryV}V | Charger: ${vs.chargerV}V\n`;
+                    debugData += `  Rooted: ${vs.rooted} | Charging: ${vs.charging}\n`;
+                });
+                debugData += '\n';
+                
                 debugData += '--- BUBBLE PHYSICS ---\n';
                 debugData += `Spawn Position: Bottom 0-3%\n`;
                 debugData += `Current Capacity: ${currentCapacity}%\n`;
@@ -1478,8 +1504,7 @@
                 
                 debugData += '--- ROOT STATUS ---\n';
                 debugData += `Has Root: ${hasRoot}\n`;
-                debugData += `Voltage Tile Mode: ${document.getElementById('tile-voltage').classList.contains('charger-mode') ? 'Charger' : 'Battery'}\n`;
-                debugData += `Charger Voltage (filtered): ${parseFloat(document.getElementById('voltage-value').textContent) > 5 ? 'Valid' : 'Noise/Disconnected'}\n\n`;
+                debugData += `Voltage Tile Mode: ${document.getElementById('tile-voltage').classList.contains('charger-mode') ? 'Charger (rooted)' : 'Battery (fallback)'}\n\n`;
                 
                 if (debugLog.errors.length > 0) {
                     debugData += '--- ERROR LOG ---\n';
