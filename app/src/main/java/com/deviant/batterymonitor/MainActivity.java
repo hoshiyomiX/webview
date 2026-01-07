@@ -11,6 +11,7 @@ import android.os.Environment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.app.AlertDialog;
 import android.widget.Toast;
 import org.json.JSONObject;
@@ -26,6 +27,7 @@ public class MainActivity extends Activity {
     private BatteryManager batteryManager;
     private boolean hasRootAccess = false;
     private boolean rootChecked = false;
+    private WebView webView; // Store WebView reference for theme changes
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +36,7 @@ public class MainActivity extends Activity {
         // Initialize BatteryManager
         batteryManager = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
         
-        WebView webView = new WebView(this);
+        webView = new WebView(this);
         setContentView(webView);
         
         WebSettings settings = webView.getSettings();
@@ -49,6 +51,28 @@ public class MainActivity extends Activity {
         
         // Check and request root access
         checkRootAccess();
+    }
+    
+    // Detect system theme changes and notify JavaScript
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        
+        // Detect theme change
+        boolean isDark = (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        String theme = isDark ? "dark" : "light";
+        
+        logDebug("[THEME] System theme changed to: " + theme);
+        
+        // Notify JavaScript
+        if (webView != null) {
+            runOnUiThread(() -> {
+                webView.evaluateJavascript(
+                    "if (typeof applyTheme === 'function') { applyTheme('" + theme + "'); }",
+                    null
+                );
+            });
+        }
     }
     
     private void checkRootAccess() {
@@ -133,6 +157,12 @@ public class MainActivity extends Activity {
             logDebug("Android Version: " + android.os.Build.VERSION.RELEASE + " (SDK " + android.os.Build.VERSION.SDK_INT + ")");
             logDebug("Device: " + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL);
             logDebug("Board: " + android.os.Build.BOARD);
+            
+            // Log initial theme
+            int uiMode = getResources().getConfiguration().uiMode;
+            boolean isDark = (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+            logDebug("Initial Theme: " + (isDark ? "dark" : "light"));
+            
             logDebug("\n--- Detection Strategy ---");
             logDebug("1. Try sysfs paths with root access");
             logDebug("2. Fallback to BatteryManager + Intent API (official, no root needed)\n");
@@ -154,6 +184,20 @@ public class MainActivity extends Activity {
     }
     
     public class BatteryBridge {
+        
+        @JavascriptInterface
+        public String getSystemTheme() {
+            try {
+                int uiMode = getResources().getConfiguration().uiMode;
+                boolean isDark = (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+                String theme = isDark ? "dark" : "light";
+                logDebug("[THEME] JavaScript requested theme: " + theme);
+                return theme;
+            } catch (Exception e) {
+                logDebug("[THEME] Error getting theme: " + e.getMessage());
+                return "dark"; // Default to dark on error
+            }
+        }
         
         @JavascriptInterface
         public String getRootStatus() {
@@ -284,7 +328,12 @@ public class MainActivity extends Activity {
             info.append("Debug file: ").append(DEBUG_FILE).append("\n\n");
             info.append("Device: ").append(android.os.Build.MANUFACTURER).append(" ").append(android.os.Build.MODEL).append("\n");
             info.append("Android: ").append(android.os.Build.VERSION.RELEASE).append(" (SDK ").append(android.os.Build.VERSION.SDK_INT).append(")\n");
-            info.append("Root Access: ").append(hasRootAccess ? "YES" : "NO").append("\n\n");
+            info.append("Root Access: ").append(hasRootAccess ? "YES" : "NO").append("\n");
+            
+            // Show current theme
+            int uiMode = getResources().getConfiguration().uiMode;
+            boolean isDark = (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+            info.append("System Theme: ").append(isDark ? "Dark" : "Light").append("\n\n");
             
             if (hasRootAccess) {
                 info.append("=== ROOT MODE - SYSFS ACCESS ===\n\n");
