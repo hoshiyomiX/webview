@@ -226,10 +226,11 @@
             flex: 1;
         }
         
+        /* 🌟 REFINED: Smaller & more header-like */
         .app-title {
-            font-size: 34px;
-            font-weight: 500;
-            letter-spacing: -0.5px;
+            font-size: 27px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
             margin-bottom: 6px;
             background: linear-gradient(135deg, var(--md-sys-color-on-surface) 0%, var(--md-sys-color-primary) 100%);
             -webkit-background-clip: text;
@@ -906,7 +907,7 @@
             themeChanges: []
         };
         
-        console.log('[INIT] ✅ Bubble physics improved - spawn from bottom to liquid surface');
+        console.log('[INIT] ✅ Header refined + bubble fade aligned to liquid surface');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
         function applyTheme(theme) {
@@ -1052,7 +1053,7 @@
             }
         }
         
-        // 🌟 UPDATED: Bubble spawn dari dasar tile ke permukaan liquid
+        // 🌟 REFINED: Bubble fade aligned to liquid surface
         function spawnRandomBubble() {
             if (!isCharging) return;
             
@@ -1064,15 +1065,15 @@
             const size = 5 + Math.random() * 10; // 5-15px
             const left = 15 + Math.random() * 70; // 15-85% (stay within bounds)
             
-            // 🌟 NEW: Spawn dari DASAR tile (0-3% dari bottom)
+            // Spawn dari DASAR tile (0-3% dari bottom)
             const bottom = 0 + Math.random() * 3; 
             
             const drift = (Math.random() - 0.5) * 40; // -20px to +20px
             const duration = 2.5 + Math.random() * 1.5; // 2.5-4s
             
-            // 🌟 NEW: Rise distance = tinggi liquid saat ini (capacity%)
+            // 🌟 FIXED: Reduce 8px so bubble fades AT liquid surface, not over
             const containerHeight = 200; // Tile height in px
-            const riseDistance = currentCapacity * (containerHeight / 100);
+            const riseDistance = (currentCapacity * (containerHeight / 100)) - 8;
             
             // Apply styles
             bubble.style.width = size + 'px';
@@ -1406,7 +1407,7 @@
                 debugData += `Spawn Position: Bottom 0-3%\n`;
                 debugData += `Current Capacity: ${currentCapacity}%\n`;
                 debugData += `Liquid Height: ${currentCapacity}% of tile\n`;
-                debugData += `Rise Distance: ${currentCapacity * 2}px (${currentCapacity}% of 200px)\n`;
+                debugData += `Rise Distance: ${(currentCapacity * 2) - 8}px (${currentCapacity}% - 8px offset)\n`;
                 debugData += `Charging Active: ${isCharging}\n`;
                 debugData += `Bubbles Active: ${debugLog.bubbleStats.active}\n\n`;
                 
