@@ -470,32 +470,6 @@
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.8);
         }
         
-        /* ⚡ HYBRID Voltage Tile - Visual indicator for charger mode */
-        .tile-voltage {
-            transition: background 0.5s var(--md-motion-emphasized);
-        }
-        
-        .tile-voltage.charger-mode {
-            background: linear-gradient(
-                135deg,
-                var(--md-sys-color-tertiary-container) 0%,
-                var(--md-sys-color-secondary-container) 100%
-            );
-            box-shadow: 0 4px 16px rgba(239, 184, 200, 0.3);
-        }
-        
-        .tile-voltage.charger-mode .tile-label {
-            color: var(--md-sys-color-on-tertiary-container);
-        }
-        
-        .tile-voltage.charger-mode .tile-value {
-            color: var(--md-sys-color-on-tertiary-container);
-        }
-        
-        .tile-voltage.charger-mode .tile-unit {
-            color: var(--md-sys-color-on-tertiary-container);
-        }
-        
         /* Status Text (bottom-right corner) */
         .status-text {
             position: absolute;
@@ -844,7 +818,7 @@
                 </div>
             </div>
             
-            <div class="tile tile-voltage" id="tile-voltage">
+            <div class="tile" id="tile-voltage">
                 <div class="tile-label">Voltage</div>
                 <div class="tile-value-wrapper">
                     <span class="tile-value" id="voltage-value">--</span>
@@ -908,7 +882,7 @@
             themeChanges: []
         };
         
-        console.log('[INIT] ✅ Hybrid voltage tile - unified display');
+        console.log('[INIT] ✅ Hybrid voltage tile - unified display (no gradient)');
         console.log('[VOLTAGE] 🔌 Prefer: Rooted + Charging = Charger voltage, else Battery voltage');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
@@ -1213,9 +1187,8 @@
             }
         }
         
-        // ⚡ HYBRID Voltage Tile - Unified display with smart source switching
+        // ⚡ HYBRID Voltage Tile - Unified display (no visual changes, only value switching)
         function updateVoltageTile(batteryVoltage, chargerVoltage, isRooted, isCurrentlyCharging) {
-            const tile = document.getElementById('tile-voltage');
             const validChargerVoltage = chargerVoltage >= 1.0 ? chargerVoltage : 0;
             
             let displayVoltage, voltageSource;
@@ -1224,11 +1197,9 @@
             if (isRooted && isCurrentlyCharging && validChargerVoltage > 0) {
                 displayVoltage = validChargerVoltage;
                 voltageSource = 'charger (/sys)';
-                tile.classList.add('charger-mode');
             } else {
                 displayVoltage = batteryVoltage;
                 voltageSource = 'battery (API)';
-                tile.classList.remove('charger-mode');
             }
             
             animateValue('voltage-value', displayVoltage);
@@ -1427,7 +1398,7 @@
         function showDebug() {
             try {
                 debugData = '========== ADVANCED DEBUG LOG ==========\n\n';
-                debugData += '--- HYBRID VOLTAGE TILE ---\n';
+                debugData += '--- HYBRID VOLTAGE TILE (No Gradient) ---\n';
                 debugLog.voltageSource.slice(-10).forEach(vs => {
                     debugData += `[${new Date(vs.time).toLocaleTimeString()}] Source: ${vs.source}\n`;
                     debugData += `  Display: ${vs.value}V | Battery: ${vs.batteryV}V | Charger: ${vs.chargerV}V\n`;
@@ -1504,7 +1475,7 @@
                 
                 debugData += '--- ROOT STATUS ---\n';
                 debugData += `Has Root: ${hasRoot}\n`;
-                debugData += `Voltage Tile Mode: ${document.getElementById('tile-voltage').classList.contains('charger-mode') ? 'Charger (rooted)' : 'Battery (fallback)'}\n\n`;
+                debugData += `Voltage Source: ${hasRoot ? 'Hybrid (charger preferred)' : 'Battery only (API)'}\n\n`;
                 
                 if (debugLog.errors.length > 0) {
                     debugData += '--- ERROR LOG ---\n';
