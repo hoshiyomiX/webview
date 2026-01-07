@@ -40,16 +40,22 @@
             --md-motion-spring: cubic-bezier(0.5, 1.5, 0.5, 1);
         }
         
-        /* Water Wave Animation */
+        /* ENHANCED Water Wave Animation - 3 layers for more visible effect */
         @keyframes wave {
             0% { transform: translateX(0) translateY(0); }
-            50% { transform: translateX(-25%) translateY(-5px); }
+            50% { transform: translateX(-25%) translateY(-10px); }
             100% { transform: translateX(0) translateY(0); }
         }
         
         @keyframes wave2 {
             0% { transform: translateX(0) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-10px); }
+            50% { transform: translateX(-50%) translateY(-15px); }
+            100% { transform: translateX(0) translateY(0); }
+        }
+        
+        @keyframes wave3 {
+            0% { transform: translateX(0) translateY(0); }
+            50% { transform: translateX(-35%) translateY(-8px); }
             100% { transform: translateX(0) translateY(0); }
         }
         
@@ -70,7 +76,7 @@
                 opacity: 0.3;
             }
             100% {
-                transform: translateY(-180px) translateX(var(--drift-x, 0)) scale(0.8);
+                transform: translateY(var(--rise-distance, -180px)) translateX(var(--drift-x, 0)) scale(0.8);
                 opacity: 0;
             }
         }
@@ -238,7 +244,9 @@
             font-size: 14px;
             color: var(--md-sys-color-on-surface-variant);
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             transition: all 0.3s var(--md-motion-emphasized);
         }
         
@@ -426,6 +434,7 @@
             transform-origin: center bottom;
         }
         
+        /* ENHANCED: 3-layer wave system with blur for more realistic water effect */
         .liquid::before,
         .liquid::after {
             content: '';
@@ -440,11 +449,34 @@
         .liquid::before {
             animation: wave 3s linear infinite;
             opacity: 0.8;
+            filter: blur(1px);
         }
         
         .liquid::after {
             animation: wave2 4s linear infinite;
-            opacity: 0.5;
+            opacity: 0.6;
+            filter: blur(0.5px);
+        }
+        
+        /* Third wave layer */
+        .liquid-container::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -50%;
+            width: 200%;
+            height: var(--liquid-height, 0%);
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        .liquid-container::before {
+            top: calc(100% - var(--liquid-height, 0%) - 20px);
+            animation: wave3 5s linear infinite;
+            opacity: 0.4;
+            filter: blur(1.5px);
+            border-radius: 45%;
+            height: 40px;
         }
         
         /* Random Bubbles */
@@ -783,7 +815,10 @@
         <header class="app-header">
             <div class="header-left">
                 <h1 class="app-title">devBattery Monitor</h1>
-                <a href="https://t.me/hoshiyomi_id" class="app-subtitle">@hoshiyomi_id</a>
+                <a href="https://t.me/hoshiyomi_id" class="app-subtitle">
+                    <span>✈️</span>
+                    <span>t.me/hoshiyomi_id</span>
+                </a>
             </div>
             <div class="root-badge non-rooted" id="root-badge" onclick="retryRootAccess()">
                 <span class="root-icon" id="root-icon">🔒</span>
@@ -882,6 +917,7 @@
         let bubbleCount = 0;
         let lastStatus = '';
         let rootModalShown = false;
+        let currentCapacity = 0; // Track current battery level for bubble height
         
         const debugLog = {
             updates: 0,
@@ -954,6 +990,7 @@
             }
         }
         
+        // IMPROVED: Dynamic bubble height based on liquid level
         function spawnRandomBubble() {
             if (!isCharging) return;
             
@@ -967,11 +1004,17 @@
             const drift = (Math.random() - 0.5) * 40;
             const duration = 2.5 + Math.random() * 1.5;
             
+            // DYNAMIC RISE DISTANCE: Bubble rises to liquid surface (not fixed height)
+            // Container height ~200px, bubbles should stop at (100% - capacity%) of container
+            const containerHeight = 200; // tile-large min-height
+            const riseDistance = (100 - currentCapacity) * (containerHeight / 100);
+            
             bubble.style.width = size + 'px';
             bubble.style.height = size + 'px';
             bubble.style.left = left + '%';
             bubble.style.bottom = bottom + '%';
             bubble.style.setProperty('--drift-x', drift + 'px');
+            bubble.style.setProperty('--rise-distance', `-${riseDistance}px`);
             bubble.style.animationDuration = duration + 's';
             
             container.appendChild(bubble);
@@ -1068,8 +1111,12 @@
         
         function updateLiquid(percentage) {
             const liquid = document.getElementById('liquid');
+            const container = document.getElementById('liquid-container');
+            
+            currentCapacity = percentage; // Store for bubble calculations
             
             liquid.style.height = percentage + '%';
+            container.style.setProperty('--liquid-height', percentage + '%');
             
             const color = getBatteryColor(percentage);
             const colorBefore = getBatteryColor(Math.min(100, percentage + 10));
@@ -1286,7 +1333,9 @@
                 debugData += `Charging Active: ${isCharging}\n`;
                 debugData += `Bubbles Spawned (Total): ${debugLog.bubbleStats.total}\n`;
                 debugData += `Bubbles Active (Now): ${debugLog.bubbleStats.active}\n`;
-                debugData += `Spawn Interval: ${bubbleSpawnInterval ? '400ms' : 'Stopped'}\n\n`;
+                debugData += `Spawn Interval: ${bubbleSpawnInterval ? '400ms' : 'Stopped'}\n`;
+                debugData += `Current Capacity: ${currentCapacity}%\n`;
+                debugData += `Bubble Rise Distance: ${(100 - currentCapacity) * 2}px\n\n`;
                 
                 debugData += '--- POWER CALCULATION LOG (Last 10) ---\n';
                 debugLog.powerSource.slice(-10).forEach(ps => {
