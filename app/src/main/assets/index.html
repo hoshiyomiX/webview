@@ -868,7 +868,7 @@
         let lastStatus = '';
         let rootModalShown = false;
         let currentCapacity = 0;
-        let currentTheme = 'dark'; // Track current theme
+        let currentTheme = 'dark';
         
         const debugLog = {
             updates: 0,
@@ -880,19 +880,18 @@
             errors: [],
             statusDetection: [],
             powerSource: [],
-            themeChanges: [] // Track theme changes
+            themeChanges: []
         };
         
         console.log('[INIT] ✅ Simple liquid fill loaded (NO waves)');
-        console.log('[THEME] 🎨 Theme detection enabled');
+        console.log('[THEME] 🎨 Force dark theme (WebView detection unreliable)');
         
-        // 🎨 THEME DETECTION & SWITCHING
+        // 🎨 THEME MANAGEMENT (FORCE DARK AS DEFAULT)
         function applyTheme(theme) {
             const root = document.documentElement;
             currentTheme = theme;
             
             if (theme === 'light') {
-                // Material Design 3 - Light Theme
                 root.style.setProperty('--md-sys-color-primary', '#6750A4');
                 root.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
                 root.style.setProperty('--md-sys-color-primary-container', '#EADDFF');
@@ -920,7 +919,7 @@
                 document.querySelector('meta[name="theme-color"]').setAttribute('content', '#FFFBFE');
                 console.log('[THEME] 🌞 Switched to LIGHT mode');
             } else {
-                // Material Design 3 - Dark Theme (default)
+                // Dark theme (keep CSS defaults - no changes needed)
                 root.style.setProperty('--md-sys-color-primary', '#D0BCFF');
                 root.style.setProperty('--md-sys-color-on-primary', '#381E72');
                 root.style.setProperty('--md-sys-color-primary-container', '#4F378B');
@@ -946,7 +945,7 @@
                 root.style.setProperty('--md-sys-color-error-container', '#8C1D18');
                 
                 document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1C1B1F');
-                console.log('[THEME] 🌙 Switched to DARK mode');
+                console.log('[THEME] 🌙 Applied DARK mode');
             }
             
             debugLog.themeChanges.push({ 
@@ -955,14 +954,20 @@
             });
         }
         
-        // Detect system theme on load
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-        applyTheme(prefersDark.matches ? 'dark' : 'light');
+        // ❌ WebView's matchMedia is UNRELIABLE - force dark theme
+        applyTheme('dark');
         
-        // Listen for theme changes
-        prefersDark.addEventListener('change', (e) => {
-            applyTheme(e.matches ? 'dark' : 'light');
-        });
+        // Still listen for changes (in case WebView supports it properly)
+        try {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+            console.log('[THEME] matchMedia result:', prefersDark.matches);
+            prefersDark.addEventListener('change', (e) => {
+                console.log('[THEME] Change event fired:', e.matches);
+                applyTheme(e.matches ? 'dark' : 'light');
+            });
+        } catch (e) {
+            console.log('[THEME] matchMedia not supported:', e.message);
+        }
         
         function formatPower(value) {
             const num = parseFloat(value);
@@ -1144,12 +1149,6 @@
                 ${colorBefore} 0%, 
                 ${colorMid} 50%, 
                 ${color} 100%)`;
-            
-            console.log('[LIQUID] Simple fill:', {
-                capacity: percentage + '%',
-                height: liquid.style.height,
-                waveAnimation: 'DISABLED (clean fill only)'
-            });
         }
         
         function updateVoltageTile(batteryVoltage, chargerVoltage, isRooted, isCurrentlyCharging) {
@@ -1343,7 +1342,7 @@
                 debugData += `User Agent: ${navigator.userAgent}\n`;
                 debugData += `Screen: ${window.screen.width}x${window.screen.height}\n`;
                 debugData += `Viewport: ${window.innerWidth}x${window.innerHeight}\n`;
-                debugData += `Current Theme: ${currentTheme}\n\n`;
+                debugData += `Current Theme: ${currentTheme} (forced)\n\n`;
                 
                 debugData += '--- PERFORMANCE STATS ---\n';
                 debugData += `Total Updates: ${debugLog.updates}\n`;
