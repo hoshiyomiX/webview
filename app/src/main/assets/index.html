@@ -880,10 +880,9 @@
         let isCharging = false;
         let bubbleSpawnInterval = null;
         let bubbleCount = 0;
-        let lastStatus = '';  // Track last valid status to prevent undefined
-        let rootModalShown = false;  // Track if modal was shown on startup
+        let lastStatus = '';
+        let rootModalShown = false;
         
-        // Advanced debug logging
         const debugLog = {
             updates: 0,
             lastUpdate: Date.now(),
@@ -893,38 +892,50 @@
             performance: { avgUpdateTime: 0, totalTime: 0 },
             errors: [],
             statusDetection: [],
-            powerSource: []  // Track power calculation source
+            powerSource: []
         };
         
-        // Format number: max 2 digits, 1 decimal, hide .0
+        // IMPROVED: Smart power formatting (precision based on magnitude)
+        function formatPower(value) {
+            const num = parseFloat(value);
+            if (isNaN(num)) return value;
+            
+            // Cap at 99.9W maximum to prevent tile overflow
+            const capped = Math.min(99.9, num);
+            
+            // Precision logic:
+            // 0-9.99W   → 2 decimals (e.g., "3.45 W")
+            // 10-99.9W  → 1 decimal  (e.g., "15.7 W")
+            if (capped < 10) {
+                return capped.toFixed(2).replace(/\.00$/, '');
+            } else {
+                return capped.toFixed(1).replace(/\.0$/, '');
+            }
+        }
+        
+        // Standard number formatting (for voltage, temp, etc.)
         function formatNumber(value, decimals = 1) {
             const num = parseFloat(value);
             if (isNaN(num)) return value;
             
-            // Limit to 2 digits before decimal (0-99.9)
             const limited = Math.min(99.9, num);
             const fixed = limited.toFixed(decimals);
-            // Remove .0 decimal
             return fixed.replace(/\.0$/, '');
         }
         
-        // Show root permission modal
         function showRootModal() {
             document.getElementById('root-modal').classList.add('show');
         }
         
-        // Dismiss root modal
         function dismissRootModal() {
             document.getElementById('root-modal').classList.remove('show');
         }
         
-        // Request root from modal
         function requestRootFromModal() {
             dismissRootModal();
             retryRootAccess();
         }
         
-        // Retry root access (clickable badge / modal)
         function retryRootAccess() {
             try {
                 debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Root retry requested' });
@@ -945,7 +956,6 @@
             }
         }
         
-        // Random bubble spawner (ONLY when charging)
         function spawnRandomBubble() {
             if (!isCharging) return;
             
@@ -953,12 +963,11 @@
             const bubble = document.createElement('div');
             bubble.className = 'bubble';
             
-            // Random properties
-            const size = 5 + Math.random() * 10; // 5-15px
-            const left = 15 + Math.random() * 70; // 15%-85%
-            const bottom = 5 + Math.random() * 10; // 5%-15%
-            const drift = (Math.random() - 0.5) * 40; // -20px to +20px horizontal drift
-            const duration = 2.5 + Math.random() * 1.5; // 2.5-4s
+            const size = 5 + Math.random() * 10;
+            const left = 15 + Math.random() * 70;
+            const bottom = 5 + Math.random() * 10;
+            const drift = (Math.random() - 0.5) * 40;
+            const duration = 2.5 + Math.random() * 1.5;
             
             bubble.style.width = size + 'px';
             bubble.style.height = size + 'px';
@@ -972,7 +981,6 @@
             debugLog.bubbleStats.total++;
             debugLog.bubbleStats.active++;
             
-            // Remove after animation
             setTimeout(() => {
                 bubble.remove();
                 bubbleCount--;
@@ -980,25 +988,22 @@
             }, duration * 1000);
         }
         
-        // Start/Stop bubble spawning
         function toggleBubbleSpawning(active) {
             if (active && !bubbleSpawnInterval) {
                 debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Bubble spawning started' });
-                bubbleSpawnInterval = setInterval(spawnRandomBubble, 400); // Spawn every 400ms
+                bubbleSpawnInterval = setInterval(spawnRandomBubble, 400);
                 isCharging = true;
             } else if (!active && bubbleSpawnInterval) {
                 debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Bubble spawning stopped' });
                 clearInterval(bubbleSpawnInterval);
                 bubbleSpawnInterval = null;
                 isCharging = false;
-                // Clear existing bubbles
                 document.querySelectorAll('.bubble').forEach(b => b.remove());
                 bubbleCount = 0;
                 debugLog.bubbleStats.active = 0;
             }
         }
         
-        // Get color based on battery percentage (Red 0% -> Green 100%)
         function getBatteryColor(percentage) {
             let r, g, b;
             
@@ -1026,10 +1031,9 @@
                     const prevRoot = hasRoot;
                     hasRoot = status.hasRoot;
                     
-                    // Show modal on first check if no root
                     if (!rootModalShown && !hasRoot) {
                         rootModalShown = true;
-                        setTimeout(() => showRootModal(), 1000);  // Show after 1s
+                        setTimeout(() => showRootModal(), 1000);
                     }
                     
                     if (prevRoot !== hasRoot) {
@@ -1064,7 +1068,6 @@
             }
         }
         
-        // Update liquid height and color
         function updateLiquid(percentage) {
             const liquid = document.getElementById('liquid');
             
@@ -1075,21 +1078,17 @@
             liquid.style.background = `linear-gradient(180deg, ${colorBefore} 0%, ${color} 100%)`;
         }
         
-        // Update voltage tile (dual mode: battery voltage / charger voltage)
         function updateVoltageTile(batteryVoltage, chargerVoltage, isRooted, isCurrentlyCharging) {
             const tile = document.getElementById('tile-voltage');
             const label = document.getElementById('voltage-label');
             
-            // Filter charger voltage noise: ignore if < 1V (1000mV)
             const validChargerVoltage = chargerVoltage >= 1.0 ? chargerVoltage : 0;
             
-            // If rooted AND charging AND charger voltage valid, show charger voltage
             if (isRooted && isCurrentlyCharging && validChargerVoltage > 0) {
                 tile.classList.add('charger-mode');
                 label.textContent = '⚡ Charger';
                 animateValue('voltage-value', validChargerVoltage);
             } else {
-                // Show battery voltage (normal mode)
                 tile.classList.remove('charger-mode');
                 label.textContent = 'Voltage';
                 animateValue('voltage-value', batteryVoltage);
@@ -1120,46 +1119,40 @@
                 }
                 
                 const capacity = parseInt(data.capacity) || 0;
-                const status = data.status || lastStatus || "Unknown";  // Use lastStatus as fallback
+                const status = data.status || lastStatus || "Unknown";
                 const voltageRaw = parseInt(data.voltage) || 0;
                 const currentRaw = parseInt(data.current_now) || 0;
                 const tempRaw = parseInt(data.temp) || 0;
                 const chargerVoltageRaw = parseInt(data.charger_voltage) || 0;
-                const powerRaw = parseInt(data.power_now) || 0; // From /sys if available
+                const powerRaw = parseInt(data.power_now) || 0;
                 
-                // Update lastStatus if current status is valid
                 if (status !== "Unknown" && status !== "undefined" && status) {
                     lastStatus = status;
                 }
                 
-                // Track battery history
                 debugLog.batteryHistory.push({
                     time: new Date().toISOString(),
                     capacity,
                     voltage: voltageRaw,
                     current: currentRaw,
                     temp: tempRaw,
-                    status: lastStatus  // Use lastStatus to avoid undefined
+                    status: lastStatus
                 });
                 if (debugLog.batteryHistory.length > 50) debugLog.batteryHistory.shift();
                 
-                // Format values
                 const voltage = formatNumber(voltageRaw / 1000, 2);
                 const current = Math.floor(currentRaw / 1000);
                 const temperature = formatNumber(tempRaw / 10, 1);
                 const chargerVoltage = formatNumber(chargerVoltageRaw / 1000, 2);
                 
-                // Power calculation: Use /sys value first, fallback to calculation
-                // Format: max 2 digits, 1 decimal, hide .0
+                // IMPROVED: Power calculation with smart formatting
                 let power;
                 let powerSourceMethod = '';
                 if (powerRaw > 0) {
-                    // Use direct /sys/class/power_supply/battery/power_now (in µW)
-                    power = formatNumber(powerRaw / 1000000, 1);
+                    power = formatPower(powerRaw / 1000000);
                     powerSourceMethod = '/sys/power_now';
                 } else {
-                    // Fallback: Calculate from voltage * current
-                    power = formatNumber(Math.abs((voltageRaw * currentRaw) / 1000000), 1);
+                    power = formatPower(Math.abs((voltageRaw * currentRaw) / 1000000));
                     powerSourceMethod = 'calculated (V×A)';
                 }
                 
@@ -1173,11 +1166,10 @@
                 updateLiquid(capacity);
                 animateValue('capacity-value', capacity);
                 
-                // Status text (plain, no badge)
                 const statusText = document.getElementById('status-text');
                 const statusLabel = document.getElementById('status-label');
                 const statusIcon = document.getElementById('status-icon');
-                const statusLower = lastStatus.toLowerCase();  // Use lastStatus
+                const statusLower = lastStatus.toLowerCase();
                 
                 const prevStatus = statusLabel.textContent;
                 if (prevStatus !== lastStatus && lastStatus !== "Unknown") {
@@ -1192,57 +1184,48 @@
                 statusLabel.textContent = lastStatus;
                 statusText.className = 'status-text';
                 
-                // FIXED: Check specificity order (most specific first)
                 let detectedStatus = '';
                 let chargingActive = false;
                 
                 if (statusLower === 'not charging') {
-                    // Exact match: "Not charging" - Chipset bypass icon
                     statusText.classList.add('status-not-charging');
-                    statusIcon.textContent = '🔶';  // Chipset icon
+                    statusIcon.textContent = '🔶';
                     detectedStatus = 'not_charging';
                     chargingActive = false;
                 } else if (statusLower === 'full') {
-                    // Exact match: "Full"
                     statusText.classList.add('status-full');
                     statusIcon.textContent = '✓';
                     detectedStatus = 'full';
                     chargingActive = false;
                 } else if (statusLower === 'charging') {
-                    // Exact match: "Charging"
                     statusText.classList.add('status-charging');
-                    statusIcon.textContent = '⚡';  // Lightning
+                    statusIcon.textContent = '⚡';
                     detectedStatus = 'charging';
                     chargingActive = true;
                 } else if (statusLower === 'discharging') {
-                    // Exact match: "Discharging" - Unplug icon
                     statusText.classList.add('status-discharging');
-                    statusIcon.textContent = '🔌';  // Unplug icon
+                    statusIcon.textContent = '🔌';
                     detectedStatus = 'discharging';
                     chargingActive = false;
                 } else {
-                    // Unknown
                     statusText.classList.add('status-unknown');
                     statusIcon.textContent = '❓';
                     detectedStatus = 'unknown';
                     chargingActive = false;
                 }
                 
-                // Log detection for debugging
                 debugLog.statusDetection.push({
                     time: Date.now(),
-                    rawStatus: data.status,  // Original from Android
-                    lastStatus: lastStatus,   // Fallback value used
+                    rawStatus: data.status,
+                    lastStatus: lastStatus,
                     statusLower: statusLower,
                     detected: detectedStatus,
                     chargingActive: chargingActive
                 });
                 if (debugLog.statusDetection.length > 20) debugLog.statusDetection.shift();
                 
-                // Toggle bubbles based on charging state
                 toggleBubbleSpawning(chargingActive);
                 
-                // Update voltage tile (dual mode with noise filter)
                 updateVoltageTile(voltage, chargerVoltage, hasRoot, chargingActive);
                 
                 animateValue('current-value', current);
@@ -1253,7 +1236,6 @@
                     hideError();
                 }
                 
-                // Performance tracking
                 const updateTime = performance.now() - startTime;
                 debugLog.updates++;
                 debugLog.performance.totalTime += updateTime;
@@ -1279,7 +1261,6 @@
         
         function showDebug() {
             try {
-                // Advanced debug info
                 debugData = '========== ADVANCED DEBUG LOG ==========\n\n';
                 debugData += '--- SYSTEM INFO ---\n';
                 debugData += `Timestamp: ${new Date().toISOString()}\n`;
@@ -1291,7 +1272,8 @@
                 debugData += `Total Updates: ${debugLog.updates}\n`;
                 debugData += `Avg Update Time: ${debugLog.performance.avgUpdateTime.toFixed(2)}ms\n`;
                 debugData += `Last Update: ${new Date(debugLog.lastUpdate).toLocaleTimeString()}\n`;
-                debugData += `Uptime: ${((Date.now() - (debugLog.lastUpdate - debugLog.updates * 200)) / 1000).toFixed(0)}s\n\n`;
+                debugData += `Update Interval: 1000ms (1s)\n`;
+                debugData += `Uptime: ${((Date.now() - (debugLog.lastUpdate - debugLog.updates * 1000)) / 1000).toFixed(0)}s\n\n`;
                 
                 debugData += '--- BUBBLE STATS ---\n';
                 debugData += `Charging Active: ${isCharging}\n`;
@@ -1380,9 +1362,9 @@
             updateBattery();
         }, 300);
         
-        // Update loops
+        // CHANGED: Update interval from 200ms to 1000ms (1s)
         setInterval(checkRootStatus, 2000);
-        setInterval(updateBattery, 200);
+        setInterval(updateBattery, 1000);
     </script>
 </body>
 </html>
