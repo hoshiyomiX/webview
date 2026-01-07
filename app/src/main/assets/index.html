@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <meta name="theme-color" content="#1C1B1F">
-    <title>Battery Monitor</title>
+    <title>devBattery Monitor</title>
     <style>
         :root {
             /* Material Design 3 - Dynamic Colors */
@@ -166,6 +166,17 @@
             }
             to {
                 transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideInBottom {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
                 opacity: 1;
             }
         }
@@ -472,17 +483,18 @@
             color: var(--md-sys-color-on-tertiary-container);
         }
         
-        /* Status Text (plain, no badge/frame) */
+        /* Status Text (bottom-right corner) */
         .status-text {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
             display: inline-flex;
             align-items: center;
             gap: 8px;
             font-size: 16px;
             font-weight: 600;
-            margin-top: 14px;
             transition: all 0.4s var(--md-motion-spring);
-            animation: slideInRight 0.6s var(--md-motion-emphasized-decel) 0.3s both;
-            position: relative;
+            animation: slideInBottom 0.6s var(--md-motion-emphasized-decel) 0.3s both;
             z-index: 10;
             color: var(--md-sys-color-on-primary-container);
             opacity: 0.9;
@@ -503,6 +515,102 @@
         
         .status-not-charging .status-icon {
             animation: bypassPulse 2.5s ease-in-out infinite;
+        }
+        
+        /* Root Permission Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s var(--md-motion-emphasized);
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal {
+            background: var(--md-sys-color-surface-container-highest);
+            border-radius: 28px;
+            padding: 28px;
+            max-width: 340px;
+            width: 90%;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+            animation: scaleIn 0.4s var(--md-motion-emphasized-decel);
+        }
+        
+        .modal-icon {
+            font-size: 56px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--md-sys-color-on-surface);
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        
+        .modal-message {
+            font-size: 14px;
+            color: var(--md-sys-color-on-surface-variant);
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .modal-button {
+            flex: 1;
+            height: 48px;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s var(--md-motion-emphasized);
+        }
+        
+        .modal-button-primary {
+            background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-tertiary) 100%);
+            color: var(--md-sys-color-on-primary);
+            box-shadow: 0 4px 12px rgba(208, 188, 255, 0.4);
+        }
+        
+        .modal-button-primary:active {
+            transform: scale(0.95);
+            box-shadow: 0 8px 20px rgba(208, 188, 255, 0.6);
+        }
+        
+        .modal-button-secondary {
+            background: transparent;
+            color: var(--md-sys-color-primary);
+            border: 2px solid var(--md-sys-color-outline);
+        }
+        
+        .modal-button-secondary:active {
+            transform: scale(0.95);
+            background: rgba(208, 188, 255, 0.12);
         }
         
         /* Action Buttons */
@@ -655,11 +763,26 @@
     </style>
 </head>
 <body>
+    <!-- Root Permission Modal -->
+    <div class="modal-overlay" id="root-modal">
+        <div class="modal">
+            <div class="modal-icon">🔐</div>
+            <div class="modal-title">Root Access Required</div>
+            <div class="modal-message">
+                Advanced features like charger voltage monitoring require root access. Would you like to grant root permission?
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button modal-button-secondary" onclick="dismissRootModal()">Later</button>
+                <button class="modal-button modal-button-primary" onclick="requestRootFromModal()">Grant Root</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="container">
         <!-- Header -->
         <header class="app-header">
             <div class="header-left">
-                <h1 class="app-title">Battery Monitor</h1>
+                <h1 class="app-title">devBattery Monitor</h1>
                 <a href="https://t.me/hoshiyomi_id" class="app-subtitle">@hoshiyomi_id</a>
             </div>
             <div class="root-badge non-rooted" id="root-badge" onclick="retryRootAccess()">
@@ -682,7 +805,7 @@
                     <span class="tile-value" id="capacity-value">--</span>
                     <span class="tile-unit">%</span>
                 </div>
-                <!-- Plain status text (no badge) -->
+                <!-- Status text (bottom-right corner) -->
                 <div class="status-text" id="status-text">
                     <span class="status-icon" id="status-icon">⚡</span>
                     <span id="status-label">--</span>
@@ -758,6 +881,7 @@
         let bubbleSpawnInterval = null;
         let bubbleCount = 0;
         let lastStatus = '';  // Track last valid status to prevent undefined
+        let rootModalShown = false;  // Track if modal was shown on startup
         
         // Advanced debug logging
         const debugLog = {
@@ -784,7 +908,23 @@
             return fixed.replace(/\.0$/, '');
         }
         
-        // Retry root access (clickable badge)
+        // Show root permission modal
+        function showRootModal() {
+            document.getElementById('root-modal').classList.add('show');
+        }
+        
+        // Dismiss root modal
+        function dismissRootModal() {
+            document.getElementById('root-modal').classList.remove('show');
+        }
+        
+        // Request root from modal
+        function requestRootFromModal() {
+            dismissRootModal();
+            retryRootAccess();
+        }
+        
+        // Retry root access (clickable badge / modal)
         function retryRootAccess() {
             try {
                 debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Root retry requested' });
@@ -883,15 +1023,23 @@
                 const status = JSON.parse(statusJson);
                 
                 if (status.checked) {
-                    if (hasRoot !== status.hasRoot) {
+                    const prevRoot = hasRoot;
+                    hasRoot = status.hasRoot;
+                    
+                    // Show modal on first check if no root
+                    if (!rootModalShown && !hasRoot) {
+                        rootModalShown = true;
+                        setTimeout(() => showRootModal(), 1000);  // Show after 1s
+                    }
+                    
+                    if (prevRoot !== hasRoot) {
                         debugLog.statusChanges.push({ 
                             time: new Date().toISOString(), 
                             event: 'Root status changed',
-                            from: hasRoot,
-                            to: status.hasRoot
+                            from: prevRoot,
+                            to: hasRoot
                         });
                     }
-                    hasRoot = status.hasRoot;
                     updateRootBadge(hasRoot);
                 }
             } catch (e) {
