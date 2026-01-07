@@ -781,7 +781,6 @@
     </style>
 </head>
 <body>
-    <!-- (HTML sama seperti sebelumnya, hanya update di JavaScript) -->
     <div class="modal-overlay" id="root-modal">
         <div class="modal">
             <div class="modal-icon">🔐</div>
@@ -907,7 +906,7 @@
             themeChanges: []
         };
         
-        console.log('[INIT] ✅ UI improvements loaded');
+        console.log('[INIT] ✅ Bubble physics improved - spawn from bottom to liquid surface');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
         function applyTheme(theme) {
@@ -1053,6 +1052,7 @@
             }
         }
         
+        // 🌟 UPDATED: Bubble spawn dari dasar tile ke permukaan liquid
         function spawnRandomBubble() {
             if (!isCharging) return;
             
@@ -1060,14 +1060,21 @@
             const bubble = document.createElement('div');
             bubble.className = 'bubble';
             
-            const size = 5 + Math.random() * 10;
-            const left = 15 + Math.random() * 70;
-            const bottom = 5 + Math.random() * 10;
-            const drift = (Math.random() - 0.5) * 40;
-            const duration = 2.5 + Math.random() * 1.5;
-            const containerHeight = 200;
-            const riseDistance = (100 - currentCapacity) * (containerHeight / 100);
+            // Bubble properties
+            const size = 5 + Math.random() * 10; // 5-15px
+            const left = 15 + Math.random() * 70; // 15-85% (stay within bounds)
             
+            // 🌟 NEW: Spawn dari DASAR tile (0-3% dari bottom)
+            const bottom = 0 + Math.random() * 3; 
+            
+            const drift = (Math.random() - 0.5) * 40; // -20px to +20px
+            const duration = 2.5 + Math.random() * 1.5; // 2.5-4s
+            
+            // 🌟 NEW: Rise distance = tinggi liquid saat ini (capacity%)
+            const containerHeight = 200; // Tile height in px
+            const riseDistance = currentCapacity * (containerHeight / 100);
+            
+            // Apply styles
             bubble.style.width = size + 'px';
             bubble.style.height = size + 'px';
             bubble.style.left = left + '%';
@@ -1081,6 +1088,7 @@
             debugLog.bubbleStats.total++;
             debugLog.bubbleStats.active++;
             
+            // Remove after animation
             setTimeout(() => {
                 bubble.remove();
                 bubbleCount--;
@@ -1120,7 +1128,6 @@
             return `rgba(${r}, ${g}, ${b}, 0.75)`;
         }
         
-        // 🌟 NEW: Get ambient breathing color based on battery level
         function getAmbientColor(percentage) {
             if (percentage < 20) {
                 return 'rgba(244, 67, 54, 0.6)'; // Red
@@ -1179,7 +1186,6 @@
             }
         }
         
-        // 🌟 UPDATED: Add idle mode class for ambient breathing
         function updateLiquid(percentage, idleMode = false) {
             const liquid = document.getElementById('liquid');
             currentCapacity = percentage;
@@ -1195,7 +1201,6 @@
                 ${colorMid} 50%, 
                 ${color} 100%)`;
             
-            // 🌟 NEW: Toggle idle mode for ambient breathing
             if (idleMode) {
                 liquid.classList.add('idle-mode');
                 const ambientColor = getAmbientColor(percentage);
@@ -1322,25 +1327,25 @@
                     statusIconImg.src = 'icons/not-charging.svg';
                     detectedStatus = 'not_charging';
                     chargingActive = false;
-                    idleMode = true; // 🌟 Ambient breathing ON
+                    idleMode = true;
                 } else if (statusLower === 'full') {
                     statusText.classList.add('status-full');
                     statusIconImg.src = 'icons/full.svg';
                     detectedStatus = 'full';
                     chargingActive = false;
-                    idleMode = true; // 🌟 Ambient breathing ON
+                    idleMode = true;
                 } else if (statusLower === 'charging') {
                     statusText.classList.add('status-charging');
                     statusIconImg.src = 'icons/charging.svg';
                     detectedStatus = 'charging';
                     chargingActive = true;
-                    idleMode = false; // Bubbles ON instead
+                    idleMode = false;
                 } else if (statusLower === 'discharging') {
                     statusText.classList.add('status-discharging');
                     statusIconImg.src = 'icons/discharging.svg';
                     detectedStatus = 'discharging';
                     chargingActive = false;
-                    idleMode = true; // 🌟 Ambient breathing ON
+                    idleMode = true;
                 } else {
                     statusText.classList.add('status-unknown');
                     statusIconImg.src = 'icons/not-charging.svg';
@@ -1360,7 +1365,7 @@
                 if (debugLog.statusDetection.length > 20) debugLog.statusDetection.shift();
                 
                 toggleBubbleSpawning(chargingActive);
-                updateLiquid(capacity, idleMode); // 🌟 Pass idle mode flag
+                updateLiquid(capacity, idleMode);
                 updateVoltageTile(voltage, chargerVoltage, hasRoot, chargingActive);
                 
                 animateValue('current-value', current);
@@ -1397,6 +1402,14 @@
         function showDebug() {
             try {
                 debugData = '========== ADVANCED DEBUG LOG ==========\n\n';
+                debugData += '--- BUBBLE PHYSICS ---\n';
+                debugData += `Spawn Position: Bottom 0-3%\n`;
+                debugData += `Current Capacity: ${currentCapacity}%\n`;
+                debugData += `Liquid Height: ${currentCapacity}% of tile\n`;
+                debugData += `Rise Distance: ${currentCapacity * 2}px (${currentCapacity}% of 200px)\n`;
+                debugData += `Charging Active: ${isCharging}\n`;
+                debugData += `Bubbles Active: ${debugLog.bubbleStats.active}\n\n`;
+                
                 debugData += '--- SYSTEM INFO ---\n';
                 debugData += `Timestamp: ${new Date().toISOString()}\n`;
                 debugData += `User Agent: ${navigator.userAgent}\n`;
@@ -1416,11 +1429,6 @@
                 debugData += `Idle Ambient Breathing: ${document.getElementById('liquid').classList.contains('idle-mode') ? 'Active' : 'Stopped'}\n`;
                 debugData += `Current Ambient Color: ${getComputedStyle(document.documentElement).getPropertyValue('--ambient-color')}\n\n`;
                 
-                debugData += '--- LIQUID FILL INFO ---\n';
-                debugData += `Wave Animations: DISABLED (simple fill only)\n`;
-                debugData += `Current Capacity: ${currentCapacity}%\n`;
-                debugData += `Fill Type: Clean gradient (no waves)\n\n`;
-                
                 debugData += '--- THEME CHANGES ---\n';
                 debugLog.themeChanges.slice(-5).forEach(change => {
                     debugData += `[${new Date(change.time).toLocaleTimeString()}] ${change.from} → ${change.to} (${change.source})\n`;
@@ -1428,12 +1436,8 @@
                 debugData += '\n';
                 
                 debugData += '--- BUBBLE STATS ---\n';
-                debugData += `Charging Active: ${isCharging}\n`;
                 debugData += `Bubbles Spawned (Total): ${debugLog.bubbleStats.total}\n`;
-                debugData += `Bubbles Active (Now): ${debugLog.bubbleStats.active}\n`;
-                debugData += `Spawn Interval: ${bubbleSpawnInterval ? '400ms' : 'Stopped'}\n`;
-                debugData += `Current Capacity: ${currentCapacity}%\n`;
-                debugData += `Bubble Rise Distance: ${(100 - currentCapacity) * 2}px\n\n`;
+                debugData += `Spawn Interval: ${bubbleSpawnInterval ? '400ms' : 'Stopped'}\n\n`;
                 
                 debugData += '--- POWER CALCULATION LOG (Last 10) ---\n';
                 debugLog.powerSource.slice(-10).forEach(ps => {
