@@ -40,22 +40,22 @@
             --md-motion-spring: cubic-bezier(0.5, 1.5, 0.5, 1);
         }
         
-        /* ENHANCED Water Wave Animation - 3 layers for more visible effect */
+        /* ENHANCED Water Wave Animation - MAXIMUM VISIBILITY! */
         @keyframes wave {
             0% { transform: translateX(0) translateY(0); }
-            50% { transform: translateX(-25%) translateY(-10px); }
+            50% { transform: translateX(-25%) translateY(-40px); } /* 4x amplitude! */
             100% { transform: translateX(0) translateY(0); }
         }
         
         @keyframes wave2 {
             0% { transform: translateX(0) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-15px); }
+            50% { transform: translateX(-50%) translateY(-60px); } /* 4x amplitude! */
             100% { transform: translateX(0) translateY(0); }
         }
         
         @keyframes wave3 {
             0% { transform: translateX(0) translateY(0); }
-            50% { transform: translateX(-35%) translateY(-8px); }
+            50% { transform: translateX(-35%) translateY(-30px); } /* 3.75x amplitude! */
             100% { transform: translateX(0) translateY(0); }
         }
         
@@ -442,49 +442,46 @@
             transform-origin: center bottom;
         }
         
-        /* ENHANCED: 3-layer wave system with blur for more realistic water effect */
+        /* FIXED: Maximum visibility wave system - NO BLUR, BIGGER WAVES! */
         .liquid::before,
         .liquid::after {
             content: '';
             position: absolute;
-            top: -20px;
+            top: -40px; /* Moved higher for bigger waves */
             left: 0;
             width: 200%;
-            height: 40px;
+            height: 80px; /* 2x thicker! */
             border-radius: 45%;
+            background: inherit; /* Use liquid gradient */
         }
         
         .liquid::before {
             animation: wave 3s linear infinite;
-            opacity: 0.8;
-            filter: blur(1px);
+            opacity: 1.0; /* Fully visible! */
+            filter: none; /* NO BLUR for maximum visibility */
         }
         
         .liquid::after {
             animation: wave2 4s linear infinite;
-            opacity: 0.6;
-            filter: blur(0.5px);
+            opacity: 0.9; /* Almost fully visible */
+            filter: none; /* NO BLUR */
         }
         
-        /* Third wave layer */
+        /* Third wave layer - ENHANCED */
         .liquid-container::before {
             content: '';
             position: absolute;
-            bottom: 0;
             left: -50%;
             width: 200%;
-            height: var(--liquid-height, 0%);
+            height: 80px; /* 2x thicker! */
             pointer-events: none;
             z-index: 2;
-        }
-        
-        .liquid-container::before {
-            top: calc(100% - var(--liquid-height, 0%) - 20px);
+            top: calc(100% - var(--liquid-height, 0%) - 40px);
             animation: wave3 5s linear infinite;
-            opacity: 0.4;
-            filter: blur(1.5px);
+            opacity: 0.85; /* More visible */
+            filter: none; /* NO BLUR */
             border-radius: 45%;
-            height: 40px;
+            background: linear-gradient(180deg, rgba(244, 67, 54, 0.3) 0%, rgba(76, 175, 80, 0.3) 100%);
         }
         
         /* Random Bubbles */
@@ -523,15 +520,15 @@
             color: var(--md-sys-color-on-tertiary-container);
         }
         
-        /* Status Text (bottom-right corner) - ADJUSTED FONT SIZE 3:2 ratio */
+        /* Status Text (bottom-right corner) - FIXED: 12px font size */
         .status-text {
             position: absolute;
             bottom: 20px;
             right: 20px;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: 48px; /* 72px * 2/3 = 48px (3:2 ratio) */
+            gap: 6px;
+            font-size: 12px; /* FIXED: Changed from 48px to 12px */
             font-weight: 600;
             transition: all 0.4s var(--md-motion-spring);
             animation: slideInBottom 0.6s var(--md-motion-emphasized-decel) 0.3s both;
@@ -542,8 +539,8 @@
         
         /* Status Icon IMG */
         .status-icon-img {
-            width: 32px;
-            height: 32px;
+            width: 16px; /* Adjusted to match 12px text */
+            height: 16px;
             display: inline-block;
             vertical-align: middle;
         }
@@ -946,6 +943,7 @@
         
         // WAVE DEBUG: Initialize wave animation monitoring
         console.log('[WAVE] Initializing wave animation monitoring...');
+        console.log('[WAVE] Enhanced settings: 4x amplitude, NO blur, full opacity');
         
         // Power formatting with precision based on magnitude
         function formatPower(value) {
@@ -1156,6 +1154,11 @@
                     liquidBefore: liquidBefore.transform,
                     liquidAfter: liquidAfter.transform,
                     containerBefore: containerBefore.transform
+                },
+                waveAmplitudes: {
+                    wave1: '-40px (4x enhanced)',
+                    wave2: '-60px (4x enhanced)',
+                    wave3: '-30px (3.75x enhanced)'
                 }
             };
             
@@ -1166,11 +1169,9 @@
                 capacity: percentage + '%',
                 liquidHeight: liquid.style.height,
                 cssVarHeight: container.style.getPropertyValue('--liquid-height'),
-                waveAnimations: {
-                    wave1: '3s linear infinite (::before)',
-                    wave2: '4s linear infinite (::after)',
-                    wave3: '5s linear infinite (container::before)'
-                }
+                waveAmplitudes: '4x bigger (-40px, -60px, -30px)',
+                blurFilter: 'REMOVED for visibility',
+                opacity: 'FULL (0.85-1.0)'
             });
             
             const color = getBatteryColor(percentage);
@@ -1389,6 +1390,7 @@
                     debugData += `[${new Date(wave.time).toLocaleTimeString()}] Capacity: ${wave.capacity}%\n`;
                     debugData += `  Liquid Height: ${wave.liquidHeight}\n`;
                     debugData += `  CSS Var: ${wave.containerLiquidHeight}\n`;
+                    debugData += `  Amplitudes: wave(-40px) wave2(-60px) wave3(-30px)\n`;
                     debugData += `  Animations: ${JSON.stringify(wave.animations)}\n`;
                 });
                 debugData += '\n';
@@ -1501,11 +1503,9 @@
                     frame: frameCount,
                     liquidHeight: liquid.style.height,
                     cssVar: container.style.getPropertyValue('--liquid-height'),
-                    animationRunning: {
-                        wave: 'wave 3s linear infinite',
-                        wave2: 'wave2 4s linear infinite',
-                        wave3: 'wave3 5s linear infinite'
-                    }
+                    enhancedAmplitudes: 'wave(-40px) wave2(-60px) wave3(-30px)',
+                    blurRemoved: 'YES',
+                    fullOpacity: 'YES (0.85-1.0)'
                 });
             }
             requestAnimationFrame(checkWaveAnimations);
