@@ -1143,17 +1143,19 @@
                 const temperature = formatNumber(tempRaw / 10, 1);
                 const chargerVoltage = formatNumber(chargerVoltageRaw / 1000, 2);
                 
-                // FIXED: Separate power calculation by root status (NO MIXING)
+                // FIXED: Correct power calculation with proper unit conversion
                 let power;
                 let powerSourceMethod = '';
                 
                 if (hasRoot && powerRaw > 0) {
-                    // ROOT PATH: Use /sys/class/power_supply/battery/power_now
+                    // ROOT PATH: Use /sys/class/power_supply/battery/power_now (already in µW)
                     power = formatPower(powerRaw / 1000000);
                     powerSourceMethod = '/sys/power_now (root)';
                 } else {
                     // NON-ROOT PATH: Calculate from voltage × current
-                    power = formatPower(Math.abs((voltageRaw * currentRaw) / 1000000));
+                    // voltageRaw: mV (10^-3 V), currentRaw: µA (10^-6 A)
+                    // mV × µA = 10^-3 × 10^-6 = 10^-9 W → divide by 1,000,000,000
+                    power = formatPower(Math.abs((voltageRaw * currentRaw) / 1000000000));
                     powerSourceMethod = 'calculated (V×A)';
                 }
                 
@@ -1162,7 +1164,9 @@
                     method: powerSourceMethod, 
                     value: power,
                     hasRoot: hasRoot,
-                    powerRaw: powerRaw
+                    powerRaw: powerRaw,
+                    voltageRaw: voltageRaw,
+                    currentRaw: currentRaw
                 });
                 if (debugLog.powerSource.length > 20) debugLog.powerSource.shift();
                 
@@ -1286,7 +1290,10 @@
                 
                 debugData += '--- POWER CALCULATION LOG (Last 10) ---\n';
                 debugLog.powerSource.slice(-10).forEach(ps => {
-                    debugData += `[${new Date(ps.time).toLocaleTimeString()}] Root: ${ps.hasRoot} | powerRaw: ${ps.powerRaw} | Method: ${ps.method} | Value: ${ps.value}W\n`;
+                    debugData += `[${new Date(ps.time).toLocaleTimeString()}] ${ps.method}\n`;
+                    debugData += `  Root: ${ps.hasRoot} | powerRaw: ${ps.powerRaw} µW\n`;
+                    debugData += `  V: ${ps.voltageRaw} mV | I: ${ps.currentRaw} µA\n`;
+                    debugData += `  Result: ${ps.value}W\n`;
                 });
                 debugData += '\n';
                 
