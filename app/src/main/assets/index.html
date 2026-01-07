@@ -907,7 +907,7 @@
             themeChanges: []
         };
         
-        console.log('[INIT] ✅ Header refined + bubble fade aligned to liquid surface');
+        console.log('[INIT] ✅ Power calculation fixed - uses charger voltage when rooted & charging');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
         function applyTheme(theme) {
@@ -1277,15 +1277,26 @@
                 const temperature = formatNumber(tempRaw / 10, 1);
                 const chargerVoltage = formatNumber(chargerVoltageRaw / 1000, 2);
                 
+                // ⚡ DETERMINE CHARGING STATUS FIRST
+                const statusLower = lastStatus.toLowerCase();
+                const chargingActive = (statusLower === 'charging');
+                
+                // ⚡ FIXED POWER CALCULATION - USE CHARGER VOLTAGE WHEN ROOTED & CHARGING
                 let power;
                 let powerSourceMethod = '';
                 
                 if (hasRoot && powerRaw > 0) {
+                    // Priority 1: Direct sysfs power reading
                     power = formatPower(powerRaw / 1000000);
-                    powerSourceMethod = '/sys/power_now (root)';
+                    powerSourceMethod = '/sys/power_now (sysfs)';
+                } else if (hasRoot && chargingActive && chargerVoltageRaw >= 1000) {
+                    // Priority 2: Use CHARGER voltage for accurate charging power
+                    power = formatPower(Math.abs((chargerVoltageRaw * currentRaw) / 1000000000));
+                    powerSourceMethod = `calculated (Charger ${formatNumber(chargerVoltageRaw/1000, 2)}V × ${current}mA)`;
                 } else {
+                    // Priority 3: Fallback to battery voltage
                     power = formatPower(Math.abs((voltageRaw * currentRaw) / 1000000000));
-                    powerSourceMethod = 'calculated (V×A)';
+                    powerSourceMethod = `calculated (Battery ${voltage}V × ${current}mA)`;
                 }
                 
                 debugLog.powerSource.push({ 
@@ -1293,8 +1304,10 @@
                     method: powerSourceMethod, 
                     value: power,
                     hasRoot: hasRoot,
+                    chargingActive: chargingActive,
                     powerRaw: powerRaw,
                     voltageRaw: voltageRaw,
+                    chargerVoltageRaw: chargerVoltageRaw,
                     currentRaw: currentRaw
                 });
                 if (debugLog.powerSource.length > 20) debugLog.powerSource.shift();
@@ -1304,7 +1317,6 @@
                 const statusText = document.getElementById('status-text');
                 const statusLabel = document.getElementById('status-label');
                 const statusIconImg = document.getElementById('status-icon-img');
-                const statusLower = lastStatus.toLowerCase();
                 
                 const prevStatus = statusLabel.textContent;
                 if (prevStatus !== lastStatus && lastStatus !== "Unknown") {
@@ -1320,38 +1332,32 @@
                 statusText.className = 'status-text';
                 
                 let detectedStatus = '';
-                let chargingActive = false;
                 let idleMode = false;
                 
                 if (statusLower === 'not charging') {
                     statusText.classList.add('status-not-charging');
                     statusIconImg.src = 'icons/not-charging.svg';
                     detectedStatus = 'not_charging';
-                    chargingActive = false;
                     idleMode = true;
                 } else if (statusLower === 'full') {
                     statusText.classList.add('status-full');
                     statusIconImg.src = 'icons/full.svg';
                     detectedStatus = 'full';
-                    chargingActive = false;
                     idleMode = true;
                 } else if (statusLower === 'charging') {
                     statusText.classList.add('status-charging');
                     statusIconImg.src = 'icons/charging.svg';
                     detectedStatus = 'charging';
-                    chargingActive = true;
                     idleMode = false;
                 } else if (statusLower === 'discharging') {
                     statusText.classList.add('status-discharging');
                     statusIconImg.src = 'icons/discharging.svg';
                     detectedStatus = 'discharging';
-                    chargingActive = false;
                     idleMode = true;
                 } else {
                     statusText.classList.add('status-unknown');
                     statusIconImg.src = 'icons/not-charging.svg';
                     detectedStatus = 'unknown';
-                    chargingActive = false;
                     idleMode = false;
                 }
                 
@@ -1443,8 +1449,8 @@
                 debugData += '--- POWER CALCULATION LOG (Last 10) ---\n';
                 debugLog.powerSource.slice(-10).forEach(ps => {
                     debugData += `[${new Date(ps.time).toLocaleTimeString()}] ${ps.method}\n`;
-                    debugData += `  Root: ${ps.hasRoot} | powerRaw: ${ps.powerRaw} µW\n`;
-                    debugData += `  V: ${ps.voltageRaw} mV | I: ${ps.currentRaw} µA\n`;
+                    debugData += `  Root: ${ps.hasRoot} | Charging: ${ps.chargingActive} | powerRaw: ${ps.powerRaw} µW\n`;
+                    debugData += `  Battery V: ${ps.voltageRaw} mV | Charger V: ${ps.chargerVoltageRaw} mV | I: ${ps.currentRaw} µA\n`;
                     debugData += `  Result: ${ps.value}W\n`;
                 });
                 debugData += '\n';
