@@ -895,7 +895,7 @@
             powerSource: []
         };
         
-        // IMPROVED: Smart power formatting (precision based on magnitude)
+        // Power formatting with precision based on magnitude
         function formatPower(value) {
             const num = parseFloat(value);
             if (isNaN(num)) return value;
@@ -903,9 +903,7 @@
             // Cap at 99.9W maximum to prevent tile overflow
             const capped = Math.min(99.9, num);
             
-            // Precision logic:
-            // 0-9.99W   → 2 decimals (e.g., "3.45 W")
-            // 10-99.9W  → 1 decimal  (e.g., "15.7 W")
+            // 0-9.99W → 2 decimals, 10-99.9W → 1 decimal
             if (capped < 10) {
                 return capped.toFixed(2).replace(/\.00$/, '');
             } else {
@@ -913,7 +911,7 @@
             }
         }
         
-        // Standard number formatting (for voltage, temp, etc.)
+        // Standard number formatting
         function formatNumber(value, decimals = 1) {
             const num = parseFloat(value);
             if (isNaN(num)) return value;
@@ -1145,13 +1143,16 @@
                 const temperature = formatNumber(tempRaw / 10, 1);
                 const chargerVoltage = formatNumber(chargerVoltageRaw / 1000, 2);
                 
-                // IMPROVED: Power calculation with smart formatting
+                // FIXED: Separate power calculation by root status (NO MIXING)
                 let power;
                 let powerSourceMethod = '';
-                if (powerRaw > 0) {
+                
+                if (hasRoot && powerRaw > 0) {
+                    // ROOT PATH: Use /sys/class/power_supply/battery/power_now
                     power = formatPower(powerRaw / 1000000);
-                    powerSourceMethod = '/sys/power_now';
+                    powerSourceMethod = '/sys/power_now (root)';
                 } else {
+                    // NON-ROOT PATH: Calculate from voltage × current
                     power = formatPower(Math.abs((voltageRaw * currentRaw) / 1000000));
                     powerSourceMethod = 'calculated (V×A)';
                 }
@@ -1159,7 +1160,9 @@
                 debugLog.powerSource.push({ 
                     time: Date.now(), 
                     method: powerSourceMethod, 
-                    value: power 
+                    value: power,
+                    hasRoot: hasRoot,
+                    powerRaw: powerRaw
                 });
                 if (debugLog.powerSource.length > 20) debugLog.powerSource.shift();
                 
@@ -1283,7 +1286,7 @@
                 
                 debugData += '--- POWER CALCULATION LOG (Last 10) ---\n';
                 debugLog.powerSource.slice(-10).forEach(ps => {
-                    debugData += `[${new Date(ps.time).toLocaleTimeString()}] Method: ${ps.method} | Value: ${ps.value}W\n`;
+                    debugData += `[${new Date(ps.time).toLocaleTimeString()}] Root: ${ps.hasRoot} | powerRaw: ${ps.powerRaw} | Method: ${ps.method} | Value: ${ps.value}W\n`;
                 });
                 debugData += '\n';
                 
@@ -1362,7 +1365,6 @@
             updateBattery();
         }, 300);
         
-        // CHANGED: Update interval from 200ms to 1000ms (1s)
         setInterval(checkRootStatus, 2000);
         setInterval(updateBattery, 1000);
     </script>
