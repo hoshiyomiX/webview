@@ -40,94 +40,6 @@
             --md-motion-spring: cubic-bezier(0.5, 1.5, 0.5, 1);
         }
         
-        /* Water Wave Animation */
-        @keyframes wave {
-            0% { transform: translateX(0) translateY(0); }
-            50% { transform: translateX(-25%) translateY(-5px); }
-            100% { transform: translateX(0) translateY(0); }
-        }
-        
-        @keyframes wave2 {
-            0% { transform: translateX(0) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-10px); }
-            100% { transform: translateX(0) translateY(0); }
-        }
-        
-        /* Charging Bubble Effect (Random spawn) */
-        @keyframes bubbleRise {
-            0% {
-                transform: translateY(0) translateX(0) scale(0);
-                opacity: 0;
-            }
-            5% {
-                opacity: 1;
-                transform: translateY(-10px) translateX(0) scale(1);
-            }
-            50% {
-                opacity: 0.8;
-            }
-            95% {
-                opacity: 0.3;
-            }
-            100% {
-                transform: translateY(-180px) translateX(var(--drift-x, 0)) scale(0.8);
-                opacity: 0;
-            }
-        }
-        
-        /* Electric/Lightning Effect */
-        @keyframes electricPulse {
-            0%, 100% {
-                filter: drop-shadow(0 0 2px #FFC107) drop-shadow(0 0 4px #FFEB3B);
-                transform: scale(1);
-            }
-            10% {
-                filter: drop-shadow(0 0 8px #FFC107) drop-shadow(0 0 16px #FFEB3B) drop-shadow(0 0 24px #FFF9C4);
-                transform: scale(1.15);
-            }
-            20% {
-                filter: drop-shadow(0 0 2px #FFC107);
-                transform: scale(0.95);
-            }
-            30% {
-                filter: drop-shadow(0 0 12px #FFC107) drop-shadow(0 0 20px #FFEB3B);
-                transform: scale(1.1);
-            }
-            40% {
-                filter: drop-shadow(0 0 2px #FFC107);
-                transform: scale(1);
-            }
-        }
-        
-        /* Discharging drain effect */
-        @keyframes drainPulse {
-            0%, 100% {
-                filter: drop-shadow(0 0 2px #F44336) drop-shadow(0 0 4px #E57373);
-                transform: scale(1);
-            }
-            50% {
-                filter: drop-shadow(0 0 8px #F44336) drop-shadow(0 0 12px #E57373);
-                transform: scale(1.08);
-            }
-        }
-        
-        /* Bypass icon pulse */
-        @keyframes bypassPulse {
-            0%, 100% {
-                filter: drop-shadow(0 0 2px #2196F3) drop-shadow(0 0 4px #64B5F6);
-                transform: scale(1);
-            }
-            50% {
-                filter: drop-shadow(0 0 8px #2196F3) drop-shadow(0 0 12px #64B5F6);
-                transform: scale(1.08);
-            }
-        }
-        
-        @keyframes shimmerFlow {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-        
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -376,12 +288,12 @@
             opacity: 0.7;
         }
         
-        /* Hero Battery Tile with Liquid */
+        /* Hero Battery Tile with WebGL Fluid */
         .tile-large {
             grid-column: span 2;
             background: linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, var(--md-sys-color-tertiary-container) 100%);
             padding: 28px;
-            min-height: 200px;
+            min-height: 240px;
             box-shadow: 0 8px 24px rgba(79, 55, 139, 0.4);
         }
         
@@ -403,58 +315,17 @@
             opacity: 0.8;
         }
         
-        /* Liquid Water Container */
-        .liquid-container {
+        /* WebGL Fluid Canvas Container */
+        #fluid-canvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
             border-radius: 24px;
             pointer-events: none;
             z-index: 1;
-        }
-        
-        .liquid {
-            position: absolute;
-            bottom: 0;
-            left: -50%;
-            width: 200%;
-            height: 0%;
-            transition: height 0.8s var(--md-motion-emphasized), background 0.5s ease;
-            transform-origin: center bottom;
-        }
-        
-        .liquid::before,
-        .liquid::after {
-            content: '';
-            position: absolute;
-            top: -20px;
-            left: 0;
-            width: 200%;
-            height: 40px;
-            border-radius: 45%;
-        }
-        
-        .liquid::before {
-            animation: wave 3s linear infinite;
-            opacity: 0.8;
-        }
-        
-        .liquid::after {
-            animation: wave2 4s linear infinite;
-            opacity: 0.5;
-        }
-        
-        /* Random Bubbles */
-        .bubble {
-            position: absolute;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.4) 100%);
-            border-radius: 50%;
-            animation: bubbleRise 3s ease-out forwards;
-            pointer-events: none;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.8);
+            opacity: 0.85;
         }
         
         /* Voltage Tile - Dual Mode (Battery Voltage / Charger Voltage) */
@@ -502,19 +373,6 @@
         
         .status-icon {
             font-size: 20px;
-        }
-        
-        /* Electric effect for charging icon */
-        .status-charging .status-icon {
-            animation: electricPulse 2s ease-in-out infinite;
-        }
-        
-        .status-discharging .status-icon {
-            animation: drainPulse 2.5s ease-in-out infinite;
-        }
-        
-        .status-not-charging .status-icon {
-            animation: bypassPulse 2.5s ease-in-out infinite;
         }
         
         /* Root Permission Modal */
@@ -793,12 +651,10 @@
         
         <!-- Tiles Grid -->
         <div class="tiles-grid">
-            <!-- Hero Battery Tile with Liquid -->
+            <!-- Hero Battery Tile with WebGL Fluid -->
             <div class="tile tile-large" id="tile-capacity">
-                <!-- Liquid Water Animation -->
-                <div class="liquid-container" id="liquid-container">
-                    <div class="liquid" id="liquid"></div>
-                </div>
+                <!-- WebGL Fluid Canvas -->
+                <canvas id="fluid-canvas"></canvas>
                 
                 <div class="tile-label">Battery</div>
                 <div class="tile-value-wrapper">
@@ -874,57 +730,468 @@
     </div>
 
     <script>
+        // ========== WEBGL FLUID SIMULATION ENGINE ==========
+        class WebGLFluid {
+            constructor(canvas) {
+                this.canvas = canvas;
+                const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true, alpha: true });
+                if (!gl) {
+                    console.error('WebGL not supported');
+                    return;
+                }
+                this.gl = gl;
+                
+                // Simulation parameters
+                this.config = {
+                    simResolution: 128,
+                    dyeResolution: 512,
+                    densityDissipation: 0.98,
+                    velocityDissipation: 0.99,
+                    pressure: 0.8,
+                    curl: 20,
+                    splatRadius: 0.005
+                };
+                
+                this.pointers = [];
+                this.splatStack = [];
+                
+                this.init();
+            }
+            
+            init() {
+                const gl = this.gl;
+                
+                // Compile shaders
+                this.programs = this.compilePrograms();
+                
+                // Create framebuffers
+                this.density = this.createDoubleFBO(this.config.dyeResolution, gl.RGBA, gl.LINEAR);
+                this.velocity = this.createDoubleFBO(this.config.simResolution, gl.RG, gl.LINEAR);
+                this.pressure = this.createDoubleFBO(this.config.simResolution, gl.R, gl.NEAREST);
+                this.divergence = this.createFBO(this.config.simResolution, gl.R, gl.NEAREST);
+                this.curl = this.createFBO(this.config.simResolution, gl.R, gl.NEAREST);
+                
+                // Resize to canvas
+                this.resize();
+            }
+            
+            compilePrograms() {
+                const gl = this.gl;
+                
+                // Vertex shader (shared)
+                const vertexShader = this.compileShader(gl.VERTEX_SHADER, `
+                    precision highp float;
+                    attribute vec2 aPosition;
+                    varying vec2 vUv;
+                    void main () {
+                        vUv = aPosition * 0.5 + 0.5;
+                        gl_Position = vec4(aPosition, 0.0, 1.0);
+                    }
+                `);
+                
+                // Advection shader
+                const advectionShader = this.compileShader(gl.FRAGMENT_SHADER, `
+                    precision highp float;
+                    precision highp sampler2D;
+                    varying vec2 vUv;
+                    uniform sampler2D uVelocity;
+                    uniform sampler2D uSource;
+                    uniform vec2 texelSize;
+                    uniform float dt;
+                    uniform float dissipation;
+                    
+                    void main () {
+                        vec2 coord = vUv - dt * texture2D(uVelocity, vUv).xy * texelSize;
+                        gl_FragColor = dissipation * texture2D(uSource, coord);
+                    }
+                `);
+                
+                // Divergence shader
+                const divergenceShader = this.compileShader(gl.FRAGMENT_SHADER, `
+                    precision highp float;
+                    precision highp sampler2D;
+                    varying vec2 vUv;
+                    uniform sampler2D uVelocity;
+                    uniform vec2 texelSize;
+                    
+                    void main () {
+                        vec2 L = texture2D(uVelocity, vUv - vec2(texelSize.x, 0.0)).xy;
+                        vec2 R = texture2D(uVelocity, vUv + vec2(texelSize.x, 0.0)).xy;
+                        vec2 B = texture2D(uVelocity, vUv - vec2(0.0, texelSize.y)).xy;
+                        vec2 T = texture2D(uVelocity, vUv + vec2(0.0, texelSize.y)).xy;
+                        float div = 0.5 * (R.x - L.x + T.y - B.y);
+                        gl_FragColor = vec4(div, 0.0, 0.0, 1.0);
+                    }
+                `);
+                
+                // Pressure shader
+                const pressureShader = this.compileShader(gl.FRAGMENT_SHADER, `
+                    precision highp float;
+                    precision highp sampler2D;
+                    varying vec2 vUv;
+                    uniform sampler2D uPressure;
+                    uniform sampler2D uDivergence;
+                    uniform vec2 texelSize;
+                    
+                    void main () {
+                        float L = texture2D(uPressure, vUv - vec2(texelSize.x, 0.0)).x;
+                        float R = texture2D(uPressure, vUv + vec2(texelSize.x, 0.0)).x;
+                        float B = texture2D(uPressure, vUv - vec2(0.0, texelSize.y)).x;
+                        float T = texture2D(uPressure, vUv + vec2(0.0, texelSize.y)).x;
+                        float divergence = texture2D(uDivergence, vUv).x;
+                        float pressure = (L + R + B + T - divergence) * 0.25;
+                        gl_FragColor = vec4(pressure, 0.0, 0.0, 1.0);
+                    }
+                `);
+                
+                // Gradient subtract shader
+                const gradientSubtractShader = this.compileShader(gl.FRAGMENT_SHADER, `
+                    precision highp float;
+                    precision highp sampler2D;
+                    varying vec2 vUv;
+                    uniform sampler2D uPressure;
+                    uniform sampler2D uVelocity;
+                    uniform vec2 texelSize;
+                    
+                    void main () {
+                        float L = texture2D(uPressure, vUv - vec2(texelSize.x, 0.0)).x;
+                        float R = texture2D(uPressure, vUv + vec2(texelSize.x, 0.0)).x;
+                        float B = texture2D(uPressure, vUv - vec2(0.0, texelSize.y)).x;
+                        float T = texture2D(uPressure, vUv + vec2(0.0, texelSize.y)).x;
+                        vec2 velocity = texture2D(uVelocity, vUv).xy;
+                        velocity.xy -= vec2(R - L, T - B);
+                        gl_FragColor = vec4(velocity, 0.0, 1.0);
+                    }
+                `);
+                
+                // Display shader
+                const displayShader = this.compileShader(gl.FRAGMENT_SHADER, `
+                    precision highp float;
+                    precision highp sampler2D;
+                    varying vec2 vUv;
+                    uniform sampler2D uTexture;
+                    
+                    void main () {
+                        gl_FragColor = texture2D(uTexture, vUv);
+                    }
+                `);
+                
+                // Splat shader
+                const splatShader = this.compileShader(gl.FRAGMENT_SHADER, `
+                    precision highp float;
+                    precision highp sampler2D;
+                    varying vec2 vUv;
+                    uniform sampler2D uTarget;
+                    uniform float aspectRatio;
+                    uniform vec3 color;
+                    uniform vec2 point;
+                    uniform float radius;
+                    
+                    void main () {
+                        vec2 p = vUv - point.xy;
+                        p.x *= aspectRatio;
+                        vec3 splat = exp(-dot(p, p) / radius) * color;
+                        vec3 base = texture2D(uTarget, vUv).xyz;
+                        gl_FragColor = vec4(base + splat, 1.0);
+                    }
+                `);
+                
+                return {
+                    advection: this.createProgram(vertexShader, advectionShader),
+                    divergence: this.createProgram(vertexShader, divergenceShader),
+                    pressure: this.createProgram(vertexShader, pressureShader),
+                    gradientSubtract: this.createProgram(vertexShader, gradientSubtractShader),
+                    display: this.createProgram(vertexShader, displayShader),
+                    splat: this.createProgram(vertexShader, splatShader)
+                };
+            }
+            
+            compileShader(type, source) {
+                const gl = this.gl;
+                const shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+                    gl.deleteShader(shader);
+                    return null;
+                }
+                
+                return shader;
+            }
+            
+            createProgram(vertexShader, fragmentShader) {
+                const gl = this.gl;
+                const program = gl.createProgram();
+                gl.attachShader(program, vertexShader);
+                gl.attachShader(program, fragmentShader);
+                gl.linkProgram(program);
+                
+                if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                    console.error('Program link error:', gl.getProgramInfoLog(program));
+                    return null;
+                }
+                
+                return program;
+            }
+            
+            createFBO(resolution, internalFormat, filter) {
+                const gl = this.gl;
+                const texture = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, resolution, resolution, 0, internalFormat, gl.FLOAT, null);
+                
+                const fbo = gl.createFramebuffer();
+                gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+                gl.viewport(0, 0, resolution, resolution);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                
+                return { texture, fbo, width: resolution, height: resolution };
+            }
+            
+            createDoubleFBO(resolution, internalFormat, filter) {
+                return {
+                    read: this.createFBO(resolution, internalFormat, filter),
+                    write: this.createFBO(resolution, internalFormat, filter),
+                    swap() {
+                        const temp = this.read;
+                        this.read = this.write;
+                        this.write = temp;
+                    }
+                };
+            }
+            
+            resize() {
+                const canvas = this.canvas;
+                const parent = canvas.parentElement;
+                canvas.width = parent.clientWidth;
+                canvas.height = parent.clientHeight;
+            }
+            
+            splat(x, y, dx, dy, color) {
+                const gl = this.gl;
+                const program = this.programs.splat;
+                
+                gl.useProgram(program);
+                gl.uniform1i(gl.getUniformLocation(program, 'uTarget'), this.velocity.read.texture);
+                gl.uniform1f(gl.getUniformLocation(program, 'aspectRatio'), this.canvas.width / this.canvas.height);
+                gl.uniform2f(gl.getUniformLocation(program, 'point'), x / this.canvas.width, 1.0 - y / this.canvas.height);
+                gl.uniform3f(gl.getUniformLocation(program, 'color'), dx, -dy, 1.0);
+                gl.uniform1f(gl.getUniformLocation(program, 'radius'), this.config.splatRadius);
+                
+                this.blit(this.velocity.write.fbo);
+                this.velocity.swap();
+                
+                gl.uniform1i(gl.getUniformLocation(program, 'uTarget'), this.density.read.texture);
+                gl.uniform3f(gl.getUniformLocation(program, 'color'), color.r, color.g, color.b);
+                this.blit(this.density.write.fbo);
+                this.density.swap();
+            }
+            
+            blit(destination) {
+                const gl = this.gl;
+                gl.bindFramebuffer(gl.FRAMEBUFFER, destination);
+                gl.drawArrays(gl.TRIANGLES, 0, 3);
+            }
+            
+            step(dt) {
+                const gl = this.gl;
+                
+                // Advection
+                gl.useProgram(this.programs.advection);
+                gl.uniform2f(gl.getUniformLocation(this.programs.advection, 'texelSize'), 1.0 / this.config.simResolution, 1.0 / this.config.simResolution);
+                gl.uniform1f(gl.getUniformLocation(this.programs.advection, 'dt'), dt);
+                gl.uniform1f(gl.getUniformLocation(this.programs.advection, 'dissipation'), this.config.velocityDissipation);
+                gl.uniform1i(gl.getUniformLocation(this.programs.advection, 'uVelocity'), this.velocity.read.texture);
+                gl.uniform1i(gl.getUniformLocation(this.programs.advection, 'uSource'), this.velocity.read.texture);
+                this.blit(this.velocity.write.fbo);
+                this.velocity.swap();
+                
+                // Advect dye
+                gl.uniform1f(gl.getUniformLocation(this.programs.advection, 'dissipation'), this.config.densityDissipation);
+                gl.uniform1i(gl.getUniformLocation(this.programs.advection, 'uVelocity'), this.velocity.read.texture);
+                gl.uniform1i(gl.getUniformLocation(this.programs.advection, 'uSource'), this.density.read.texture);
+                this.blit(this.density.write.fbo);
+                this.density.swap();
+                
+                // Pressure solve
+                for (let i = 0; i < 20; i++) {
+                    gl.useProgram(this.programs.pressure);
+                    gl.uniform2f(gl.getUniformLocation(this.programs.pressure, 'texelSize'), 1.0 / this.config.simResolution, 1.0 / this.config.simResolution);
+                    gl.uniform1i(gl.getUniformLocation(this.programs.pressure, 'uPressure'), this.pressure.read.texture);
+                    gl.uniform1i(gl.getUniformLocation(this.programs.pressure, 'uDivergence'), this.divergence.texture);
+                    this.blit(this.pressure.write.fbo);
+                    this.pressure.swap();
+                }
+                
+                // Gradient subtract
+                gl.useProgram(this.programs.gradientSubtract);
+                gl.uniform2f(gl.getUniformLocation(this.programs.gradientSubtract, 'texelSize'), 1.0 / this.config.simResolution, 1.0 / this.config.simResolution);
+                gl.uniform1i(gl.getUniformLocation(this.programs.gradientSubtract, 'uPressure'), this.pressure.read.texture);
+                gl.uniform1i(gl.getUniformLocation(this.programs.gradientSubtract, 'uVelocity'), this.velocity.read.texture);
+                this.blit(this.velocity.write.fbo);
+                this.velocity.swap();
+            }
+            
+            render() {
+                const gl = this.gl;
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+                gl.useProgram(this.programs.display);
+                gl.uniform1i(gl.getUniformLocation(this.programs.display, 'uTexture'), this.density.read.texture);
+                gl.drawArrays(gl.TRIANGLES, 0, 3);
+            }
+        }
+        
+        // ========== MAIN APP LOGIC ==========
         let debugData = '';
         let hasRoot = false;
         let previousValues = {};
         let isCharging = false;
-        let bubbleSpawnInterval = null;
-        let bubbleCount = 0;
-        let lastStatus = '';  // Track last valid status to prevent undefined
-        let rootModalShown = false;  // Track if modal was shown on startup
+        let lastStatus = '';
+        let rootModalShown = false;
+        let fluidSim = null;
+        let motionSensors = { accel: null, gyro: null };
         
-        // Advanced debug logging
         const debugLog = {
             updates: 0,
             lastUpdate: Date.now(),
             batteryHistory: [],
             statusChanges: [],
-            bubbleStats: { total: 0, active: 0 },
             performance: { avgUpdateTime: 0, totalTime: 0 },
             errors: [],
-            statusDetection: [],
-            powerSource: []  // Track power calculation source
+            fluidStats: { splats: 0, fps: 0 },
+            sensors: { accelSupported: false, gyroSupported: false, accelActive: false, gyroActive: false }
         };
         
-        // Format number: max 2 digits, 1 decimal, hide .0
+        // Initialize WebGL Fluid
+        function initFluid() {
+            try {
+                const canvas = document.getElementById('fluid-canvas');
+                fluidSim = new WebGLFluid(canvas);
+                debugLog.fluidStats.initialized = true;
+                
+                // Start render loop
+                let lastTime = Date.now();
+                function animate() {
+                    const now = Date.now();
+                    const dt = Math.min((now - lastTime) / 1000, 0.016);
+                    lastTime = now;
+                    
+                    if (fluidSim) {
+                        fluidSim.step(dt);
+                        fluidSim.render();
+                        debugLog.fluidStats.fps = Math.round(1 / dt);
+                    }
+                    
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            } catch (e) {
+                debugLog.errors.push({ time: new Date().toISOString(), error: 'Fluid init: ' + e.message });
+                console.error('Fluid initialization failed:', e);
+            }
+        }
+        
+        // Initialize Device Motion Sensors
+        function initSensors() {
+            // Check Accelerometer support
+            if (typeof Accelerometer !== 'undefined') {
+                try {
+                    const accel = new Accelerometer({ frequency: 60, referenceFrame: 'screen' });
+                    accel.addEventListener('reading', () => {
+                        if (fluidSim && accel.x !== null) {
+                            // Apply tilt-based force to fluid
+                            const forceX = accel.x * 0.0001;
+                            const forceY = accel.y * 0.0001;
+                            const centerX = fluidSim.canvas.width / 2;
+                            const centerY = fluidSim.canvas.height / 2;
+                            
+                            fluidSim.splat(centerX, centerY, forceX, forceY, { r: 0.5, g: 0.3, b: 0.8 });
+                            debugLog.fluidStats.splats++;
+                        }
+                    });
+                    accel.start();
+                    motionSensors.accel = accel;
+                    debugLog.sensors.accelSupported = true;
+                    debugLog.sensors.accelActive = true;
+                } catch (e) {
+                    debugLog.errors.push({ time: new Date().toISOString(), error: 'Accelerometer: ' + e.message });
+                }
+            }
+            
+            // Check Gyroscope support
+            if (typeof Gyroscope !== 'undefined') {
+                try {
+                    const gyro = new Gyroscope({ frequency: 30 });
+                    gyro.addEventListener('reading', () => {
+                        if (fluidSim && gyro.z !== null && Math.abs(gyro.z) > 0.5) {
+                            // Create swirl on rotation
+                            const randX = Math.random() * fluidSim.canvas.width;
+                            const randY = Math.random() * fluidSim.canvas.height;
+                            fluidSim.splat(randX, randY, gyro.z * 0.1, 0, { r: 0.8, g: 0.5, b: 0.3 });
+                            debugLog.fluidStats.splats++;
+                        }
+                    });
+                    gyro.start();
+                    motionSensors.gyro = gyro;
+                    debugLog.sensors.gyroSupported = true;
+                    debugLog.sensors.gyroActive = true;
+                } catch (e) {
+                    debugLog.errors.push({ time: new Date().toISOString(), error: 'Gyroscope: ' + e.message });
+                }
+            }
+        }
+        
+        // Update fluid color based on battery percentage
+        function updateFluidColor(capacity) {
+            if (!fluidSim) return;
+            
+            let color;
+            if (capacity < 20) {
+                color = { r: 0.96, g: 0.26, b: 0.21 };  // Red
+            } else if (capacity < 50) {
+                color = { r: 1.0, g: 0.76, b: 0.03 };   // Yellow
+            } else {
+                color = { r: 0.30, g: 0.69, b: 0.31 };  // Green
+            }
+            
+            // Spawn colored particles when charging
+            if (isCharging && Math.random() < 0.3) {
+                const x = Math.random() * fluidSim.canvas.width;
+                const y = fluidSim.canvas.height * 0.9;  // Bottom spawn
+                fluidSim.splat(x, y, 0, -0.02, color);  // Upward velocity
+                debugLog.fluidStats.splats++;
+            }
+        }
+        
         function formatNumber(value, decimals = 1) {
             const num = parseFloat(value);
             if (isNaN(num)) return value;
-            
-            // Limit to 2 digits before decimal (0-99.9)
             const limited = Math.min(99.9, num);
             const fixed = limited.toFixed(decimals);
-            // Remove .0 decimal
             return fixed.replace(/\.0$/, '');
         }
         
-        // Show root permission modal
         function showRootModal() {
             document.getElementById('root-modal').classList.add('show');
         }
         
-        // Dismiss root modal
         function dismissRootModal() {
             document.getElementById('root-modal').classList.remove('show');
         }
         
-        // Request root from modal
         function requestRootFromModal() {
             dismissRootModal();
             retryRootAccess();
         }
         
-        // Retry root access (clickable badge / modal)
         function retryRootAccess() {
             try {
                 debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Root retry requested' });
@@ -945,78 +1212,6 @@
             }
         }
         
-        // Random bubble spawner (ONLY when charging)
-        function spawnRandomBubble() {
-            if (!isCharging) return;
-            
-            const container = document.getElementById('liquid-container');
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-            
-            // Random properties
-            const size = 5 + Math.random() * 10; // 5-15px
-            const left = 15 + Math.random() * 70; // 15%-85%
-            const bottom = 5 + Math.random() * 10; // 5%-15%
-            const drift = (Math.random() - 0.5) * 40; // -20px to +20px horizontal drift
-            const duration = 2.5 + Math.random() * 1.5; // 2.5-4s
-            
-            bubble.style.width = size + 'px';
-            bubble.style.height = size + 'px';
-            bubble.style.left = left + '%';
-            bubble.style.bottom = bottom + '%';
-            bubble.style.setProperty('--drift-x', drift + 'px');
-            bubble.style.animationDuration = duration + 's';
-            
-            container.appendChild(bubble);
-            bubbleCount++;
-            debugLog.bubbleStats.total++;
-            debugLog.bubbleStats.active++;
-            
-            // Remove after animation
-            setTimeout(() => {
-                bubble.remove();
-                bubbleCount--;
-                debugLog.bubbleStats.active--;
-            }, duration * 1000);
-        }
-        
-        // Start/Stop bubble spawning
-        function toggleBubbleSpawning(active) {
-            if (active && !bubbleSpawnInterval) {
-                debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Bubble spawning started' });
-                bubbleSpawnInterval = setInterval(spawnRandomBubble, 400); // Spawn every 400ms
-                isCharging = true;
-            } else if (!active && bubbleSpawnInterval) {
-                debugLog.statusChanges.push({ time: new Date().toISOString(), event: 'Bubble spawning stopped' });
-                clearInterval(bubbleSpawnInterval);
-                bubbleSpawnInterval = null;
-                isCharging = false;
-                // Clear existing bubbles
-                document.querySelectorAll('.bubble').forEach(b => b.remove());
-                bubbleCount = 0;
-                debugLog.bubbleStats.active = 0;
-            }
-        }
-        
-        // Get color based on battery percentage (Red 0% -> Green 100%)
-        function getBatteryColor(percentage) {
-            let r, g, b;
-            
-            if (percentage < 50) {
-                const ratio = percentage / 50;
-                r = 244;
-                g = Math.floor(67 + (244 - 67) * ratio);
-                b = 54;
-            } else {
-                const ratio = (percentage - 50) / 50;
-                r = Math.floor(244 - (244 - 76) * ratio);
-                g = Math.floor(244 - (244 - 175) * ratio);
-                b = Math.floor(54 + (80 - 54) * ratio);
-            }
-            
-            return `rgba(${r}, ${g}, ${b}, 0.6)`;
-        }
-        
         function checkRootStatus() {
             try {
                 const statusJson = Android.getRootStatus();
@@ -1026,10 +1221,9 @@
                     const prevRoot = hasRoot;
                     hasRoot = status.hasRoot;
                     
-                    // Show modal on first check if no root
                     if (!rootModalShown && !hasRoot) {
                         rootModalShown = true;
-                        setTimeout(() => showRootModal(), 1000);  // Show after 1s
+                        setTimeout(() => showRootModal(), 1000);
                     }
                     
                     if (prevRoot !== hasRoot) {
@@ -1064,32 +1258,16 @@
             }
         }
         
-        // Update liquid height and color
-        function updateLiquid(percentage) {
-            const liquid = document.getElementById('liquid');
-            
-            liquid.style.height = percentage + '%';
-            
-            const color = getBatteryColor(percentage);
-            const colorBefore = getBatteryColor(Math.min(100, percentage + 10));
-            liquid.style.background = `linear-gradient(180deg, ${colorBefore} 0%, ${color} 100%)`;
-        }
-        
-        // Update voltage tile (dual mode: battery voltage / charger voltage)
         function updateVoltageTile(batteryVoltage, chargerVoltage, isRooted, isCurrentlyCharging) {
             const tile = document.getElementById('tile-voltage');
             const label = document.getElementById('voltage-label');
-            
-            // Filter charger voltage noise: ignore if < 1V (1000mV)
             const validChargerVoltage = chargerVoltage >= 1.0 ? chargerVoltage : 0;
             
-            // If rooted AND charging AND charger voltage valid, show charger voltage
             if (isRooted && isCurrentlyCharging && validChargerVoltage > 0) {
                 tile.classList.add('charger-mode');
                 label.textContent = '⚡ Charger';
                 animateValue('voltage-value', validChargerVoltage);
             } else {
-                // Show battery voltage (normal mode)
                 tile.classList.remove('charger-mode');
                 label.textContent = 'Voltage';
                 animateValue('voltage-value', batteryVoltage);
@@ -1120,64 +1298,48 @@
                 }
                 
                 const capacity = parseInt(data.capacity) || 0;
-                const status = data.status || lastStatus || "Unknown";  // Use lastStatus as fallback
+                const status = data.status || lastStatus || "Unknown";
                 const voltageRaw = parseInt(data.voltage) || 0;
                 const currentRaw = parseInt(data.current_now) || 0;
                 const tempRaw = parseInt(data.temp) || 0;
                 const chargerVoltageRaw = parseInt(data.charger_voltage) || 0;
-                const powerRaw = parseInt(data.power_now) || 0; // From /sys if available
+                const powerRaw = parseInt(data.power_now) || 0;
                 
-                // Update lastStatus if current status is valid
                 if (status !== "Unknown" && status !== "undefined" && status) {
                     lastStatus = status;
                 }
                 
-                // Track battery history
                 debugLog.batteryHistory.push({
                     time: new Date().toISOString(),
                     capacity,
                     voltage: voltageRaw,
                     current: currentRaw,
                     temp: tempRaw,
-                    status: lastStatus  // Use lastStatus to avoid undefined
+                    status: lastStatus
                 });
                 if (debugLog.batteryHistory.length > 50) debugLog.batteryHistory.shift();
                 
-                // Format values
                 const voltage = formatNumber(voltageRaw / 1000, 2);
                 const current = Math.floor(currentRaw / 1000);
                 const temperature = formatNumber(tempRaw / 10, 1);
                 const chargerVoltage = formatNumber(chargerVoltageRaw / 1000, 2);
                 
-                // Power calculation: Use /sys value first, fallback to calculation
-                // Format: max 2 digits, 1 decimal, hide .0
                 let power;
-                let powerSourceMethod = '';
                 if (powerRaw > 0) {
-                    // Use direct /sys/class/power_supply/battery/power_now (in µW)
                     power = formatNumber(powerRaw / 1000000, 1);
-                    powerSourceMethod = '/sys/power_now';
                 } else {
-                    // Fallback: Calculate from voltage * current
                     power = formatNumber(Math.abs((voltageRaw * currentRaw) / 1000000), 1);
-                    powerSourceMethod = 'calculated (V×A)';
                 }
                 
-                debugLog.powerSource.push({ 
-                    time: Date.now(), 
-                    method: powerSourceMethod, 
-                    value: power 
-                });
-                if (debugLog.powerSource.length > 20) debugLog.powerSource.shift();
+                // Update fluid color
+                updateFluidColor(capacity);
                 
-                updateLiquid(capacity);
                 animateValue('capacity-value', capacity);
                 
-                // Status text (plain, no badge)
                 const statusText = document.getElementById('status-text');
                 const statusLabel = document.getElementById('status-label');
                 const statusIcon = document.getElementById('status-icon');
-                const statusLower = lastStatus.toLowerCase();  // Use lastStatus
+                const statusLower = lastStatus.toLowerCase();
                 
                 const prevStatus = statusLabel.textContent;
                 if (prevStatus !== lastStatus && lastStatus !== "Unknown") {
@@ -1192,57 +1354,22 @@
                 statusLabel.textContent = lastStatus;
                 statusText.className = 'status-text';
                 
-                // FIXED: Check specificity order (most specific first)
-                let detectedStatus = '';
                 let chargingActive = false;
-                
-                if (statusLower === 'not charging') {
-                    // Exact match: "Not charging" - Chipset bypass icon
-                    statusText.classList.add('status-not-charging');
-                    statusIcon.textContent = '🔶';  // Chipset icon
-                    detectedStatus = 'not_charging';
-                    chargingActive = false;
-                } else if (statusLower === 'full') {
-                    // Exact match: "Full"
-                    statusText.classList.add('status-full');
-                    statusIcon.textContent = '✓';
-                    detectedStatus = 'full';
-                    chargingActive = false;
-                } else if (statusLower === 'charging') {
-                    // Exact match: "Charging"
-                    statusText.classList.add('status-charging');
-                    statusIcon.textContent = '⚡';  // Lightning
-                    detectedStatus = 'charging';
+                if (statusLower === 'charging') {
+                    statusIcon.textContent = '⚡';
                     chargingActive = true;
+                } else if (statusLower === 'not charging') {
+                    statusIcon.textContent = '🔶';
                 } else if (statusLower === 'discharging') {
-                    // Exact match: "Discharging" - Unplug icon
-                    statusText.classList.add('status-discharging');
-                    statusIcon.textContent = '🔌';  // Unplug icon
-                    detectedStatus = 'discharging';
-                    chargingActive = false;
+                    statusIcon.textContent = '🔌';
+                } else if (statusLower === 'full') {
+                    statusIcon.textContent = '✓';
                 } else {
-                    // Unknown
-                    statusText.classList.add('status-unknown');
                     statusIcon.textContent = '❓';
-                    detectedStatus = 'unknown';
-                    chargingActive = false;
                 }
                 
-                // Log detection for debugging
-                debugLog.statusDetection.push({
-                    time: Date.now(),
-                    rawStatus: data.status,  // Original from Android
-                    lastStatus: lastStatus,   // Fallback value used
-                    statusLower: statusLower,
-                    detected: detectedStatus,
-                    chargingActive: chargingActive
-                });
-                if (debugLog.statusDetection.length > 20) debugLog.statusDetection.shift();
+                isCharging = chargingActive;
                 
-                // Toggle bubbles based on charging state
-                toggleBubbleSpawning(chargingActive);
-                
-                // Update voltage tile (dual mode with noise filter)
                 updateVoltageTile(voltage, chargerVoltage, hasRoot, chargingActive);
                 
                 animateValue('current-value', current);
@@ -1253,7 +1380,6 @@
                     hideError();
                 }
                 
-                // Performance tracking
                 const updateTime = performance.now() - startTime;
                 debugLog.updates++;
                 debugLog.performance.totalTime += updateTime;
@@ -1279,8 +1405,16 @@
         
         function showDebug() {
             try {
-                // Advanced debug info
                 debugData = '========== ADVANCED DEBUG LOG ==========\n\n';
+                debugData += '--- WEBGL FLUID STATS ---\n';
+                debugData += `Initialized: ${debugLog.fluidStats.initialized || false}\n`;
+                debugData += `FPS: ${debugLog.fluidStats.fps}\n`;
+                debugData += `Total Splats: ${debugLog.fluidStats.splats}\n\n`;
+                
+                debugData += '--- MOTION SENSORS ---\n';
+                debugData += `Accelerometer: ${debugLog.sensors.accelSupported ? 'Supported' : 'Not supported'} (Active: ${debugLog.sensors.accelActive})\n`;
+                debugData += `Gyroscope: ${debugLog.sensors.gyroSupported ? 'Supported' : 'Not supported'} (Active: ${debugLog.sensors.gyroActive})\n\n`;
+                
                 debugData += '--- SYSTEM INFO ---\n';
                 debugData += `Timestamp: ${new Date().toISOString()}\n`;
                 debugData += `User Agent: ${navigator.userAgent}\n`;
@@ -1290,26 +1424,7 @@
                 debugData += '--- PERFORMANCE STATS ---\n';
                 debugData += `Total Updates: ${debugLog.updates}\n`;
                 debugData += `Avg Update Time: ${debugLog.performance.avgUpdateTime.toFixed(2)}ms\n`;
-                debugData += `Last Update: ${new Date(debugLog.lastUpdate).toLocaleTimeString()}\n`;
-                debugData += `Uptime: ${((Date.now() - (debugLog.lastUpdate - debugLog.updates * 200)) / 1000).toFixed(0)}s\n\n`;
-                
-                debugData += '--- BUBBLE STATS ---\n';
-                debugData += `Charging Active: ${isCharging}\n`;
-                debugData += `Bubbles Spawned (Total): ${debugLog.bubbleStats.total}\n`;
-                debugData += `Bubbles Active (Now): ${debugLog.bubbleStats.active}\n`;
-                debugData += `Spawn Interval: ${bubbleSpawnInterval ? '400ms' : 'Stopped'}\n\n`;
-                
-                debugData += '--- POWER CALCULATION LOG (Last 10) ---\n';
-                debugLog.powerSource.slice(-10).forEach(ps => {
-                    debugData += `[${new Date(ps.time).toLocaleTimeString()}] Method: ${ps.method} | Value: ${ps.value}W\n`;
-                });
-                debugData += '\n';
-                
-                debugData += '--- STATUS DETECTION LOG (Last 10) ---\n';
-                debugLog.statusDetection.slice(-10).forEach(det => {
-                    debugData += `[${new Date(det.time).toLocaleTimeString()}] Raw: "${det.rawStatus}" | Last: "${det.lastStatus}" | Lower: "${det.statusLower}" | Detected: ${det.detected} | Charging: ${det.chargingActive}\n`;
-                });
-                debugData += '\n';
+                debugData += `Last Update: ${new Date(debugLog.lastUpdate).toLocaleTimeString()}\n\n`;
                 
                 debugData += '--- BATTERY STATUS HISTORY ---\n';
                 const recent = debugLog.batteryHistory.slice(-10);
@@ -1317,19 +1432,6 @@
                     debugData += `[${new Date(entry.time).toLocaleTimeString()}] ${entry.capacity}% | ${(entry.voltage/1000).toFixed(2)}V | ${(entry.current/1000).toFixed(0)}mA | ${(entry.temp/10).toFixed(1)}°C | ${entry.status}\n`;
                 });
                 debugData += '\n';
-                
-                debugData += '--- STATUS CHANGES LOG ---\n';
-                debugLog.statusChanges.slice(-10).forEach(change => {
-                    debugData += `[${new Date(change.time).toLocaleTimeString()}] ${change.event}`;
-                    if (change.from !== undefined) debugData += ` (${change.from} → ${change.to})`;
-                    debugData += '\n';
-                });
-                debugData += '\n';
-                
-                debugData += '--- ROOT STATUS ---\n';
-                debugData += `Has Root: ${hasRoot}\n`;
-                debugData += `Voltage Tile Mode: ${document.getElementById('tile-voltage').classList.contains('charger-mode') ? 'Charger' : 'Battery'}\n`;
-                debugData += `Charger Voltage (filtered): ${parseFloat(document.getElementById('voltage-value').textContent) > 5 ? 'Valid' : 'Noise/Disconnected'}\n\n`;
                 
                 if (debugLog.errors.length > 0) {
                     debugData += '--- ERROR LOG ---\n';
@@ -1374,8 +1476,10 @@
             document.body.removeChild(textarea);
         }
         
-        // Initialize
+        // Initialize everything
         setTimeout(() => {
+            initFluid();
+            initSensors();
             checkRootStatus();
             updateBattery();
         }, 300);
@@ -1383,6 +1487,25 @@
         // Update loops
         setInterval(checkRootStatus, 2000);
         setInterval(updateBattery, 200);
+        
+        // Handle visibility changes (pause sensors when hidden)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (motionSensors.accel) motionSensors.accel.stop();
+                if (motionSensors.gyro) motionSensors.gyro.stop();
+                debugLog.sensors.accelActive = false;
+                debugLog.sensors.gyroActive = false;
+            } else {
+                if (motionSensors.accel) {
+                    motionSensors.accel.start();
+                    debugLog.sensors.accelActive = true;
+                }
+                if (motionSensors.gyro) {
+                    motionSensors.gyro.start();
+                    debugLog.sensors.gyroActive = true;
+                }
+            }
+        });
     </script>
 </body>
 </html>
