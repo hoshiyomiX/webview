@@ -7,7 +7,7 @@
     <title>devBattery Monitor</title>
     <style>
         :root {
-            /* Material Design 3 - Dynamic Colors */
+            /* Material Design 3 - Dynamic Colors (Dark Theme Default) */
             --md-sys-color-primary: #D0BCFF;
             --md-sys-color-on-primary: #381E72;
             --md-sys-color-primary-container: #4F378B;
@@ -38,62 +38,6 @@
             --md-motion-emphasized-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
             --md-motion-standard: cubic-bezier(0.2, 0, 0, 1);
             --md-motion-spring: cubic-bezier(0.5, 1.5, 0.5, 1);
-            --md-motion-water: cubic-bezier(0.36, 0.45, 0.63, 0.53); /* NEW: Water physics */
-        }
-        
-        /* 🌊 ADVANCED LIQUID WAVE PHYSICS - REALISTIC SINE CURVES */
-        @keyframes wave {
-            0% { 
-                transform: translateX(0%) translateY(0px) scale(1);
-            }
-            25% { 
-                transform: translateX(-20%) translateY(-35px) scale(1.02);
-            }
-            50% { 
-                transform: translateX(-40%) translateY(-50px) scale(1.05);
-            }
-            75% { 
-                transform: translateX(-30%) translateY(-30px) scale(1.02);
-            }
-            100% { 
-                transform: translateX(0%) translateY(0px) scale(1);
-            }
-        }
-        
-        @keyframes wave2 {
-            0% { 
-                transform: translateX(0%) translateY(0px) scale(1);
-            }
-            20% { 
-                transform: translateX(-15%) translateY(-40px) scale(1.03);
-            }
-            50% { 
-                transform: translateX(-50%) translateY(-70px) scale(1.08);
-            }
-            80% { 
-                transform: translateX(-35%) translateY(-45px) scale(1.03);
-            }
-            100% { 
-                transform: translateX(0%) translateY(0px) scale(1);
-            }
-        }
-        
-        @keyframes wave3 {
-            0% { 
-                transform: translateX(0%) translateY(0px) scale(1);
-            }
-            30% { 
-                transform: translateX(-25%) translateY(-25px) scale(1.02);
-            }
-            50% { 
-                transform: translateX(-35%) translateY(-40px) scale(1.04);
-            }
-            70% { 
-                transform: translateX(-20%) translateY(-25px) scale(1.02);
-            }
-            100% { 
-                transform: translateX(0%) translateY(0px) scale(1);
-            }
         }
         
         /* Charging Bubble Effect (Random spawn) */
@@ -245,6 +189,7 @@
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         .container {
@@ -456,7 +401,7 @@
             opacity: 0.8;
         }
         
-        /* 🌊 REALISTIC LIQUID WATER SYSTEM - PHYSICS SIMULATION */
+        /* 🎨 SIMPLE LIQUID FILL - NO WAVE ANIMATIONS */
         .liquid-container {
             position: absolute;
             top: 0;
@@ -472,64 +417,12 @@
         .liquid {
             position: absolute;
             bottom: 0;
-            left: -50%;
-            width: 200%;
+            left: 0;
+            width: 100%;
             height: 0%;
-            transition: height 0.8s var(--md-motion-emphasized), background 0.5s ease;
+            transition: height 0.8s cubic-bezier(0.4, 0.0, 0.2, 1), background 0.5s ease;
             transform-origin: center bottom;
-        }
-        
-        /* Wave Layer 1 - Primary wave (fastest, highest amplitude) */
-        .liquid::before {
-            content: '';
-            position: absolute;
-            top: -50px;
-            left: 0;
-            width: 200%;
-            height: 100px;
-            border-radius: 48% 52% 45% 55%;
-            background: inherit;
-            opacity: 1.0;
-            filter: none;
-            animation: wave 3s var(--md-motion-water) infinite;
-            animation-delay: 0s;
-        }
-        
-        /* Wave Layer 2 - Secondary wave (medium speed, max amplitude) */
-        .liquid::after {
-            content: '';
-            position: absolute;
-            top: -45px;
-            left: 0;
-            width: 200%;
-            height: 95px;
-            border-radius: 52% 48% 55% 45%;
-            background: inherit;
-            opacity: 0.85;
-            filter: none;
-            animation: wave2 4.2s var(--md-motion-water) infinite;
-            animation-delay: 0.7s; /* Anti-phase with wave 1 */
-        }
-        
-        /* Wave Layer 3 - Tertiary wave (slowest, depth effect) */
-        .liquid-container::before {
-            content: '';
-            position: absolute;
-            left: -50%;
-            width: 200%;
-            height: 85px;
-            pointer-events: none;
-            z-index: 2;
-            top: calc(100% - var(--liquid-height, 0%) - 42px);
-            border-radius: 45% 55% 50% 50%;
-            background: linear-gradient(180deg, 
-                rgba(244, 67, 54, 0.25) 0%, 
-                rgba(156, 39, 176, 0.3) 50%,
-                rgba(76, 175, 80, 0.25) 100%);
-            opacity: 0.75;
-            filter: none;
-            animation: wave3 5.5s var(--md-motion-water) infinite;
-            animation-delay: 1.4s; /* Creates interference with other waves */
+            /* NO pseudo-elements, NO animations - just clean gradient fill */
         }
         
         /* Random Bubbles */
@@ -887,7 +780,7 @@
         <div class="tiles-grid">
             <!-- Hero Battery Tile with Liquid -->
             <div class="tile tile-large" id="tile-capacity">
-                <!-- Liquid Water Animation -->
+                <!-- Simple Liquid Fill (NO WAVES) -->
                 <div class="liquid-container" id="liquid-container">
                     <div class="liquid" id="liquid"></div>
                 </div>
@@ -975,6 +868,7 @@
         let lastStatus = '';
         let rootModalShown = false;
         let currentCapacity = 0;
+        let currentTheme = 'dark'; // Track current theme
         
         const debugLog = {
             updates: 0,
@@ -986,11 +880,89 @@
             errors: [],
             statusDetection: [],
             powerSource: [],
-            waveAnimation: []
+            themeChanges: [] // Track theme changes
         };
         
-        console.log('[WAVE] ✅ REALISTIC PHYSICS LOADED');
-        console.log('[WAVE] System: X+Y+Scale, Bezier easing, Anti-phase delays');
+        console.log('[INIT] ✅ Simple liquid fill loaded (NO waves)');
+        console.log('[THEME] 🎨 Theme detection enabled');
+        
+        // 🎨 THEME DETECTION & SWITCHING
+        function applyTheme(theme) {
+            const root = document.documentElement;
+            currentTheme = theme;
+            
+            if (theme === 'light') {
+                // Material Design 3 - Light Theme
+                root.style.setProperty('--md-sys-color-primary', '#6750A4');
+                root.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
+                root.style.setProperty('--md-sys-color-primary-container', '#EADDFF');
+                root.style.setProperty('--md-sys-color-on-primary-container', '#21005D');
+                root.style.setProperty('--md-sys-color-secondary', '#625B71');
+                root.style.setProperty('--md-sys-color-secondary-container', '#E8DEF8');
+                root.style.setProperty('--md-sys-color-on-secondary-container', '#1D192B');
+                root.style.setProperty('--md-sys-color-tertiary', '#7D5260');
+                root.style.setProperty('--md-sys-color-tertiary-container', '#FFD8E4');
+                root.style.setProperty('--md-sys-color-on-tertiary-container', '#31111D');
+                root.style.setProperty('--md-sys-color-surface', '#FFFBFE');
+                root.style.setProperty('--md-sys-color-surface-dim', '#DED8E1');
+                root.style.setProperty('--md-sys-color-surface-bright', '#FFFBFE');
+                root.style.setProperty('--md-sys-color-surface-container', '#F3EDF7');
+                root.style.setProperty('--md-sys-color-surface-container-high', '#ECE6F0');
+                root.style.setProperty('--md-sys-color-surface-container-highest', '#E6E0E9');
+                root.style.setProperty('--md-sys-color-on-surface', '#1C1B1F');
+                root.style.setProperty('--md-sys-color-on-surface-variant', '#49454F');
+                root.style.setProperty('--md-sys-color-outline', '#79747E');
+                root.style.setProperty('--md-sys-color-outline-variant', '#CAC4D0');
+                root.style.setProperty('--md-sys-color-error', '#B3261E');
+                root.style.setProperty('--md-sys-color-on-error', '#FFFFFF');
+                root.style.setProperty('--md-sys-color-error-container', '#F9DEDC');
+                
+                document.querySelector('meta[name="theme-color"]').setAttribute('content', '#FFFBFE');
+                console.log('[THEME] 🌞 Switched to LIGHT mode');
+            } else {
+                // Material Design 3 - Dark Theme (default)
+                root.style.setProperty('--md-sys-color-primary', '#D0BCFF');
+                root.style.setProperty('--md-sys-color-on-primary', '#381E72');
+                root.style.setProperty('--md-sys-color-primary-container', '#4F378B');
+                root.style.setProperty('--md-sys-color-on-primary-container', '#EADDFF');
+                root.style.setProperty('--md-sys-color-secondary', '#CCC2DC');
+                root.style.setProperty('--md-sys-color-secondary-container', '#4A4458');
+                root.style.setProperty('--md-sys-color-on-secondary-container', '#E8DEF8');
+                root.style.setProperty('--md-sys-color-tertiary', '#EFB8C8');
+                root.style.setProperty('--md-sys-color-tertiary-container', '#633B48');
+                root.style.setProperty('--md-sys-color-on-tertiary-container', '#FFD8E4');
+                root.style.setProperty('--md-sys-color-surface', '#1C1B1F');
+                root.style.setProperty('--md-sys-color-surface-dim', '#141316');
+                root.style.setProperty('--md-sys-color-surface-bright', '#3B383E');
+                root.style.setProperty('--md-sys-color-surface-container', '#211F26');
+                root.style.setProperty('--md-sys-color-surface-container-high', '#2B2930');
+                root.style.setProperty('--md-sys-color-surface-container-highest', '#36343B');
+                root.style.setProperty('--md-sys-color-on-surface', '#E6E0E9');
+                root.style.setProperty('--md-sys-color-on-surface-variant', '#CAC4D0');
+                root.style.setProperty('--md-sys-color-outline', '#938F99');
+                root.style.setProperty('--md-sys-color-outline-variant', '#49454F');
+                root.style.setProperty('--md-sys-color-error', '#F2B8B5');
+                root.style.setProperty('--md-sys-color-on-error', '#601410');
+                root.style.setProperty('--md-sys-color-error-container', '#8C1D18');
+                
+                document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1C1B1F');
+                console.log('[THEME] 🌙 Switched to DARK mode');
+            }
+            
+            debugLog.themeChanges.push({ 
+                time: new Date().toISOString(), 
+                theme: theme 
+            });
+        }
+        
+        // Detect system theme on load
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+        applyTheme(prefersDark.matches ? 'dark' : 'light');
+        
+        // Listen for theme changes
+        prefersDark.addEventListener('change', (e) => {
+            applyTheme(e.matches ? 'dark' : 'light');
+        });
         
         function formatPower(value) {
             const num = parseFloat(value);
@@ -1157,45 +1129,12 @@
             }
         }
         
+        // Simple liquid update - NO WAVES
         function updateLiquid(percentage) {
             const liquid = document.getElementById('liquid');
-            const container = document.getElementById('liquid-container');
             currentCapacity = percentage;
             
             liquid.style.height = percentage + '%';
-            container.style.setProperty('--liquid-height', percentage + '%');
-            
-            const liquidBefore = window.getComputedStyle(liquid, '::before');
-            const liquidAfter = window.getComputedStyle(liquid, '::after');
-            const containerBefore = window.getComputedStyle(container, '::before');
-            
-            const waveState = {
-                time: Date.now(),
-                capacity: percentage,
-                liquidHeight: liquid.style.height,
-                containerLiquidHeight: container.style.getPropertyValue('--liquid-height'),
-                animations: {
-                    liquidBefore: liquidBefore.animation || 'unknown',
-                    liquidAfter: liquidAfter.animation || 'unknown',
-                    containerBefore: containerBefore.animation || 'unknown'
-                },
-                physics: {
-                    wave1: '3s bezier, X+Y+Scale, -50px amplitude',
-                    wave2: '4.2s bezier (0.7s delay), X+Y+Scale, -70px amplitude',
-                    wave3: '5.5s bezier (1.4s delay), X+Y+Scale, -40px amplitude'
-                }
-            };
-            
-            debugLog.waveAnimation.push(waveState);
-            if (debugLog.waveAnimation.length > 10) debugLog.waveAnimation.shift();
-            
-            console.log('[WAVE] Liquid updated:', {
-                capacity: percentage + '%',
-                liquidHeight: liquid.style.height,
-                physics: 'X+Y+Scale movement',
-                easing: 'cubic-bezier(0.36, 0.45, 0.63, 0.53)',
-                delays: '0s, 0.7s, 1.4s (anti-phase)'
-            });
             
             const color = getBatteryColor(percentage);
             const colorBefore = getBatteryColor(Math.min(100, percentage + 12));
@@ -1205,6 +1144,12 @@
                 ${colorBefore} 0%, 
                 ${colorMid} 50%, 
                 ${color} 100%)`;
+            
+            console.log('[LIQUID] Simple fill:', {
+                capacity: percentage + '%',
+                height: liquid.style.height,
+                waveAnimation: 'DISABLED (clean fill only)'
+            });
         }
         
         function updateVoltageTile(batteryVoltage, chargerVoltage, isRooted, isCurrentlyCharging) {
@@ -1397,7 +1342,8 @@
                 debugData += `Timestamp: ${new Date().toISOString()}\n`;
                 debugData += `User Agent: ${navigator.userAgent}\n`;
                 debugData += `Screen: ${window.screen.width}x${window.screen.height}\n`;
-                debugData += `Viewport: ${window.innerWidth}x${window.innerHeight}\n\n`;
+                debugData += `Viewport: ${window.innerWidth}x${window.innerHeight}\n`;
+                debugData += `Current Theme: ${currentTheme}\n\n`;
                 
                 debugData += '--- PERFORMANCE STATS ---\n';
                 debugData += `Total Updates: ${debugLog.updates}\n`;
@@ -1406,13 +1352,14 @@
                 debugData += `Update Interval: 1000ms (1s)\n`;
                 debugData += `Uptime: ${((Date.now() - (debugLog.lastUpdate - debugLog.updates * 1000)) / 1000).toFixed(0)}s\n\n`;
                 
-                debugData += '--- WAVE ANIMATION LOG (Last 5) ---\n';
-                debugLog.waveAnimation.slice(-5).forEach(wave => {
-                    debugData += `[${new Date(wave.time).toLocaleTimeString()}] Capacity: ${wave.capacity}%\n`;
-                    debugData += `  Liquid Height: ${wave.liquidHeight}\n`;
-                    debugData += `  CSS Var: ${wave.containerLiquidHeight}\n`;
-                    debugData += `  Physics: ${wave.physics.wave1}\n`;
-                    debugData += `  Animations: ${JSON.stringify(wave.animations)}\n`;
+                debugData += '--- LIQUID FILL INFO ---\n';
+                debugData += `Wave Animations: DISABLED (simple fill only)\n`;
+                debugData += `Current Capacity: ${currentCapacity}%\n`;
+                debugData += `Fill Type: Clean gradient (no waves)\n\n`;
+                
+                debugData += '--- THEME CHANGES ---\n';
+                debugLog.themeChanges.slice(-5).forEach(change => {
+                    debugData += `[${new Date(change.time).toLocaleTimeString()}] Theme: ${change.theme}\n`;
                 });
                 debugData += '\n';
                 
@@ -1503,33 +1450,13 @@
         }
         
         setTimeout(() => {
-            console.log('[WAVE] 🚀 Starting realistic wave physics...');
+            console.log('[INIT] 🚀 Starting battery monitoring...');
             checkRootStatus();
             updateBattery();
         }, 300);
         
         setInterval(checkRootStatus, 2000);
         setInterval(updateBattery, 1000);
-        
-        let frameCount = 0;
-        function checkWaveAnimations() {
-            frameCount++;
-            if (frameCount % 60 === 0) {
-                const liquid = document.getElementById('liquid');
-                const container = document.getElementById('liquid-container');
-                
-                console.log('[WAVE] Animation check:', {
-                    frame: frameCount,
-                    liquidHeight: liquid.style.height,
-                    cssVar: container.style.getPropertyValue('--liquid-height'),
-                    physics: 'X+Y+Scale (sine curve)',
-                    easing: 'bezier(0.36,0.45,0.63,0.53)',
-                    delays: '0s/0.7s/1.4s'
-                });
-            }
-            requestAnimationFrame(checkWaveAnimations);
-        }
-        requestAnimationFrame(checkWaveAnimations);
     </script>
 </body>
 </html>
