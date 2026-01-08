@@ -1,0 +1,137 @@
+################################################################################
+# Battery Monitor - SELinux File Contexts
+################################################################################
+# 
+# FILE: vendor_file_contexts
+# LOCATION: /vendor/etc/selinux/vendor_file_contexts
+# ACTION: APPEND these contexts to your existing vendor_file_contexts
+# 
+# Package: com.deviant.batterymonitor
+# Install Path: /product/priv-app/BatteryMonitor/
+# 
+# Purpose:
+#   Label battery monitor app files and charger sysfs paths with appropriate
+#   SELinux contexts to enable priv_app access while maintaining security.
+# 
+# Usage:
+#   cat selinux/vendor_file_contexts >> /vendor/etc/selinux/vendor_file_contexts
+# 
+# Note:
+#   File contexts are applied at boot time, not runtime.
+#   After modifying, you must relabel filesystems or reboot.
+# 
+################################################################################
+
+# ------------------------------------------------------------------------------
+# APPLICATION DIRECTORIES
+# ------------------------------------------------------------------------------
+
+# Privileged app installation directory
+# All files under /product/priv-app/BatteryMonitor/ labeled as privapp_data_file
+/product/priv-app/BatteryMonitor(/.*)?                      u:object_r:privapp_data_file:s0
+
+# App data directory
+# Runtime data for com.deviant.batterymonitor package
+/data/data/com\.deviant\.batterymonitor(/.*)?               u:object_r:privapp_data_file:s0
+
+# ------------------------------------------------------------------------------
+# CHARGER SYSFS PATHS - PRIMARY (MediaTek)
+# ------------------------------------------------------------------------------
+
+# MediaTek charger driver sysfs interface
+# Primary path used on most MTK devices
+/sys/devices/platform/charger(/.*)?                         u:object_r:sysfs_charger:s0
+/sys/devices/platform/charger/ADC_Charger_Voltage           u:object_r:sysfs_charger:s0
+
+# Additional MediaTek charger attributes (optional)
+/sys/devices/platform/charger/Charger_Type                  u:object_r:sysfs_charger:s0
+/sys/devices/platform/charger/Input_Current_Limit           u:object_r:sysfs_charger:s0
+/sys/devices/platform/charger/Charging_Current              u:object_r:sysfs_charger:s0
+
+# ------------------------------------------------------------------------------
+# CHARGER SYSFS PATHS - GENERIC (power_supply class)
+# ------------------------------------------------------------------------------
+
+# Generic Linux power_supply class - charger subsystem
+# Used on Qualcomm, Samsung, and other non-MTK devices
+/sys/class/power_supply/charger(/.*)?                       u:object_r:sysfs_charger:s0
+/sys/class/power_supply/charger/voltage_now                 u:object_r:sysfs_charger:s0
+/sys/class/power_supply/charger/voltage_max                 u:object_r:sysfs_charger:s0
+/sys/class/power_supply/charger/current_now                 u:object_r:sysfs_charger:s0
+/sys/class/power_supply/charger/type                        u:object_r:sysfs_charger:s0
+
+# USB power_supply subsystem
+# Some devices expose charger info through USB node
+/sys/class/power_supply/usb(/.*)?                           u:object_r:sysfs_charger:s0
+/sys/class/power_supply/usb/voltage_now                     u:object_r:sysfs_charger:s0
+/sys/class/power_supply/usb/voltage_max                     u:object_r:sysfs_charger:s0
+/sys/class/power_supply/usb/current_now                     u:object_r:sysfs_charger:s0
+
+# AC/Main power_supply subsystem (alternative)
+/sys/class/power_supply/ac(/.*)?                            u:object_r:sysfs_charger:s0
+/sys/class/power_supply/ac/voltage_now                      u:object_r:sysfs_charger:s0
+
+# Battery node with charger info (some devices)
+/sys/class/power_supply/battery/charger_voltage             u:object_r:sysfs_charger:s0
+/sys/class/power_supply/battery/input_voltage               u:object_r:sysfs_charger:s0
+
+# ------------------------------------------------------------------------------
+# DEVICE-SPECIFIC PATHS (uncomment if your device uses these)
+# ------------------------------------------------------------------------------
+
+# Qualcomm PMIC charger paths
+# /sys/class/power_supply/qpnp-charger(/.*)?                u:object_r:sysfs_charger:s0
+# /sys/class/power_supply/qpnp-charger/voltage_now         u:object_r:sysfs_charger:s0
+
+# Samsung charger paths
+# /sys/class/power_supply/max77705-charger(/.*)?           u:object_r:sysfs_charger:s0
+# /sys/class/power_supply/max77705-charger/voltage_now     u:object_r:sysfs_charger:s0
+
+# OPPO/Realme VOOC charger
+# /sys/class/power_supply/bms(/.*)?                         u:object_r:sysfs_charger:s0
+# /sys/class/power_supply/bms/voltage_now                   u:object_r:sysfs_charger:s0
+
+# Xiaomi Mi Turbo Charge
+# /sys/class/power_supply/bq2597x-master(/.*)?             u:object_r:sysfs_charger:s0
+# /sys/class/power_supply/bq2597x-master/voltage_now       u:object_r:sysfs_charger:s0
+
+# OnePlus Warp Charge
+# /sys/class/power_supply/bq25890(/.*)?                     u:object_r:sysfs_charger:s0
+# /sys/class/power_supply/bq25890/voltage_now               u:object_r:sysfs_charger:s0
+
+################################################################################
+# END OF BATTERY MONITOR FILE CONTEXTS
+################################################################################
+# 
+# FINDING YOUR DEVICE'S CHARGER PATH:
+# 
+# If charger voltage shows 0 or permission denied:
+# 
+# 1. Find available paths:
+#    $ adb shell find /sys -name "*voltage*" 2>/dev/null | grep -E "(charger|power_supply)"
+# 
+# 2. Check which path has data while charging:
+#    $ adb shell "cat /sys/class/power_supply/*/voltage_now"
+# 
+# 3. Add your device's path to this file with sysfs_charger label:
+#    /sys/path/to/your/charger/voltage_now    u:object_r:sysfs_charger:s0
+# 
+# 4. Relabel filesystem:
+#    $ adb shell su -c "restorecon -R /sys/devices/platform/charger"
+#    $ adb shell su -c "restorecon -R /sys/class/power_supply"
+# 
+################################################################################
+# 
+# VERIFICATION:
+# 
+# After adding contexts and rebooting:
+# 
+# $ adb shell ls -laZ /sys/devices/platform/charger/ADC_Charger_Voltage
+# -r--r--r-- 1 root root u:object_r:sysfs_charger:s0 4096 2026-01-08 15:00 ADC_Charger_Voltage
+#                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+#                       Should show sysfs_charger type
+# 
+# If showing wrong context (e.g. sysfs:s0), run:
+# $ adb shell su -c "restorecon -Rv /sys/devices/platform/charger"
+# 
+################################################################################
