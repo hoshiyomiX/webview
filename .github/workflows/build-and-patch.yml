@@ -28,16 +28,6 @@ on:
         required: false
         type: boolean
         default: true
-      target_api:
-        description: 'Target Android API level'
-        required: false
-        type: choice
-        options:
-          - 'all'
-          - '31'
-          - '33'
-          - '34'
-        default: 'all'
 
 jobs:
   # ============================================================================
@@ -65,7 +55,6 @@ jobs:
           echo "| Validation | ${{ inputs.run_validation }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Patching | ${{ inputs.run_patching }} |" >> $GITHUB_STEP_SUMMARY
           echo "| APK Build | ${{ inputs.run_build }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Target API | ${{ inputs.target_api }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
       - name: Validate vendor_sepolicy.cil syntax
@@ -269,11 +258,7 @@ jobs:
     
     strategy:
       matrix:
-        api-level: ${{ 
-          (github.event_name == 'workflow_dispatch' && inputs.target_api != 'all') && 
-          fromJSON(format('[{0}]', inputs.target_api)) || 
-          fromJSON('[31, 33, 34]') 
-        }}
+        api-level: [31, 33, 34]
     
     steps:
       - name: Checkout code
