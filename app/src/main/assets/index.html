@@ -62,26 +62,29 @@
             }
         }
         
-        /* Optimized Drain Drip - Fast & Smooth */
-        @keyframes dripFall {
+        /* Realistic Water Droplet Fall (Gravity Acceleration) */
+        @keyframes dropletFall {
             0% {
                 transform: translateY(0);
                 opacity: 0;
             }
-            5% {
+            3% {
+                opacity: 0.95;
+            }
+            10% {
                 opacity: 0.9;
             }
-            15% {
+            30% {
                 opacity: 0.85;
             }
-            50% {
-                opacity: 0.6;
+            60% {
+                opacity: 0.7;
             }
             85% {
-                opacity: 0.3;
+                opacity: 0.4;
             }
             100% {
-                transform: translateY(600px);
+                transform: translateY(700px);
                 opacity: 0;
             }
         }
@@ -419,17 +422,18 @@
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.8);
         }
         
-        /* Flat 2D Drain Drip */
+        /* Realistic Water Droplet 💧 Shape */
         .drain-drip {
             position: absolute;
-            width: 6px;
-            height: 10px;
+            width: 8px;
+            height: 12px;
             background: var(--drain-color);
-            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
-            animation: dripFall 2.5s linear forwards;
+            border-radius: 50% 50% 50% 0%;
+            transform: rotate(45deg);
+            animation: dropletFall 1.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
             pointer-events: none;
             z-index: 999;
-            opacity: 0.85;
+            opacity: 0.9;
         }
         
         /* Status Text */
@@ -806,10 +810,12 @@
         let currentCapacity = 0;
         let currentTheme = 'dark';
         
-        // Drain leak state (simplified - no blob)
-        let drainLeakInterval = null;
+        // Drain leak state with random interval
+        let drainLeakTimeout = null;
         let activeDrainLeaks = 0;
         const MAX_DRAIN_LEAKS = 3;
+        const MIN_INTERVAL = 15000;  // 15 seconds
+        const MAX_INTERVAL = 30000;  // 30 seconds
         
         const debugLog = {
             updates: 0,
@@ -817,7 +823,7 @@
             batteryHistory: [],
             statusChanges: [],
             bubbleStats: { total: 0, active: 0 },
-            drainStats: { total: 0, active: 0 },
+            drainStats: { total: 0, active: 0, intervals: [] },
             performance: { avgUpdateTime: 0, totalTime: 0 },
             errors: [],
             statusDetection: [],
@@ -826,7 +832,7 @@
             themeChanges: []
         };
         
-        console.log('[INIT] ⚡ Optimized drain leak: No blob, 2D flat, faster animation');
+        console.log('[INIT] 💧 Realistic droplet: teardrop shape, gravity physics, random 15-30s');
         console.log('[VOLTAGE] 🔌 Hybrid: Rooted + Charging = Charger voltage, else Battery voltage');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
@@ -984,6 +990,11 @@
             };
         }
         
+        // Get random interval between 15-30 seconds
+        function getRandomInterval() {
+            return Math.floor(Math.random() * (MAX_INTERVAL - MIN_INTERVAL + 1)) + MIN_INTERVAL;
+        }
+        
         // Charging bubbles
         function spawnRandomBubble() {
             if (!isCharging) return;
@@ -1037,7 +1048,7 @@
             }
         }
         
-        // Optimized drain drip (no blob, pure 2D)
+        // Realistic water droplet with gravity
         function spawnDrainDrip() {
             if (activeDrainLeaks >= MAX_DRAIN_LEAKS) return;
             
@@ -1057,37 +1068,56 @@
             debugLog.drainStats.total++;
             debugLog.drainStats.active++;
             
-            // Auto-remove after 2.5s
+            // Auto-remove after 1.4s (gravity fall duration)
             setTimeout(() => {
                 drip.remove();
                 activeDrainLeaks--;
                 debugLog.drainStats.active--;
-            }, 2500);
+            }, 1400);
+        }
+        
+        function scheduleNextDrip() {
+            if (!drainLeakTimeout) return;
+            
+            const nextInterval = getRandomInterval();
+            debugLog.drainStats.intervals.push({
+                time: new Date().toISOString(),
+                interval: nextInterval
+            });
+            if (debugLog.drainStats.intervals.length > 20) {
+                debugLog.drainStats.intervals.shift();
+            }
+            
+            drainLeakTimeout = setTimeout(() => {
+                spawnDrainDrip();
+                scheduleNextDrip();
+            }, nextInterval);
         }
         
         function toggleDrainLeak(active) {
-            if (active && !drainLeakInterval) {
-                console.log('[LEAK] ⚡ Optimized drain leak started (2D flat, 2.5s fall)');
+            if (active && !drainLeakTimeout) {
+                console.log('[LEAK] 💧 Realistic droplet started (15-30s random interval)');
                 debugLog.statusChanges.push({ 
                     time: new Date().toISOString(), 
-                    event: 'Drain leak started (optimized)' 
+                    event: 'Drain leak started (realistic gravity)' 
                 });
                 
                 // Spawn first drip immediately
                 spawnDrainDrip();
                 
-                // Then spawn every 3 seconds
-                drainLeakInterval = setInterval(spawnDrainDrip, 3000);
+                // Schedule next drip with random interval
+                drainLeakTimeout = true; // Flag to indicate active
+                scheduleNextDrip();
                 
-            } else if (!active && drainLeakInterval) {
+            } else if (!active && drainLeakTimeout) {
                 console.log('[LEAK] 🛑 Drain leak stopped');
                 debugLog.statusChanges.push({ 
                     time: new Date().toISOString(), 
                     event: 'Drain leak stopped' 
                 });
                 
-                clearInterval(drainLeakInterval);
-                drainLeakInterval = null;
+                clearTimeout(drainLeakTimeout);
+                drainLeakTimeout = null;
                 
                 // Clean up global drips
                 document.querySelectorAll('.drain-drip').forEach(el => el.remove());
@@ -1109,7 +1139,7 @@
                 g = Math.floor(244 - (244 - 175) * ratio);
                 b = Math.floor(54 + (80 - 54) * ratio);
             }
-            return `rgba(${r}, ${g}, ${b}, 0.85)`;
+            return `rgba(${r}, ${g}, ${b}, 0.9)`;
         }
         
         function checkRootStatus() {
@@ -1350,13 +1380,19 @@
         
         function showDebug() {
             try {
-                debugData = '========== OPTIMIZED LEAK DEBUG ==========\n\n';
+                debugData = '========== REALISTIC DROPLET DEBUG ==========\n\n';
                 debugData += '--- ANIMATIONS STATUS ---\n';
                 debugData += `Charging Bubbles: ${isCharging ? 'Active' : 'Stopped'}\n`;
-                debugData += `Drain Leak: ${drainLeakInterval ? 'Active (Optimized 2D)' : 'Stopped'}\n`;
+                debugData += `Drain Leak: ${drainLeakTimeout ? 'Active (Random 15-30s)' : 'Stopped'}\n`;
                 debugData += `Bubbles Active: ${debugLog.bubbleStats.active} (Total: ${debugLog.bubbleStats.total})\n`;
                 debugData += `Drips Active: ${debugLog.drainStats.active} (Total: ${debugLog.drainStats.total})\n`;
-                debugData += `Drip Specs: 2.5s fall, 600px, linear easing, no blur\n\n`;
+                debugData += `Droplet: 💧 teardrop shape, 1.4s gravity fall, 700px\n\n`;
+                
+                debugData += '--- RANDOM INTERVALS (Last 10) ---\n';
+                debugLog.drainStats.intervals.slice(-10).forEach(int => {
+                    debugData += `[${new Date(int.time).toLocaleTimeString()}] Next in: ${(int.interval/1000).toFixed(1)}s\n`;
+                });
+                debugData += '\n';
                 
                 debugData += '--- HYBRID VOLTAGE TILE ---\n';
                 debugLog.voltageSource.slice(-10).forEach(vs => {
