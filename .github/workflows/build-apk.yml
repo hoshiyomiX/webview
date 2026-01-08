@@ -23,7 +23,7 @@ on:
         options:
           - battery-monitor
           - master
-          - main
+          - selinux
       build_type:
         description: 'Build type'
         required: true
