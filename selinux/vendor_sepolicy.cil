@@ -11,8 +11,9 @@
 ;; Domain: priv_app
 ;; 
 ;; Purpose:
-;;   Allow privileged app to directly read charger voltage from sysfs
-;;   without requiring root/su access while maintaining SELinux enforcing mode.
+;;   Allow privileged app to directly read ALL battery metrics from sysfs
+;;   without requiring root/su or Android framework APIs (BatteryManager/Intent).
+;;   Pure kernel sysfs access for complete battery monitoring.
 ;; 
 ;; Usage:
 ;;   cat selinux/vendor_sepolicy.cil >> /vendor/etc/selinux/vendor_sepolicy.cil
@@ -46,13 +47,49 @@
 (allow priv_app sysfs_charger (lnk_file (read getattr)))
 
 ;; --------------------------------------------------------------------------------
-;; SYSFS ACCESS RULES - BATTERY INFO
+;; SYSFS ACCESS RULES - BATTERY INFO (REQUIRED FOR PURE SYSFS MODE)
 ;; --------------------------------------------------------------------------------
 
 ;; Allow priv_app to access battery information from sysfs
-;; Required for supplementary battery data if needed
+;; Required for: capacity, voltage_now, current_now, temp, status
 (allow priv_app sysfs_batteryinfo (dir (search getattr)))
 (allow priv_app sysfs_batteryinfo (file (read open getattr)))
+(allow priv_app sysfs_batteryinfo (lnk_file (read getattr)))
+
+;; --------------------------------------------------------------------------------
+;; SYSFS ACCESS RULES - POWER SUPPLY CLASS (REQUIRED)
+;; --------------------------------------------------------------------------------
+
+;; Allow access to /sys/class/power_supply/ for battery metrics
+;; This is the standard Linux power_supply subsystem interface
+;; Required for reading: battery/capacity, battery/voltage_now, etc.
+(allow priv_app sysfs_batteryinfo (dir (search getattr)))
+(allow priv_app sysfs_batteryinfo (file (read open getattr)))
+
+;; If your ROM uses separate sysfs_power_supply type, uncomment:
+;; (allow priv_app sysfs_power_supply (dir (search getattr)))
+;; (allow priv_app sysfs_power_supply (file (read open getattr)))
+;; (allow priv_app sysfs_power_supply (lnk_file (read getattr)))
+
+;; --------------------------------------------------------------------------------
+;; SYSFS ACCESS RULES - GENERIC SYSFS (FALLBACK)
+;; --------------------------------------------------------------------------------
+
+;; Allow limited read access to generic sysfs as fallback
+;; Some devices may not have specific sysfs types defined
+;; CAUTION: This is broader access - only use if specific types fail
+(allow priv_app sysfs (dir (search getattr)))
+(allow priv_app sysfs (file (read open getattr)))
+(allow priv_app sysfs (lnk_file (read getattr)))
+
+;; --------------------------------------------------------------------------------
+;; SYSFS ACCESS RULES - THERMAL (TEMPERATURE FALLBACK)
+;; --------------------------------------------------------------------------------
+
+;; Allow access to thermal zones for temperature reading fallback
+;; Required if battery temp unavailable: /sys/class/thermal/thermal_zone0/temp
+(allow priv_app sysfs_thermal (dir (search getattr)))
+(allow priv_app sysfs_thermal (file (read open getattr)))
 
 ;; --------------------------------------------------------------------------------
 ;; STORAGE ACCESS RULES - DEBUG LOGGING
@@ -106,36 +143,41 @@
 (allow priv_app vendor_default_prop (file (read open getattr map)))
 
 ;; --------------------------------------------------------------------------------
-;; BINDER IPC - SYSTEM SERVICES
+;; DEVICE ACCESS (OPTIONAL)
 ;; --------------------------------------------------------------------------------
 
-;; Allow priv_app to communicate with system_server via Binder
-;; Required for BatteryManager and Intent APIs
+;; If app needs direct device node access (uncommon):
+;; (allow priv_app device (dir (search)))
+;; (allow priv_app battery_device (chr_file (read open getattr)))
+
+;; --------------------------------------------------------------------------------
+;; BINDER IPC - MINIMAL (ONLY FOR THEME DETECTION)
+;; --------------------------------------------------------------------------------
+
+;; Minimal binder access for system theme detection
+;; Note: BatteryManager and Intent APIs are NOT used in pure sysfs mode
 (allow priv_app system_server (binder (call transfer)))
 (allow system_server priv_app (binder (call transfer)))
 
 ;; Allow priv_app to communicate with servicemanager
-;; Required to discover and bind to system services
 (allow priv_app servicemanager (binder (call transfer)))
-
-;; --------------------------------------------------------------------------------
-;; OPTIONAL: ADDITIONAL POWER SUPPLY PATHS
-;; --------------------------------------------------------------------------------
-
-;; If your device uses power_supply sysfs class, uncomment these:
-;; (allow priv_app sysfs_power_supply (dir (search getattr)))
-;; (allow priv_app sysfs_power_supply (file (read open getattr)))
-;; (allow priv_app sysfs_power_supply (lnk_file (read getattr)))
-
-;; --------------------------------------------------------------------------------
-;; OPTIONAL: WAKE LOCK PERMISSIONS
-;; --------------------------------------------------------------------------------
-
-;; If app needs to prevent device sleep during monitoring:
-;; (allow priv_app sysfs_wake_lock (file (write append open)))
 
 ;; ================================================================================
 ;; END OF BATTERY MONITOR SELINUX POLICY
+;; ================================================================================
+;; 
+;; BATTERY METRICS READ FROM SYSFS:
+;; 
+;; - Capacity:         /sys/class/power_supply/battery/capacity
+;; - Voltage:          /sys/class/power_supply/battery/voltage_now
+;; - Current:          /sys/class/power_supply/battery/current_now
+;; - Temperature:      /sys/class/power_supply/battery/temp
+;; - Status:           /sys/class/power_supply/battery/status
+;; - Charger Voltage:  /sys/devices/platform/charger/ADC_Charger_Voltage
+;;                     /sys/class/power_supply/charger/voltage_now
+;; 
+;; NO Android Framework APIs used (BatteryManager, Intent removed)
+;; 
 ;; ================================================================================
 ;; 
 ;; VERIFICATION AFTER INSTALLATION:
@@ -144,13 +186,21 @@
 ;;    $ adb shell ps -Z | grep batterymonitor
 ;;    Expected: u:r:priv_app:s0
 ;; 
-;; 2. Check sysfs context:
+;; 2. Check battery sysfs context:
+;;    $ adb shell ls -laZ /sys/class/power_supply/battery/
+;;    Expected: Files should be readable by priv_app
+;; 
+;; 3. Check charger sysfs context:
 ;;    $ adb shell ls -laZ /sys/devices/platform/charger/
 ;;    Expected: u:object_r:sysfs_charger:s0
 ;; 
-;; 3. Check for denials:
+;; 4. Check for denials:
 ;;    $ adb shell dmesg | grep avc | grep batterymonitor
 ;;    Expected: No output (no denials)
+;; 
+;; 5. Test reading battery capacity:
+;;    $ adb shell cat /sys/class/power_supply/battery/capacity
+;;    Should return percentage (e.g., "85")
 ;; 
 ;; If denials occur, check dmesg output and add missing rules following
 ;; the format: (allow <source> <target> (<class> (<permissions>)))
