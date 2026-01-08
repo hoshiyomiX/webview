@@ -12,8 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.app.AlertDialog;
-import android.widget.Toast;
 import org.json.JSONObject;
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -25,8 +23,7 @@ public class MainActivity extends Activity {
     private static final String DEBUG_FILE = "/sdcard/battery_debug.txt";
     private FileWriter debugWriter;
     private BatteryManager batteryManager;
-    private boolean hasRootAccess = false;
-    private boolean rootChecked = false;
+    private boolean hasPrivilegedAccess = true; // Privileged app has direct sysfs access
     private WebView webView; // Store WebView reference for theme changes
     
     @Override
@@ -48,9 +45,6 @@ public class MainActivity extends Activity {
         webView.loadUrl("file:///android_asset/index.html");
         
         initDebugFile();
-        
-        // Check and request root access
-        checkRootAccess();
     }
     
     // Detect system theme changes and notify JavaScript
@@ -75,79 +69,6 @@ public class MainActivity extends Activity {
         }
     }
     
-    private void checkRootAccess() {
-        new Thread(() -> {
-            boolean rootAvailable = isRootAvailable();
-            
-            runOnUiThread(() -> {
-                if (rootAvailable) {
-                    showRootDialog();
-                } else {
-                    rootChecked = true;
-                    hasRootAccess = false;
-                    Toast.makeText(this, "Running in non-root mode", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }).start();
-    }
-    
-    private boolean isRootAvailable() {
-        try {
-            Process process = Runtime.getRuntime().exec("su -v");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line = reader.readLine();
-            process.waitFor();
-            return line != null;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-    
-    private void showRootDialog() {
-        new AlertDialog.Builder(this)
-            .setTitle("Root Access")
-            .setMessage("This app can use root access to read charger voltage from sysfs.\n\nGrant root access?")
-            .setPositiveButton("Grant", (dialog, which) -> {
-                new Thread(() -> {
-                    boolean granted = requestRootAccess();
-                    runOnUiThread(() -> {
-                        hasRootAccess = granted;
-                        rootChecked = true;
-                        if (granted) {
-                            Toast.makeText(this, "Root access granted", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(this, "Root access denied", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }).start();
-            })
-            .setNegativeButton("Deny", (dialog, which) -> {
-                hasRootAccess = false;
-                rootChecked = true;
-                Toast.makeText(this, "Running in non-root mode", Toast.LENGTH_SHORT).show();
-            })
-            .setCancelable(false)
-            .show();
-    }
-    
-    private boolean requestRootAccess() {
-        try {
-            Process process = Runtime.getRuntime().exec("su");
-            DataOutputStream os = new DataOutputStream(process.getOutputStream());
-            os.writeBytes("id\n");
-            os.writeBytes("exit\n");
-            os.flush();
-            
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line = reader.readLine();
-            process.waitFor();
-            
-            return line != null && line.contains("uid=0");
-        } catch (Exception e) {
-            return false;
-        }
-    }
-    
     private void initDebugFile() {
         try {
             File debugFile = new File(DEBUG_FILE);
@@ -163,9 +84,12 @@ public class MainActivity extends Activity {
             boolean isDark = (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
             logDebug("Initial Theme: " + (isDark ? "dark" : "light"));
             
-            logDebug("\n--- Detection Strategy ---");
-            logDebug("1. Try sysfs paths with root access");
-            logDebug("2. Fallback to BatteryManager + Intent API (official, no root needed)\n");
+            logDebug("\n--- Running as Privileged System App ---");
+            logDebug("Mode: Direct sysfs access (no root/su required)");
+            logDebug("SELinux Domain: priv_app");
+            logDebug("Detection Strategy:");
+            logDebug("1. Direct sysfs read for charger voltage");
+            logDebug("2. BatteryManager + Intent API for other data\n");
             debugWriter.flush();
         } catch (Exception e) {
             e.printStackTrace();
@@ -203,11 +127,12 @@ public class MainActivity extends Activity {
         public String getRootStatus() {
             try {
                 JSONObject status = new JSONObject();
-                status.put("checked", rootChecked);
-                status.put("hasRoot", hasRootAccess);
+                status.put("checked", true);
+                status.put("hasRoot", hasPrivilegedAccess);
+                status.put("mode", "privileged_app");
                 return status.toString();
             } catch (Exception e) {
-                return "{\"checked\":false,\"hasRoot\":false}";
+                return "{\"checked\":true,\"hasRoot\":true,\"mode\":\"privileged_app\"}";
             }
         }
         
@@ -218,7 +143,7 @@ public class MainActivity extends Activity {
                 
                 logDebug("\n[" + new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date()) + "] Reading battery data...");
                 logDebug("Android SDK: " + Build.VERSION.SDK_INT);
-                logDebug("Root access: " + hasRootAccess);
+                logDebug("Privileged Access: " + hasPrivilegedAccess);
                 
                 // Get battery status from Intent
                 IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
@@ -256,16 +181,17 @@ public class MainActivity extends Activity {
                 data.put("voltage", String.valueOf(voltageMv));
                 data.put("current_now", String.valueOf(currentUa));
                 data.put("temp", String.valueOf(tempDeci));
-                data.put("source", hasRootAccess ? "root" : "hybrid");
+                data.put("source", "privileged_app_sysfs");
                 
-                // Try to get charger voltage with root
-                if (hasRootAccess && status == BatteryManager.BATTERY_STATUS_CHARGING) {
-                    String chargerVoltage = readChargerVoltageRoot();
+                // Try to get charger voltage with direct sysfs access
+                if (hasPrivilegedAccess && status == BatteryManager.BATTERY_STATUS_CHARGING) {
+                    String chargerVoltage = readChargerVoltageDirect();
                     if (chargerVoltage != null && !chargerVoltage.equals("0")) {
                         data.put("charger_voltage", chargerVoltage);
-                        logDebug("Charger Voltage (root): " + chargerVoltage + " mV");
+                        logDebug("Charger Voltage (direct sysfs): " + chargerVoltage + " mV");
                     } else {
                         data.put("charger_voltage", "0");
+                        logDebug("Charger Voltage: Not available or not charging");
                     }
                 } else {
                     data.put("charger_voltage", "0");
@@ -281,30 +207,54 @@ public class MainActivity extends Activity {
             }
         }
         
-        private String readChargerVoltageRoot() {
-            try {
-                Process process = Runtime.getRuntime().exec("su");
-                DataOutputStream os = new DataOutputStream(process.getOutputStream());
-                
-                os.writeBytes("cat /sys/devices/platform/charger/ADC_Charger_Voltage\n");
-                os.writeBytes("exit\n");
-                os.flush();
-                
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String voltage = reader.readLine();
-                
-                process.waitFor();
-                os.close();
-                reader.close();
-                
-                if (voltage != null && !voltage.isEmpty()) {
-                    return voltage.trim();
+        /**
+         * Read charger voltage directly from sysfs without root/su
+         * This works because app runs as priv_app with proper SELinux context
+         */
+        private String readChargerVoltageDirect() {
+            // Try multiple possible charger voltage paths
+            String[] paths = {
+                "/sys/devices/platform/charger/ADC_Charger_Voltage",
+                "/sys/class/power_supply/charger/voltage_now",
+                "/sys/class/power_supply/usb/voltage_now",
+                "/sys/class/power_supply/battery/charger_voltage"
+            };
+            
+            for (String path : paths) {
+                try {
+                    File voltageFile = new File(path);
+                    if (!voltageFile.exists()) {
+                        logDebug("Path not found: " + path);
+                        continue;
+                    }
+                    
+                    BufferedReader reader = new BufferedReader(new FileReader(voltageFile));
+                    String voltage = reader.readLine();
+                    reader.close();
+                    
+                    if (voltage != null && !voltage.isEmpty()) {
+                        voltage = voltage.trim();
+                        logDebug("Successfully read from: " + path + " = " + voltage);
+                        
+                        // Some paths return microvolts, convert to millivolts if needed
+                        try {
+                            long voltageValue = Long.parseLong(voltage);
+                            if (voltageValue > 100000) { // Likely in microvolts
+                                voltage = String.valueOf(voltageValue / 1000);
+                            }
+                        } catch (NumberFormatException e) {
+                            // Keep original value if not a number
+                        }
+                        
+                        return voltage;
+                    }
+                } catch (IOException e) {
+                    logDebug("Failed to read " + path + ": " + e.getMessage());
                 }
-                return "0";
-            } catch (Exception e) {
-                logDebug("Root read failed: " + e.getMessage());
-                return "0";
             }
+            
+            logDebug("All charger voltage paths failed");
+            return "0";
         }
         
         private String getStatusString(int status) {
@@ -328,26 +278,28 @@ public class MainActivity extends Activity {
             info.append("Debug file: ").append(DEBUG_FILE).append("\n\n");
             info.append("Device: ").append(android.os.Build.MANUFACTURER).append(" ").append(android.os.Build.MODEL).append("\n");
             info.append("Android: ").append(android.os.Build.VERSION.RELEASE).append(" (SDK ").append(android.os.Build.VERSION.SDK_INT).append(")\n");
-            info.append("Root Access: ").append(hasRootAccess ? "YES" : "NO").append("\n");
+            info.append("Mode: Privileged System App\n");
+            info.append("Access: Direct sysfs (no root/su)\n");
             
             // Show current theme
             int uiMode = getResources().getConfiguration().uiMode;
             boolean isDark = (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
             info.append("System Theme: ").append(isDark ? "Dark" : "Light").append("\n\n");
             
-            if (hasRootAccess) {
-                info.append("=== ROOT MODE - SYSFS ACCESS ===\n\n");
-                
-                // Try read charger voltage
-                String chargerVoltage = readChargerVoltageRoot();
-                if (!chargerVoltage.equals("0")) {
-                    info.append("✓ Charger Voltage: ").append(chargerVoltage).append(" mV\n\n");
-                } else {
-                    info.append("✗ Charger Voltage: Not available\n\n");
-                }
+            info.append("=== PRIVILEGED APP MODE - DIRECT SYSFS ACCESS ===\n\n");
+            
+            // Try read charger voltage
+            String chargerVoltage = readChargerVoltageDirect();
+            if (!chargerVoltage.equals("0")) {
+                info.append("✓ Charger Voltage: ").append(chargerVoltage).append(" mV\n");
+                info.append("  Source: Direct sysfs read\n");
+                info.append("  SELinux: Allowed via priv_app → sysfs_charger\n\n");
             } else {
-                info.append("=== NON-ROOT MODE ===\n\n");
-                info.append("⚠️ Cannot read charger voltage (requires root)\n\n");
+                info.append("✗ Charger Voltage: Not available\n");
+                info.append("  Possible reasons:\n");
+                info.append("  - Device not charging\n");
+                info.append("  - Charger path not in supported list\n");
+                info.append("  - SELinux denial (check dmesg)\n\n");
             }
             
             info.append("=== HYBRID API (BatteryManager + Intent) ===\n\n");
@@ -375,7 +327,9 @@ public class MainActivity extends Activity {
                 float power = Math.abs((voltageMv / 1000.0f) * (current / 1000000.0f));
                 info.append("✓ Power: ").append(String.format("%.2f", power)).append(" W\n\n");
                 
-                info.append("✅ Using Hybrid API (works on all Android versions)");
+                info.append("✅ All standard APIs working correctly\n");
+                info.append("📍 Location: /product/priv-app/BatteryMonitor/\n");
+                info.append("🔒 SELinux Domain: priv_app\n");
             } catch (Exception e) {
                 info.append("❌ API failed: ").append(e.getMessage());
             }
