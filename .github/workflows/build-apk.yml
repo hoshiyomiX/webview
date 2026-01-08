@@ -17,7 +17,7 @@ on:
     inputs:
       branch:
         description: 'Branch to build'
-        required: true
+        required: false
         default: 'selinux'
         type: choice
         options:
