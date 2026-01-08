@@ -1,0 +1,158 @@
+;; ================================================================================
+;; Battery Monitor - SELinux Policy Rules (CIL Format)
+;; ================================================================================
+;; 
+;; FILE: vendor_sepolicy.cil
+;; LOCATION: /vendor/etc/selinux/vendor_sepolicy.cil
+;; ACTION: APPEND these rules to your existing vendor_sepolicy.cil
+;; 
+;; Package: com.deviant.batterymonitor
+;; Install Path: /product/priv-app/BatteryMonitor/
+;; Domain: priv_app
+;; 
+;; Purpose:
+;;   Allow privileged app to directly read charger voltage from sysfs
+;;   without requiring root/su access while maintaining SELinux enforcing mode.
+;; 
+;; Usage:
+;;   cat selinux/vendor_sepolicy.cil >> /vendor/etc/selinux/vendor_sepolicy.cil
+;; 
+;; ================================================================================
+
+;; --------------------------------------------------------------------------------
+;; CUSTOM TYPE DEFINITIONS
+;; --------------------------------------------------------------------------------
+
+;; Define custom sysfs type for charger device files
+;; This separates charger sysfs from generic sysfs for fine-grained access control
+(type sysfs_charger)
+(typeattributeset sysfs_type (sysfs_charger))
+(typeattributeset fs_type (sysfs_charger))
+
+;; --------------------------------------------------------------------------------
+;; SYSFS ACCESS RULES - CHARGER VOLTAGE
+;; --------------------------------------------------------------------------------
+
+;; Allow priv_app to search and read charger sysfs directories
+;; Required to traverse /sys/devices/platform/charger/
+(allow priv_app sysfs_charger (dir (search getattr)))
+
+;; Allow priv_app to read charger voltage files directly
+;; Required to open and read ADC_Charger_Voltage and voltage_now files
+(allow priv_app sysfs_charger (file (read open getattr ioctl)))
+
+;; Allow priv_app to read symbolic links in charger sysfs
+;; Some devices use symlinks for power_supply subsystem
+(allow priv_app sysfs_charger (lnk_file (read getattr)))
+
+;; --------------------------------------------------------------------------------
+;; SYSFS ACCESS RULES - BATTERY INFO
+;; --------------------------------------------------------------------------------
+
+;; Allow priv_app to access battery information from sysfs
+;; Required for supplementary battery data if needed
+(allow priv_app sysfs_batteryinfo (dir (search getattr)))
+(allow priv_app sysfs_batteryinfo (file (read open getattr)))
+
+;; --------------------------------------------------------------------------------
+;; STORAGE ACCESS RULES - DEBUG LOGGING
+;; --------------------------------------------------------------------------------
+
+;; Allow priv_app to write debug logs to external storage
+;; Required for /sdcard/battery_debug.txt
+(allow priv_app sdcard_type (dir (write add_name remove_name search)))
+(allow priv_app sdcard_type (file (create write append unlink open getattr setattr)))
+
+;; Alternative: If your device uses media_rw_data_file instead of sdcard_type
+;; Uncomment if sdcard_type rules don't work:
+;; (allow priv_app media_rw_data_file (dir (write add_name remove_name search)))
+;; (allow priv_app media_rw_data_file (file (create write append unlink open getattr setattr)))
+
+;; --------------------------------------------------------------------------------
+;; PROC FILESYSTEM ACCESS
+;; --------------------------------------------------------------------------------
+
+;; Allow priv_app to read proc filesystem for system information
+(allow priv_app proc (dir (search)))
+(allow priv_app proc (file (read open getattr)))
+
+;; Allow access to /proc/meminfo for memory statistics (if needed)
+(allow priv_app proc_meminfo (file (read open getattr)))
+
+;; --------------------------------------------------------------------------------
+;; STORAGE PATHS ACCESS
+;; --------------------------------------------------------------------------------
+
+;; Allow priv_app to traverse storage mount points
+;; Required to access /storage/emulated/0/ paths
+(allow priv_app storage_file (lnk_file (read getattr)))
+(allow priv_app mnt_user_file (dir (search getattr)))
+(allow priv_app mnt_user_file (lnk_file (read getattr)))
+
+;; --------------------------------------------------------------------------------
+;; TMPFS ACCESS - WEBVIEW
+;; --------------------------------------------------------------------------------
+
+;; Allow priv_app to use tmpfs for WebView temporary files
+;; Required for WebView operation
+(allow priv_app tmpfs (dir (search)))
+
+;; --------------------------------------------------------------------------------
+;; VENDOR PROPERTIES ACCESS
+;; --------------------------------------------------------------------------------
+
+;; Allow priv_app to read vendor properties
+;; Required for device information and configuration
+(allow priv_app vendor_default_prop (file (read open getattr map)))
+
+;; --------------------------------------------------------------------------------
+;; BINDER IPC - SYSTEM SERVICES
+;; --------------------------------------------------------------------------------
+
+;; Allow priv_app to communicate with system_server via Binder
+;; Required for BatteryManager and Intent APIs
+(allow priv_app system_server (binder (call transfer)))
+(allow system_server priv_app (binder (call transfer)))
+
+;; Allow priv_app to communicate with servicemanager
+;; Required to discover and bind to system services
+(allow priv_app servicemanager (binder (call transfer)))
+
+;; --------------------------------------------------------------------------------
+;; OPTIONAL: ADDITIONAL POWER SUPPLY PATHS
+;; --------------------------------------------------------------------------------
+
+;; If your device uses power_supply sysfs class, uncomment these:
+;; (allow priv_app sysfs_power_supply (dir (search getattr)))
+;; (allow priv_app sysfs_power_supply (file (read open getattr)))
+;; (allow priv_app sysfs_power_supply (lnk_file (read getattr)))
+
+;; --------------------------------------------------------------------------------
+;; OPTIONAL: WAKE LOCK PERMISSIONS
+;; --------------------------------------------------------------------------------
+
+;; If app needs to prevent device sleep during monitoring:
+;; (allow priv_app sysfs_wake_lock (file (write append open)))
+
+;; ================================================================================
+;; END OF BATTERY MONITOR SELINUX POLICY
+;; ================================================================================
+;; 
+;; VERIFICATION AFTER INSTALLATION:
+;; 
+;; 1. Check app domain:
+;;    $ adb shell ps -Z | grep batterymonitor
+;;    Expected: u:r:priv_app:s0
+;; 
+;; 2. Check sysfs context:
+;;    $ adb shell ls -laZ /sys/devices/platform/charger/
+;;    Expected: u:object_r:sysfs_charger:s0
+;; 
+;; 3. Check for denials:
+;;    $ adb shell dmesg | grep avc | grep batterymonitor
+;;    Expected: No output (no denials)
+;; 
+;; If denials occur, check dmesg output and add missing rules following
+;; the format: (allow <source> <target> (<class> (<permissions>)))
+;; 
+;; ================================================================================
