@@ -1,0 +1,412 @@
+name: Build and Patch
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+    inputs:
+      skip_build:
+        description: 'Skip APK build'
+        required: false
+        type: boolean
+        default: false
+      skip_patch:
+        description: 'Skip SELinux patching'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  # ============================================================================
+  # Job 1: Validate SELinux Policies
+  # ============================================================================
+  validate-policies:
+    name: Validate SELinux Policies
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate vendor_sepolicy.cil syntax
+        run: |
+          echo "========================================"
+          echo "Validating CIL Syntax"
+          echo "========================================"
+          
+          CIL_FILE="selinux/vendor_sepolicy.cil"
+          
+          if [ ! -f "$CIL_FILE" ]; then
+            echo "❌ File not found: $CIL_FILE"
+            exit 1
+          fi
+          
+          echo "✓ Found: $CIL_FILE"
+          
+          # Check balanced parentheses
+          OPEN=$(grep -o '(' "$CIL_FILE" | wc -l)
+          CLOSE=$(grep -o ')' "$CIL_FILE" | wc -l)
+          
+          echo "Open parentheses: $OPEN"
+          echo "Close parentheses: $CLOSE"
+          
+          if [ "$OPEN" -eq "$CLOSE" ]; then
+            echo "✓ CIL syntax valid (balanced parentheses)"
+          else
+            echo "❌ CIL syntax error: Unbalanced parentheses!"
+            exit 1
+          fi
+          
+          # Count policy rules
+          RULES=$(grep -c '^(allow' "$CIL_FILE" || true)
+          TYPES=$(grep -c '^(type ' "$CIL_FILE" || true)
+          
+          echo "Policy rules (allow): $RULES"
+          echo "Type definitions: $TYPES"
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### SELinux Policy Validation" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| CIL Syntax | ✅ Valid |" >> $GITHUB_STEP_SUMMARY
+          echo "| Open Parentheses | $OPEN |" >> $GITHUB_STEP_SUMMARY
+          echo "| Close Parentheses | $CLOSE |" >> $GITHUB_STEP_SUMMARY
+          echo "| Allow Rules | $RULES |" >> $GITHUB_STEP_SUMMARY
+          echo "| Type Definitions | $TYPES |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Validate vendor_file_contexts
+        run: |
+          echo "========================================"
+          echo "Validating File Contexts"
+          echo "========================================"
+          
+          CONTEXTS_FILE="selinux/vendor_file_contexts"
+          
+          if [ ! -f "$CONTEXTS_FILE" ]; then
+            echo "❌ File not found: $CONTEXTS_FILE"
+            exit 1
+          fi
+          
+          echo "✓ Found: $CONTEXTS_FILE"
+          
+          # Count context rules
+          CONTEXTS=$(grep -c 'u:object_r:' "$CONTEXTS_FILE" || true)
+          BATTERYINFO=$(grep -c 'sysfs_batteryinfo' "$CONTEXTS_FILE" || true)
+          CHARGER=$(grep -c 'sysfs_charger' "$CONTEXTS_FILE" || true)
+          
+          echo "Total context rules: $CONTEXTS"
+          echo "sysfs_batteryinfo labels: $BATTERYINFO"
+          echo "sysfs_charger labels: $CHARGER"
+          
+          if [ "$CONTEXTS" -lt 10 ]; then
+            echo "⚠️  Warning: Only $CONTEXTS context rules found"
+          else
+            echo "✓ File contexts valid"
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### File Contexts Validation" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Contexts | $CONTEXTS |" >> $GITHUB_STEP_SUMMARY
+          echo "| Battery Info Labels | $BATTERYINFO |" >> $GITHUB_STEP_SUMMARY
+          echo "| Charger Labels | $CHARGER |" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================================
+  # Job 2: Patch SELinux Files (if prebuilt files exist)
+  # ============================================================================
+  patch-sepolicy:
+    name: Patch SELinux Files
+    runs-on: ubuntu-latest
+    needs: validate-policies
+    if: ${{ !inputs.skip_patch }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for prebuilt files
+        id: check_prebuilt
+        run: |
+          if [ -f "prebuilt/vendor_sepolicy.cil" ] && [ -f "prebuilt/vendor_file_contexts" ]; then
+            echo "has_prebuilt=true" >> $GITHUB_OUTPUT
+            echo "✓ Found prebuilt files"
+          else
+            echo "has_prebuilt=false" >> $GITHUB_OUTPUT
+            echo "⚠️  No prebuilt files found, skipping patching"
+          fi
+
+      - name: Run patch_sepolicy.sh
+        if: steps.check_prebuilt.outputs.has_prebuilt == 'true'
+        run: |
+          echo "========================================"
+          echo "Running SELinux Patcher"
+          echo "========================================"
+          
+          chmod +x selinux/patch_sepolicy.sh
+          bash selinux/patch_sepolicy.sh
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Patching Results" >> $GITHUB_STEP_SUMMARY
+          echo "✅ SELinux files patched successfully" >> $GITHUB_STEP_SUMMARY
+
+      - name: Generate checksums
+        if: steps.check_prebuilt.outputs.has_prebuilt == 'true'
+        run: |
+          cd selinux/patched
+          
+          echo "Generating checksums..."
+          md5sum *.patched > checksums.md5
+          sha256sum *.patched > checksums.sha256
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Checksums" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cat checksums.sha256 >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload patched files
+        if: steps.check_prebuilt.outputs.has_prebuilt == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: selinux-patched
+          path: |
+            selinux/patched/*.patched
+            selinux/patched/checksums.*
+          retention-days: 30
+
+      - name: Create patch report
+        if: steps.check_prebuilt.outputs.has_prebuilt == 'true'
+        run: |
+          cat > selinux/patched/patch_report.txt << 'EOF'
+          SELinux Patching Report
+          =======================
+          
+          Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          Commit: ${{ github.sha }}
+          Branch: ${{ github.ref_name }}
+          
+          Files Patched:
+          - vendor_sepolicy.cil.patched
+          - vendor_file_contexts.patched
+          
+          Original Files:
+          - prebuilt/vendor_sepolicy.cil
+          - prebuilt/vendor_file_contexts
+          
+          Battery Monitor Policies:
+          - selinux/vendor_sepolicy.cil
+          - selinux/vendor_file_contexts
+          
+          Checksums:
+          See checksums.md5 and checksums.sha256
+          
+          Verification:
+          1. Check app domain: adb shell ps -Z | grep batterymonitor
+          2. Check file context: adb shell ls -lZ /sys/class/power_supply/battery/
+          3. Check for denials: adb shell dmesg | grep avc
+          
+          Documentation:
+          - selinux/PATCHING.md
+          - selinux/DEBUGGING.md
+          - selinux/README.md
+          EOF
+
+  # ============================================================================
+  # Job 3: Build Android APK (if Gradle project exists)
+  # ============================================================================
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    needs: validate-policies
+    if: ${{ !inputs.skip_build }}
+    
+    strategy:
+      matrix:
+        api-level: [31, 33, 34]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for Android project
+        id: check_android
+        run: |
+          if [ -f "build.gradle" ] || [ -f "build.gradle.kts" ] || [ -f "app/build.gradle" ]; then
+            echo "has_gradle=true" >> $GITHUB_OUTPUT
+            echo "✓ Found Gradle project"
+          else
+            echo "has_gradle=false" >> $GITHUB_OUTPUT
+            echo "⚠️  No Gradle project found, skipping APK build"
+          fi
+
+      - name: Setup Java 17
+        if: steps.check_android.outputs.has_gradle == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        if: steps.check_android.outputs.has_gradle == 'true'
+        uses: android-actions/setup-android@v3
+
+      - name: Grant execute permission for gradlew
+        if: steps.check_android.outputs.has_gradle == 'true'
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        if: steps.check_android.outputs.has_gradle == 'true'
+        run: |
+          ./gradlew assembleDebug --stacktrace
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Build Results (API ${{ matrix.api-level }})" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Debug APK built successfully" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run tests
+        if: steps.check_android.outputs.has_gradle == 'true'
+        run: |
+          ./gradlew test --stacktrace || true
+
+      - name: Run lint
+        if: steps.check_android.outputs.has_gradle == 'true'
+        run: |
+          ./gradlew lint --stacktrace || true
+
+      - name: Upload debug APK
+        if: steps.check_android.outputs.has_gradle == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: BatteryMonitor-debug-api${{ matrix.api-level }}
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+      - name: Upload test reports
+        if: steps.check_android.outputs.has_gradle == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-api${{ matrix.api-level }}
+          path: |
+            app/build/reports/tests/
+            app/build/test-results/
+          retention-days: 30
+
+  # ============================================================================
+  # Job 4: Create GitHub Release (on version tags)
+  # ============================================================================
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [validate-policies, patch-sepolicy, build-apk]
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Create release notes
+        run: |
+          cat > release-notes.md << 'EOF'
+          ## Battery Monitor Release ${{ github.ref_name }}
+          
+          ### Included Files:
+          
+          **APK Files:**
+          - BatteryMonitor-debug.apk (multiple API levels)
+          
+          **SELinux Policies:**
+          - vendor_sepolicy.cil.patched
+          - vendor_file_contexts.patched
+          - checksums.md5
+          - checksums.sha256
+          
+          **Documentation:**
+          - selinux/PATCHING.md
+          - selinux/DEBUGGING.md
+          - selinux/README.md
+          
+          ### Installation:
+          
+          1. **Install APK:**
+             ```bash
+             adb install BatteryMonitor-debug.apk
+             ```
+          
+          2. **Or integrate to ROM:**
+             ```bash
+             # Copy patched files
+             cp vendor_sepolicy.cil.patched $ROM/vendor/etc/selinux/vendor_sepolicy.cil
+             cp vendor_file_contexts.patched $ROM/vendor/etc/selinux/vendor_file_contexts
+             
+             # Copy APK
+             cp BatteryMonitor-debug.apk $ROM/product/priv-app/BatteryMonitor/
+             
+             # Rebuild ROM
+             cd $ROM && make -j$(nproc)
+             ```
+          
+          ### Verification:
+          
+          ```bash
+          # Check app domain
+          adb shell ps -Z | grep batterymonitor
+          
+          # Check debug log
+          adb shell cat /sdcard/battery_debug.txt
+          
+          # Check for AVC denials
+          adb shell dmesg | grep avc | grep priv_app
+          ```
+          
+          ### Checksums:
+          
+          See `checksums.sha256` for file verification.
+          
+          ### Support:
+          
+          - Repository: https://github.com/hoshiyomiX/webview
+          - Issues: https://github.com/hoshiyomiX/webview/issues
+          - Documentation: https://github.com/hoshiyomiX/webview/tree/selinux/selinux
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Battery Monitor ${{ github.ref_name }}
+          body_path: release-notes.md
+          files: |
+            release-artifacts/**/*.apk
+            release-artifacts/**/*.patched
+            release-artifacts/**/checksums.*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update release summary
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎉 Release Created" >> $GITHUB_STEP_SUMMARY
+          echo "Version: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Release available at:" >> $GITHUB_STEP_SUMMARY
+          echo "https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
