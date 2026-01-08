@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ================================================================================
+  Battery Monitor - Privileged App Permissions Whitelist
+  ================================================================================
+  
+  FILE: privapp-permissions-batterymonitor.xml
+  LOCATION: /product/etc/permissions/privapp-permissions-batterymonitor.xml
+  
+  Package: com.deviant.batterymonitor
+  Install Path: /product/priv-app/BatteryMonitor/
+  
+  Purpose:
+    Whitelist privileged permissions that are normally not available to
+    regular apps. This file is required for privileged apps in Android 8.0+
+    to prevent "Privileged permission XXX is not declared" warnings.
+  
+  Documentation:
+    https://source.android.com/docs/core/permissions/perms-allowlist
+  
+  ================================================================================
+-->
+<permissions>
+    <!-- 
+      Main permissions block for Battery Monitor package
+      All permissions listed here are granted automatically without user prompt
+    -->
+    <privapp-permissions package="com.deviant.batterymonitor">
+        
+        <!-- ================================================================== -->
+        <!-- BASIC PERMISSIONS (Android 6.0+)                                   -->
+        <!-- ================================================================== -->
+        
+        <!-- Network access for future online features (if needed) -->
+        <permission name="android.permission.INTERNET"/>
+        <permission name="android.permission.ACCESS_NETWORK_STATE"/>
+        <permission name="android.permission.ACCESS_WIFI_STATE"/>
+        
+        <!-- Storage access for debug log file (/sdcard/battery_debug.txt) -->
+        <permission name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+        <permission name="android.permission.READ_EXTERNAL_STORAGE"/>
+        
+        <!-- ================================================================== -->
+        <!-- PRIVILEGED PERMISSIONS (Normally requires privileged app)          -->
+        <!-- ================================================================== -->
+        
+        <!-- Battery statistics and monitoring -->
+        <!-- Required for BatteryManager detailed statistics -->
+        <permission name="android.permission.BATTERY_STATS"/>
+        
+        <!-- System dump permission -->
+        <!-- Allows reading system state for debugging -->
+        <permission name="android.permission.DUMP"/>
+        
+        <!-- Read system logs -->
+        <!-- Optional: for debugging SELinux denials and system issues -->
+        <permission name="android.permission.READ_LOGS"/>
+        
+        <!-- Wake lock -->
+        <!-- Optional: prevent device sleep during background monitoring -->
+        <permission name="android.permission.WAKE_LOCK"/>
+        
+        <!-- ================================================================== -->
+        <!-- OPTIONAL PERMISSIONS (uncomment if needed)                         -->
+        <!-- ================================================================== -->
+        
+        <!-- Package usage stats -->
+        <!-- Uncomment if you want to track battery usage per-app -->
+        <!-- <permission name="android.permission.PACKAGE_USAGE_STATS"/> -->
+        
+        <!-- Device power management -->
+        <!-- Uncomment if implementing power save mode detection -->
+        <!-- <permission name="android.permission.DEVICE_POWER"/> -->
+        
+        <!-- Power saver -->
+        <!-- Uncomment for battery saver state detection -->
+        <!-- <permission name="android.permission.POWER_SAVER"/> -->
+        
+        <!-- System alert window -->
+        <!-- Uncomment if implementing overlay UI -->
+        <!-- <permission name="android.permission.SYSTEM_ALERT_WINDOW"/> -->
+        
+        <!-- Foreground service -->
+        <!-- Uncomment for background monitoring service -->
+        <!-- <permission name="android.permission.FOREGROUND_SERVICE"/> -->
+        
+        <!-- Reboot device -->
+        <!-- Uncomment if implementing automatic reboot on critical battery -->
+        <!-- <permission name="android.permission.REBOOT"/> -->
+        
+    </privapp-permissions>
+</permissions>
+
+<!--
+  ================================================================================
+  INSTALLATION NOTES
+  ================================================================================
+  
+  1. Copy this file to your ROM's product partition:
+     /product/etc/permissions/privapp-permissions-batterymonitor.xml
+  
+  2. Set correct permissions:
+     chmod 644 /product/etc/permissions/privapp-permissions-batterymonitor.xml
+     chown root:root /product/etc/permissions/privapp-permissions-batterymonitor.xml
+  
+  3. Verify file is loaded after boot:
+     adb shell dumpsys package com.deviant.batterymonitor | grep -A 30 "install permission"
+  
+  4. Check for privilege escalation warnings:
+     adb logcat | grep "Privileged permission"
+     (Should see no warnings about undeclared privileged permissions)
+  
+  ================================================================================
+  VERIFICATION
+  ================================================================================
+  
+  After installation, verify permissions are granted:
+  
+  $ adb shell dumpsys package com.deviant.batterymonitor
+  
+  Look for:
+    install permissions:
+      android.permission.INTERNET: granted=true
+      android.permission.WRITE_EXTERNAL_STORAGE: granted=true
+      android.permission.BATTERY_STATS: granted=true
+      ...
+  
+  All whitelisted permissions should show granted=true without user prompt.
+  
+  ================================================================================
+  TROUBLESHOOTING
+  ================================================================================
+  
+  Issue: "Permission denial" in logcat
+  Solution: Check if permission is in this whitelist file
+  
+  Issue: "Privileged permission XXX is not declared"
+  Solution: Add missing permission to this file
+  
+  Issue: Permission shows granted=false
+  Solution: 
+    1. Verify file is at correct location
+    2. Check file permissions (should be 644)
+    3. Verify package name matches exactly (com.deviant.batterymonitor)
+    4. Reboot device to reload permission database
+  
+  Issue: File not loaded at boot
+  Solution:
+    1. Verify /product partition is mounted read-write during build
+    2. Check for typos in package name
+    3. Verify XML syntax is correct (no unclosed tags)
+  
+  ================================================================================
+-->
