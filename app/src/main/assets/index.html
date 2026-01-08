@@ -80,8 +80,11 @@
             70% {
                 opacity: 0.7;
             }
-            88% {
-                opacity: 0.55;
+            90% {
+                opacity: 0.6;
+            }
+            95% {
+                opacity: 0.4;
             }
             100% {
                 transform: translateY(var(--fall-distance));
@@ -842,7 +845,7 @@
         let currentCapacity = 0;
         let currentTheme = 'dark';
         
-        // Faster gravity with navbar-aligned landing
+        // ADJUSTED TIMING: Splash delayed to 95% (was 88%)
         let drainLeakTimeout = null;
         let activeDrainLeaks = 0;
         let splashParticleCount = 0;
@@ -851,7 +854,7 @@
         const MAX_INTERVAL = 10000;  // 10 seconds
         const STARTUP_DELAY = 3000;  // 3 seconds delay on app start
         const DROPLET_DURATION = 1100; // 1.1s (faster gravity!) ⚡
-        const SPLASH_TIMING = 968;     // Trigger splash at 88% (1100ms × 0.88)
+        const SPLASH_TIMING = 1045;    // Trigger splash at 95% (1100ms × 0.95) - DELAYED!
         const LANDING_OFFSET = 15;     // 15px from bottom (right above navbar) 📍
         
         const debugLog = {
@@ -871,8 +874,8 @@
             positionLog: []
         };
         
-        console.log('[INIT] ⚡ Faster gravity: 1.1s duration (was 1.4s)');
-        console.log('[SYNC] ⏱️ Splash timing: ' + SPLASH_TIMING + 'ms (' + ((SPLASH_TIMING/DROPLET_DURATION)*100).toFixed(1) + '% of animation)');
+        console.log('[INIT] ⚡ Faster gravity: 1.1s duration');
+        console.log('[SYNC] ⏱️ Splash timing: ' + SPLASH_TIMING + 'ms (' + ((SPLASH_TIMING/DROPLET_DURATION)*100).toFixed(1) + '% of animation) - DELAYED');
         console.log('[POSITION] 📍 Landing: ' + LANDING_OFFSET + 'px from bottom (navbar-aligned)');
         console.log('[PHYSICS] 🌍 Easing: cubic-bezier(0.5, 0, 1, 1) - realistic gravity acceleration');
         
@@ -1189,7 +1192,7 @@
             debugLog.drainStats.total++;
             debugLog.drainStats.active++;
             
-            // Spawn splash particles at exact landing position at 88% of animation (968ms)
+            // Spawn splash particles at exact landing position at 95% of animation (1045ms)
             setTimeout(() => {
                 spawnSplash(pos.landingY, pos.landingX);
             }, SPLASH_TIMING);
@@ -1512,11 +1515,17 @@
         
         function showDebug() {
             try {
-                debugData = '========== FASTER GRAVITY + NAVBAR-ALIGNED DEBUG ==========\n\n';
+                debugData = '========== TIMING ADJUSTMENT DEBUG ==========\n\n';
                 debugData += '--- PHYSICS IMPROVEMENTS ---\n';
-                debugData += `Duration: ${DROPLET_DURATION}ms (was 1400ms) - 21.4% faster! ⚡\n`;
+                debugData += `Duration: ${DROPLET_DURATION}ms (faster gravity) ⚡\n`;
                 debugData += `Easing: cubic-bezier(0.5, 0, 1, 1) - realistic gravity\n`;
                 debugData += `Landing: ${LANDING_OFFSET}px from viewport bottom (navbar-aligned)\n\n`;
+                
+                debugData += '--- TIMING SYNCHRONIZATION ---\n';
+                debugData += `Droplet Duration: ${DROPLET_DURATION}ms (100%)\n`;
+                debugData += `Splash Trigger: ${SPLASH_TIMING}ms (${((SPLASH_TIMING/DROPLET_DURATION)*100).toFixed(1)}%) - DELAYED to 95%!\n`;
+                debugData += `Offset: ${DROPLET_DURATION - SPLASH_TIMING}ms before completion\n`;
+                debugData += `Reason: Splash was appearing too early (88%), adjusted to 95% for better sync\n\n`;
                 
                 debugData += '--- POSITION ALIGNMENT ---\n';
                 debugData += `Viewport Height: ${window.innerHeight}px\n\n`;
@@ -1525,14 +1534,9 @@
                 debugLog.positionLog.forEach(pos => {
                     debugData += `[${new Date(pos.time).toLocaleTimeString()}]\n`;
                     debugData += `  Spawn: (${pos.spawnX}, ${pos.spawnY}) → Landing: (${pos.landingX}, ${pos.landingY})\n`;
-                    debugData += `  Fall Distance: ${pos.fallDistance}px | Duration: ${pos.duration}ms | Splash: ${pos.splashAt}ms\n`;
+                    debugData += `  Fall Distance: ${pos.fallDistance}px | Duration: ${pos.duration}ms | Splash: ${pos.splashAt}ms (${((pos.splashAt/pos.duration)*100).toFixed(1)}%)\n`;
                 });
                 debugData += '\n';
-                
-                debugData += '--- TIMING SYNCHRONIZATION ---\n';
-                debugData += `Droplet Duration: ${DROPLET_DURATION}ms (100%)\n`;
-                debugData += `Splash Trigger: ${SPLASH_TIMING}ms (${((SPLASH_TIMING/DROPLET_DURATION)*100).toFixed(1)}%)\n`;
-                debugData += `Offset: ${DROPLET_DURATION - SPLASH_TIMING}ms before completion\n\n`;
                 
                 debugData += '--- SPLASH TIMING LOG (Last 10) ---\n';
                 debugLog.splashSync.forEach(sync => {
