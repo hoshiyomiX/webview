@@ -80,8 +80,8 @@
             60% {
                 opacity: 0.7;
             }
-            85% {
-                opacity: 0.4;
+            82% {
+                opacity: 0.5;
             }
             100% {
                 transform: translateY(700px);
@@ -851,6 +851,8 @@
         const MIN_INTERVAL = 5000;   // 5 seconds
         const MAX_INTERVAL = 10000;  // 10 seconds
         const STARTUP_DELAY = 3000;  // 3 seconds delay on app start
+        const DROPLET_DURATION = 1400; // 1.4s animation
+        const SPLASH_TIMING = 1150;    // Trigger splash at 82% (1.4s × 0.82 = 1148ms)
         
         const debugLog = {
             updates: 0,
@@ -864,10 +866,12 @@
             statusDetection: [],
             powerSource: [],
             voltageSource: [],
-            themeChanges: []
+            themeChanges: [],
+            splashSync: []
         };
         
         console.log('[INIT] 💦 Interval: 5-10s random, realistic water splash particles');
+        console.log('[SYNC] ⏱️ Splash timing: ' + SPLASH_TIMING + 'ms (' + ((SPLASH_TIMING/DROPLET_DURATION)*100).toFixed(1) + '% of animation)');
         console.log('[VOLTAGE] 🔌 Hybrid: Rooted + Charging = Charger voltage, else Battery voltage');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
@@ -1088,6 +1092,14 @@
             const splashColor = getBatteryColor(currentCapacity);
             const particleCount = 6 + Math.floor(Math.random() * 4); // 6-9 particles
             
+            debugLog.splashSync.push({
+                time: Date.now(),
+                timing: SPLASH_TIMING,
+                percentage: ((SPLASH_TIMING / DROPLET_DURATION) * 100).toFixed(1) + '%',
+                particles: particleCount
+            });
+            if (debugLog.splashSync.length > 10) debugLog.splashSync.shift();
+            
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'splash-particle';
@@ -1140,17 +1152,17 @@
             debugLog.drainStats.total++;
             debugLog.drainStats.active++;
             
-            // Spawn splash particles at bottom after 1.4s (when drip reaches bottom)
+            // Spawn splash particles at 82% of animation (1150ms) for perfect sync
             setTimeout(() => {
                 spawnSplash(pos.right);
-            }, 1400);
+            }, SPLASH_TIMING);
             
-            // Auto-remove drip after animation
+            // Auto-remove drip after full animation
             setTimeout(() => {
                 drip.remove();
                 activeDrainLeaks--;
                 debugLog.drainStats.active--;
-            }, 1400);
+            }, DROPLET_DURATION);
         }
         
         function scheduleNextDrip() {
@@ -1463,7 +1475,18 @@
         
         function showDebug() {
             try {
-                debugData = '========== REALISTIC SPLASH DEBUG (5-10s) ==========\n\n';
+                debugData = '========== SYNCED SPLASH DEBUG (5-10s) ==========\n\n';
+                debugData += '--- TIMING SYNCHRONIZATION ---\n';
+                debugData += `Droplet Duration: ${DROPLET_DURATION}ms (100%)\n`;
+                debugData += `Splash Trigger: ${SPLASH_TIMING}ms (${((SPLASH_TIMING/DROPLET_DURATION)*100).toFixed(1)}%)\n`;
+                debugData += `Offset: ${DROPLET_DURATION - SPLASH_TIMING}ms before completion\n\n`;
+                
+                debugData += '--- SPLASH TIMING LOG (Last 10) ---\n';
+                debugLog.splashSync.forEach(sync => {
+                    debugData += `[${new Date(sync.time).toLocaleTimeString()}] Triggered at ${sync.timing}ms (${sync.percentage}) | ${sync.particles} particles\n`;
+                });
+                debugData += '\n';
+                
                 debugData += '--- ANIMATIONS STATUS ---\n';
                 debugData += `Charging Bubbles: ${isCharging ? 'Active' : 'Stopped'}\n`;
                 debugData += `Drain Leak: ${drainLeakTimeout ? 'Active (3s delay + Random 5-10s)' : 'Stopped'}\n`;
