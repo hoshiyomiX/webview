@@ -3,13 +3,13 @@ name: Build APK
 on:
   push:
     branches: 
-      - battery-monitor
+      - selinux
       - master
       - checkpoint
       - main
   pull_request:
     branches:
-      - battery-monitor
+      - selinux
       - master
       - checkpoint
       - main
@@ -18,7 +18,7 @@ on:
       branch:
         description: 'Branch to build'
         required: true
-        default: 'battery-monitor'
+        default: 'selinux'
         type: choice
         options:
           - battery-monitor
