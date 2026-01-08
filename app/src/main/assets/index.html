@@ -62,7 +62,7 @@
             }
         }
         
-        /* Smooth Gravity Fall (No Overshoot) */
+        /* Smooth Gravity Fall - Dynamic distance based on viewport */
         @keyframes dropletFall {
             0% {
                 transform: translateY(0);
@@ -84,7 +84,7 @@
                 opacity: 0.5;
             }
             100% {
-                transform: translateY(700px);
+                transform: translateY(var(--fall-distance));
                 opacity: 0;
             }
         }
@@ -442,9 +442,9 @@
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.8);
         }
         
-        /* Realistic Water Droplet 💧 Shape */
+        /* Realistic Water Droplet 💧 Shape - Fixed positioning */
         .drain-drip {
-            position: absolute;
+            position: fixed;
             width: 8px;
             height: 12px;
             background: var(--drain-color);
@@ -456,10 +456,9 @@
             opacity: 0.9;
         }
         
-        /* Realistic Water Splash - Small particles */
+        /* Realistic Water Splash - Fixed positioning at landing point */
         .splash-particle {
             position: fixed;
-            bottom: 20px;
             width: 4px;
             height: 4px;
             border-radius: 50%;
@@ -853,6 +852,7 @@
         const STARTUP_DELAY = 3000;  // 3 seconds delay on app start
         const DROPLET_DURATION = 1400; // 1.4s animation
         const SPLASH_TIMING = 1150;    // Trigger splash at 82% (1.4s × 0.82 = 1148ms)
+        const LANDING_OFFSET = 80;     // 80px from bottom for safe landing zone
         
         const debugLog = {
             updates: 0,
@@ -867,11 +867,13 @@
             powerSource: [],
             voltageSource: [],
             themeChanges: [],
-            splashSync: []
+            splashSync: [],
+            positionLog: []
         };
         
         console.log('[INIT] 💦 Interval: 5-10s random, realistic water splash particles');
         console.log('[SYNC] ⏱️ Splash timing: ' + SPLASH_TIMING + 'ms (' + ((SPLASH_TIMING/DROPLET_DURATION)*100).toFixed(1) + '% of animation)');
+        console.log('[AXIS] 📐 Aligned: Droplet and splash share same landing position');
         console.log('[VOLTAGE] 🔌 Hybrid: Rooted + Charging = Charger voltage, else Battery voltage');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
@@ -1018,14 +1020,27 @@
             }
         }
         
-        // Calculate battery tile position for global drip spawn
-        function getBatteryTilePosition() {
+        // Calculate landing position for droplet and splash alignment
+        function calculateLandingPosition() {
             const tile = document.getElementById('tile-capacity');
             const rect = tile.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            
+            // Landing zone: LANDING_OFFSET px from viewport bottom
+            const landingY = viewportHeight - LANDING_OFFSET;
+            
+            // Droplet spawn position (tile bottom)
+            const spawnY = rect.bottom;
+            
+            // Calculate fall distance
+            const fallDistance = landingY - spawnY;
             
             return {
-                bottom: rect.bottom,
-                right: rect.right - 20
+                spawnX: rect.right - 20,
+                spawnY: spawnY,
+                landingY: landingY,
+                landingX: rect.right - 20,
+                fallDistance: fallDistance
             };
         }
         
@@ -1087,8 +1102,8 @@
             }
         }
         
-        // Realistic water splash - particles scatter horizontally
-        function spawnSplash(xPosition) {
+        // Realistic water splash - particles scatter horizontally at exact landing position
+        function spawnSplash(landingY, landingX) {
             const splashColor = getBatteryColor(currentCapacity);
             const particleCount = 6 + Math.floor(Math.random() * 4); // 6-9 particles
             
@@ -1096,14 +1111,19 @@
                 time: Date.now(),
                 timing: SPLASH_TIMING,
                 percentage: ((SPLASH_TIMING / DROPLET_DURATION) * 100).toFixed(1) + '%',
-                particles: particleCount
+                particles: particleCount,
+                landingY: landingY,
+                landingX: landingX
             });
             if (debugLog.splashSync.length > 10) debugLog.splashSync.shift();
             
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'splash-particle';
-                particle.style.left = xPosition + 'px';
+                
+                // Position at exact landing point (fixed positioning)
+                particle.style.top = landingY + 'px';
+                particle.style.left = landingX + 'px';
                 
                 // Random scatter distance and direction
                 const direction = (Math.random() - 0.5) * 2; // -1 to 1
@@ -1132,7 +1152,7 @@
             }
         }
         
-        // Realistic water droplet with smooth gravity
+        // Realistic water droplet with smooth gravity - dynamic fall distance
         function spawnDrainDrip() {
             if (activeDrainLeaks >= MAX_DRAIN_LEAKS) return;
             
@@ -1140,21 +1160,37 @@
             const drip = document.createElement('div');
             drip.className = 'drain-drip';
             
-            const pos = getBatteryTilePosition();
-            drip.style.top = pos.bottom + 'px';
-            drip.style.left = pos.right + 'px';
+            const pos = calculateLandingPosition();
+            
+            // Set spawn position (fixed positioning)
+            drip.style.top = pos.spawnY + 'px';
+            drip.style.left = pos.spawnX + 'px';
+            
+            // Set dynamic fall distance
+            drip.style.setProperty('--fall-distance', pos.fallDistance + 'px');
             
             const drainColor = getBatteryColor(currentCapacity);
             drip.style.setProperty('--drain-color', drainColor);
+            
+            debugLog.positionLog.push({
+                time: Date.now(),
+                spawnY: pos.spawnY,
+                spawnX: pos.spawnX,
+                landingY: pos.landingY,
+                landingX: pos.landingX,
+                fallDistance: pos.fallDistance,
+                viewportHeight: window.innerHeight
+            });
+            if (debugLog.positionLog.length > 10) debugLog.positionLog.shift();
             
             overlay.appendChild(drip);
             activeDrainLeaks++;
             debugLog.drainStats.total++;
             debugLog.drainStats.active++;
             
-            // Spawn splash particles at 82% of animation (1150ms) for perfect sync
+            // Spawn splash particles at exact landing position at 82% of animation (1150ms)
             setTimeout(() => {
-                spawnSplash(pos.right);
+                spawnSplash(pos.landingY, pos.landingX);
             }, SPLASH_TIMING);
             
             // Auto-remove drip after full animation
@@ -1475,7 +1511,19 @@
         
         function showDebug() {
             try {
-                debugData = '========== SYNCED SPLASH DEBUG (5-10s) ==========\n\n';
+                debugData = '========== AXIS-ALIGNED SPLASH DEBUG ==========\n\n';
+                debugData += '--- POSITION ALIGNMENT ---\n';
+                debugData += `Landing Offset: ${LANDING_OFFSET}px from viewport bottom\n`;
+                debugData += `Viewport Height: ${window.innerHeight}px\n\n`;
+                
+                debugData += '--- POSITION LOG (Last 10 Drips) ---\n';
+                debugLog.positionLog.forEach(pos => {
+                    debugData += `[${new Date(pos.time).toLocaleTimeString()}]\n`;
+                    debugData += `  Spawn: (${pos.spawnX}, ${pos.spawnY}) → Landing: (${pos.landingX}, ${pos.landingY})\n`;
+                    debugData += `  Fall Distance: ${pos.fallDistance}px | Viewport: ${pos.viewportHeight}px\n`;
+                });
+                debugData += '\n';
+                
                 debugData += '--- TIMING SYNCHRONIZATION ---\n';
                 debugData += `Droplet Duration: ${DROPLET_DURATION}ms (100%)\n`;
                 debugData += `Splash Trigger: ${SPLASH_TIMING}ms (${((SPLASH_TIMING/DROPLET_DURATION)*100).toFixed(1)}%)\n`;
@@ -1483,7 +1531,8 @@
                 
                 debugData += '--- SPLASH TIMING LOG (Last 10) ---\n';
                 debugLog.splashSync.forEach(sync => {
-                    debugData += `[${new Date(sync.time).toLocaleTimeString()}] Triggered at ${sync.timing}ms (${sync.percentage}) | ${sync.particles} particles\n`;
+                    debugData += `[${new Date(sync.time).toLocaleTimeString()}] Triggered at ${sync.timing}ms (${sync.percentage})\n`;
+                    debugData += `  Particles: ${sync.particles} | Position: (${sync.landingX}, ${sync.landingY})\n`;
                 });
                 debugData += '\n';
                 
