@@ -40,7 +40,7 @@
             --md-motion-spring: cubic-bezier(0.5, 1.5, 0.5, 1);
         }
         
-        /* Charging Bubble Effect (Random spawn) */
+        /* Charging Bubble Effect */
         @keyframes bubbleRise {
             0% {
                 transform: translateY(0) translateX(0) scale(0);
@@ -59,6 +59,79 @@
             100% {
                 transform: translateY(var(--rise-distance, -180px)) translateX(var(--drift-x, 0)) scale(0.8);
                 opacity: 0;
+            }
+        }
+        
+        /* Drain Leak Effect */
+        @keyframes liquidDrainDrip {
+            0% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0;
+            }
+            5% {
+                opacity: 0.9;
+                transform: translateY(2px) scale(0.98);
+            }
+            10% {
+                transform: translateY(5px) scale(0.95);
+            }
+            20% {
+                transform: translateY(15px) translateX(-2px) scale(0.9);
+                opacity: 0.8;
+            }
+            40% {
+                transform: translateY(35px) translateX(-3px) scale(0.8);
+                opacity: 0.6;
+            }
+            60% {
+                transform: translateY(60px) translateX(-4px) scale(0.65);
+                opacity: 0.4;
+            }
+            80% {
+                transform: translateY(90px) translateX(-5px) scale(0.5);
+                opacity: 0.2;
+            }
+            100% {
+                transform: translateY(120px) translateX(-6px) scale(0.3);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes drainBlob {
+            0%, 100% {
+                transform: scale(1) translateY(0);
+                border-radius: 50% 50% 60% 40%;
+            }
+            25% {
+                transform: scale(1.05) translateY(1px);
+                border-radius: 45% 55% 65% 35%;
+            }
+            50% {
+                transform: scale(1.08) translateY(2px);
+                border-radius: 55% 45% 55% 45%;
+            }
+            75% {
+                transform: scale(1.03) translateY(1px);
+                border-radius: 50% 50% 70% 30%;
+            }
+        }
+        
+        @keyframes leakAccumulate {
+            0% {
+                height: 0;
+                opacity: 0;
+            }
+            20% {
+                height: 8px;
+                opacity: 0.7;
+            }
+            80% {
+                height: 12px;
+                opacity: 0.8;
+            }
+            100% {
+                height: 15px;
+                opacity: 0.9;
             }
         }
         
@@ -189,7 +262,6 @@
             transform: scale(0.95);
         }
         
-        /* Telegram Icon */
         .telegram-icon {
             width: 18px;
             height: 18px;
@@ -197,7 +269,7 @@
             vertical-align: middle;
         }
         
-        /* Root Badge - CLICKABLE */
+        /* Root Badge */
         .root-badge {
             padding: 8px 16px;
             border-radius: 20px;
@@ -326,7 +398,7 @@
             opacity: 0.7;
         }
         
-        /* Hero Battery Tile with Liquid */
+        /* Hero Battery Tile */
         .tile-large {
             grid-column: span 2;
             background: linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, var(--md-sys-color-tertiary-container) 100%);
@@ -356,7 +428,7 @@
             opacity: 0.8;
         }
         
-        /* Liquid Fill */
+        /* Liquid Container */
         .liquid-container {
             position: absolute;
             top: 0;
@@ -389,7 +461,66 @@
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.8);
         }
         
-        /* Status Text (bottom-right corner) */
+        /* Drain Leak Effects */
+        .drain-drip {
+            position: absolute;
+            width: 7px;
+            height: 11px;
+            background: radial-gradient(ellipse at 30% 20%, 
+                rgba(255, 255, 255, 0.95) 0%, 
+                rgba(255, 255, 255, 0.6) 25%,
+                var(--drain-color) 50%, 
+                var(--drain-color) 100%);
+            border-radius: 50% 50% 50% 50% / 35% 35% 65% 65%;
+            animation: liquidDrainDrip 3s cubic-bezier(0.4, 0.0, 0.6, 1) forwards;
+            pointer-events: none;
+            filter: blur(0.3px);
+            box-shadow: 
+                0 2px 5px rgba(0, 0, 0, 0.4),
+                inset 0 1px 2px rgba(255, 255, 255, 0.6),
+                inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+            z-index: 15;
+        }
+        
+        .drain-blob {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 14px;
+            height: 14px;
+            background: radial-gradient(ellipse at 40% 30%, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                var(--drain-color) 50%);
+            animation: drainBlob 2s ease-in-out infinite;
+            pointer-events: none;
+            filter: blur(0.5px);
+            box-shadow: 
+                0 3px 8px rgba(0, 0, 0, 0.5),
+                inset -2px -2px 3px rgba(0, 0, 0, 0.3),
+                inset 2px 2px 3px rgba(255, 255, 255, 0.7);
+            z-index: 14;
+            transform-origin: center bottom;
+        }
+        
+        .drain-trail {
+            position: absolute;
+            bottom: 0;
+            right: 5px;
+            width: 3px;
+            height: 0;
+            background: linear-gradient(180deg, 
+                transparent 0%,
+                var(--drain-color) 30%,
+                var(--drain-color) 100%);
+            border-radius: 2px;
+            animation: leakAccumulate 1.5s ease-out forwards;
+            pointer-events: none;
+            filter: blur(0.5px);
+            opacity: 0.8;
+            z-index: 13;
+        }
+        
+        /* Status Text */
         .status-text {
             position: absolute;
             bottom: 20px;
@@ -760,12 +891,19 @@
         let currentCapacity = 0;
         let currentTheme = 'dark';
         
+        // Drain leak state
+        let drainLeakInterval = null;
+        let activeDrainLeaks = 0;
+        const MAX_DRAIN_LEAKS = 2;
+        let drainBlobExists = false;
+        
         const debugLog = {
             updates: 0,
             lastUpdate: Date.now(),
             batteryHistory: [],
             statusChanges: [],
             bubbleStats: { total: 0, active: 0 },
+            drainStats: { total: 0, active: 0 },
             performance: { avgUpdateTime: 0, totalTime: 0 },
             errors: [],
             statusDetection: [],
@@ -774,7 +912,7 @@
             themeChanges: []
         };
         
-        console.log('[INIT] ✅ Clean UI - No breathing/pulse animations, no status icons');
+        console.log('[INIT] ✅ Battery animations: Bubbles (charging) + Drain leak (idle)');
         console.log('[VOLTAGE] 🔌 Hybrid: Rooted + Charging = Charger voltage, else Battery voltage');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
@@ -921,6 +1059,7 @@
             }
         }
         
+        // Charging bubbles
         function spawnRandomBubble() {
             if (!isCharging) return;
             
@@ -970,6 +1109,112 @@
                 document.querySelectorAll('.bubble').forEach(b => b.remove());
                 bubbleCount = 0;
                 debugLog.bubbleStats.active = 0;
+            }
+        }
+        
+        // Drain leak effects
+        function spawnDrainDrip() {
+            if (activeDrainLeaks >= MAX_DRAIN_LEAKS) return;
+            
+            const tile = document.getElementById('tile-capacity');
+            const drip = document.createElement('div');
+            drip.className = 'drain-drip';
+            
+            drip.style.bottom = '0px';
+            drip.style.right = '20px';
+            
+            const drainColor = getBatteryColor(currentCapacity);
+            drip.style.setProperty('--drain-color', drainColor);
+            
+            tile.appendChild(drip);
+            activeDrainLeaks++;
+            debugLog.drainStats.total++;
+            debugLog.drainStats.active++;
+            
+            setTimeout(() => {
+                drip.remove();
+                activeDrainLeaks--;
+                debugLog.drainStats.active--;
+            }, 3000);
+        }
+        
+        function createDrainBlob() {
+            if (drainBlobExists) return;
+            
+            const tile = document.getElementById('tile-capacity');
+            
+            const trail = document.createElement('div');
+            trail.className = 'drain-trail';
+            trail.id = 'drain-trail';
+            const trailColor = getBatteryColor(currentCapacity);
+            trail.style.setProperty('--drain-color', trailColor);
+            tile.appendChild(trail);
+            
+            const blob = document.createElement('div');
+            blob.className = 'drain-blob';
+            blob.id = 'drain-blob';
+            const blobColor = getBatteryColor(currentCapacity);
+            blob.style.setProperty('--drain-color', blobColor);
+            tile.appendChild(blob);
+            
+            drainBlobExists = true;
+            console.log('[LEAK] 💧 Drain blob created at bottom-right corner');
+        }
+        
+        function removeDrainBlob() {
+            if (!drainBlobExists) return;
+            
+            const blob = document.getElementById('drain-blob');
+            const trail = document.getElementById('drain-trail');
+            
+            if (blob) blob.remove();
+            if (trail) trail.remove();
+            
+            drainBlobExists = false;
+            console.log('[LEAK] 🛑 Drain blob removed');
+        }
+        
+        function updateDrainBlobColor() {
+            if (!drainBlobExists) return;
+            
+            const blob = document.getElementById('drain-blob');
+            const trail = document.getElementById('drain-trail');
+            const color = getBatteryColor(currentCapacity);
+            
+            if (blob) blob.style.setProperty('--drain-color', color);
+            if (trail) trail.style.setProperty('--drain-color', color);
+        }
+        
+        function toggleDrainLeak(active) {
+            if (active && !drainLeakInterval) {
+                console.log('[LEAK] 💧 Drain leak effect started (idle/discharging)');
+                debugLog.statusChanges.push({ 
+                    time: new Date().toISOString(), 
+                    event: 'Drain leak spawning started' 
+                });
+                
+                createDrainBlob();
+                
+                drainLeakInterval = setInterval(() => {
+                    spawnDrainDrip();
+                    updateDrainBlobColor();
+                }, 4000);
+                
+            } else if (!active && drainLeakInterval) {
+                console.log('[LEAK] 🛑 Drain leak effect stopped');
+                debugLog.statusChanges.push({ 
+                    time: new Date().toISOString(), 
+                    event: 'Drain leak spawning stopped' 
+                });
+                
+                clearInterval(drainLeakInterval);
+                drainLeakInterval = null;
+                
+                removeDrainBlob();
+                
+                document.querySelectorAll('.drain-drip').forEach(el => el.remove());
+                activeDrainLeaks = 0;
+                debugLog.drainStats.active = 0;
             }
         }
         
@@ -1182,7 +1427,15 @@
                 });
                 if (debugLog.statusDetection.length > 20) debugLog.statusDetection.shift();
                 
+                // Toggle animations based on status
                 toggleBubbleSpawning(chargingActive);
+                
+                const isDraining = (
+                    statusLower === 'discharging' || 
+                    statusLower === 'not charging'
+                );
+                toggleDrainLeak(isDraining);
+                
                 updateLiquid(capacity);
                 updateVoltageTile(voltage, chargerVoltage, hasRoot, chargingActive);
                 
@@ -1219,60 +1472,36 @@
         
         function showDebug() {
             try {
-                debugData = '========== CLEAN UI DEBUG LOG ==========\n\n';
+                debugData = '========== BATTERY LEAK DEBUG LOG ==========\n\n';
+                debugData += '--- ANIMATIONS STATUS ---\n';
+                debugData += `Charging Bubbles: ${isCharging ? 'Active' : 'Stopped'}\n`;
+                debugData += `Drain Leak: ${drainLeakInterval ? 'Active' : 'Stopped'}\n`;
+                debugData += `Bubbles Active: ${debugLog.bubbleStats.active} (Total: ${debugLog.bubbleStats.total})\n`;
+                debugData += `Drips Active: ${debugLog.drainStats.active} (Total: ${debugLog.drainStats.total})\n`;
+                debugData += `Drain Blob: ${drainBlobExists ? 'Visible' : 'Hidden'}\n\n`;
+                
                 debugData += '--- HYBRID VOLTAGE TILE ---\n';
                 debugLog.voltageSource.slice(-10).forEach(vs => {
                     debugData += `[${new Date(vs.time).toLocaleTimeString()}] Source: ${vs.source}\n`;
                     debugData += `  Display: ${vs.value}V | Battery: ${vs.batteryV}V | Charger: ${vs.chargerV}V\n`;
-                    debugData += `  Rooted: ${vs.rooted} | Charging: ${vs.charging}\n`;
                 });
                 debugData += '\n';
                 
-                debugData += '--- BUBBLE PHYSICS ---\n';
-                debugData += `Spawn Position: Bottom 0-3%\n`;
-                debugData += `Current Capacity: ${currentCapacity}%\n`;
-                debugData += `Liquid Height: ${currentCapacity}% of tile\n`;
-                debugData += `Rise Distance: ${(currentCapacity * 2) - 12}px\n`;
-                debugData += `Charging Active: ${isCharging}\n`;
-                debugData += `Bubbles Active: ${debugLog.bubbleStats.active}\n\n`;
-                
                 debugData += '--- SYSTEM INFO ---\n';
                 debugData += `Timestamp: ${new Date().toISOString()}\n`;
-                debugData += `User Agent: ${navigator.userAgent}\n`;
-                debugData += `Screen: ${window.screen.width}x${window.screen.height}\n`;
-                debugData += `Viewport: ${window.innerWidth}x${window.innerHeight}\n`;
-                debugData += `Current Theme: ${currentTheme}\n\n`;
+                debugData += `Current Theme: ${currentTheme}\n`;
+                debugData += `Current Capacity: ${currentCapacity}%\n`;
+                debugData += `Viewport: ${window.innerWidth}x${window.innerHeight}\n\n`;
                 
                 debugData += '--- PERFORMANCE STATS ---\n';
                 debugData += `Total Updates: ${debugLog.updates}\n`;
                 debugData += `Avg Update Time: ${debugLog.performance.avgUpdateTime.toFixed(2)}ms\n`;
-                debugData += `Last Update: ${new Date(debugLog.lastUpdate).toLocaleTimeString()}\n`;
-                debugData += `Update Interval: 1000ms (1s)\n`;
-                debugData += `Uptime: ${((Date.now() - (debugLog.lastUpdate - debugLog.updates * 1000)) / 1000).toFixed(0)}s\n\n`;
+                debugData += `Last Update: ${new Date(debugLog.lastUpdate).toLocaleTimeString()}\n\n`;
                 
-                debugData += '--- ANIMATION STATUS ---\n';
-                debugData += `Charging Bubbles: ${isCharging ? 'Active' : 'Stopped'}\n`;
-                debugData += `Idle Breathing: REMOVED\n`;
-                debugData += `Status Icon Pulse: REMOVED\n\n`;
-                
-                debugData += '--- THEME CHANGES ---\n';
-                debugLog.themeChanges.slice(-5).forEach(change => {
-                    debugData += `[${new Date(change.time).toLocaleTimeString()}] ${change.from} → ${change.to} (${change.source})\n`;
-                });
-                debugData += '\n';
-                
-                debugData += '--- POWER CALCULATION LOG (Last 10) ---\n';
-                debugLog.powerSource.slice(-10).forEach(ps => {
-                    debugData += `[${new Date(ps.time).toLocaleTimeString()}] ${ps.method}\n`;
-                    debugData += `  Root: ${ps.hasRoot} | Charging: ${ps.chargingActive} | powerRaw: ${ps.powerRaw} µW\n`;
-                    debugData += `  Result: ${ps.value}W\n`;
-                });
-                debugData += '\n';
-                
-                debugData += '--- BATTERY STATUS HISTORY ---\n';
+                debugData += '--- BATTERY STATUS HISTORY (Last 10) ---\n';
                 const recent = debugLog.batteryHistory.slice(-10);
                 recent.forEach(entry => {
-                    debugData += `[${new Date(entry.time).toLocaleTimeString()}] ${entry.capacity}% | ${(entry.voltage/1000).toFixed(2)}V | ${(entry.current/1000).toFixed(0)}mA | ${(entry.temp/10).toFixed(1)}°C | ${entry.status}\n`;
+                    debugData += `[${new Date(entry.time).toLocaleTimeString()}] ${entry.capacity}% | ${(entry.voltage/1000).toFixed(2)}V | ${(entry.current/1000).toFixed(0)}mA | ${entry.status}\n`;
                 });
                 debugData += '\n';
                 
