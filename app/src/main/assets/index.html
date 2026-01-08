@@ -62,7 +62,7 @@
             }
         }
         
-        /* Realistic Water Droplet Fall (Gravity Acceleration) */
+        /* Smooth Gravity Fall (No Overshoot) */
         @keyframes dropletFall {
             0% {
                 transform: translateY(0);
@@ -85,6 +85,21 @@
             }
             100% {
                 transform: translateY(700px);
+                opacity: 0;
+            }
+        }
+        
+        /* Splash Effect at Bottom */
+        @keyframes splash {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0.9;
+            }
+            50% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(2.5);
                 opacity: 0;
             }
         }
@@ -430,10 +445,23 @@
             background: var(--drain-color);
             border-radius: 50% 50% 50% 0%;
             transform: rotate(45deg);
-            animation: dropletFall 1.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
+            animation: dropletFall 1.4s cubic-bezier(0.36, 0, 0.66, 1) forwards;
             pointer-events: none;
             z-index: 999;
             opacity: 0.9;
+        }
+        
+        /* Splash Effect */
+        .splash {
+            position: fixed;
+            bottom: 20px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--splash-color) 0%, transparent 70%);
+            animation: splash 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            pointer-events: none;
+            z-index: 998;
         }
         
         /* Status Text */
@@ -810,12 +838,14 @@
         let currentCapacity = 0;
         let currentTheme = 'dark';
         
-        // Drain leak state with random interval
+        // Drain leak state with random interval & startup delay
         let drainLeakTimeout = null;
         let activeDrainLeaks = 0;
+        let splashCount = 0;
         const MAX_DRAIN_LEAKS = 3;
         const MIN_INTERVAL = 15000;  // 15 seconds
         const MAX_INTERVAL = 30000;  // 30 seconds
+        const STARTUP_DELAY = 3000;  // 3 seconds delay on app start
         
         const debugLog = {
             updates: 0,
@@ -823,7 +853,7 @@
             batteryHistory: [],
             statusChanges: [],
             bubbleStats: { total: 0, active: 0 },
-            drainStats: { total: 0, active: 0, intervals: [] },
+            drainStats: { total: 0, active: 0, intervals: [], splashes: 0 },
             performance: { avgUpdateTime: 0, totalTime: 0 },
             errors: [],
             statusDetection: [],
@@ -832,7 +862,7 @@
             themeChanges: []
         };
         
-        console.log('[INIT] 💧 Realistic droplet: teardrop shape, gravity physics, random 15-30s');
+        console.log('[INIT] 💦 Smooth gravity (no overshoot), 3s startup delay, splash effect');
         console.log('[VOLTAGE] 🔌 Hybrid: Rooted + Charging = Charger voltage, else Battery voltage');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
@@ -1048,7 +1078,26 @@
             }
         }
         
-        // Realistic water droplet with gravity
+        // Spawn splash effect at bottom
+        function spawnSplash(xPosition) {
+            const splash = document.createElement('div');
+            splash.className = 'splash';
+            splash.style.left = xPosition + 'px';
+            
+            const splashColor = getBatteryColor(currentCapacity);
+            splash.style.setProperty('--splash-color', splashColor);
+            
+            document.body.appendChild(splash);
+            splashCount++;
+            debugLog.drainStats.splashes++;
+            
+            setTimeout(() => {
+                splash.remove();
+                splashCount--;
+            }, 600);
+        }
+        
+        // Realistic water droplet with smooth gravity (no overshoot)
         function spawnDrainDrip() {
             if (activeDrainLeaks >= MAX_DRAIN_LEAKS) return;
             
@@ -1068,7 +1117,12 @@
             debugLog.drainStats.total++;
             debugLog.drainStats.active++;
             
-            // Auto-remove after 1.4s (gravity fall duration)
+            // Spawn splash at bottom after 1.4s (when drip reaches bottom)
+            setTimeout(() => {
+                spawnSplash(pos.right);
+            }, 1400);
+            
+            // Auto-remove drip after animation
             setTimeout(() => {
                 drip.remove();
                 activeDrainLeaks--;
@@ -1096,18 +1150,22 @@
         
         function toggleDrainLeak(active) {
             if (active && !drainLeakTimeout) {
-                console.log('[LEAK] 💧 Realistic droplet started (15-30s random interval)');
+                console.log('[LEAK] 💦 Starting drain leak with 3s startup delay...');
                 debugLog.statusChanges.push({ 
                     time: new Date().toISOString(), 
-                    event: 'Drain leak started (realistic gravity)' 
+                    event: 'Drain leak starting (3s delay, smooth gravity)' 
                 });
                 
-                // Spawn first drip immediately
-                spawnDrainDrip();
-                
-                // Schedule next drip with random interval
+                // 3 second startup delay
                 drainLeakTimeout = true; // Flag to indicate active
-                scheduleNextDrip();
+                
+                setTimeout(() => {
+                    if (!drainLeakTimeout) return; // Check if still active
+                    
+                    console.log('[LEAK] 💧 First drip spawned after 3s delay');
+                    spawnDrainDrip();
+                    scheduleNextDrip();
+                }, STARTUP_DELAY);
                 
             } else if (!active && drainLeakTimeout) {
                 console.log('[LEAK] 🛑 Drain leak stopped');
@@ -1119,9 +1177,11 @@
                 clearTimeout(drainLeakTimeout);
                 drainLeakTimeout = null;
                 
-                // Clean up global drips
+                // Clean up global drips and splashes
                 document.querySelectorAll('.drain-drip').forEach(el => el.remove());
+                document.querySelectorAll('.splash').forEach(el => el.remove());
                 activeDrainLeaks = 0;
+                splashCount = 0;
                 debugLog.drainStats.active = 0;
             }
         }
@@ -1380,13 +1440,14 @@
         
         function showDebug() {
             try {
-                debugData = '========== REALISTIC DROPLET DEBUG ==========\n\n';
+                debugData = '========== SMOOTH GRAVITY + SPLASH DEBUG ==========\n\n';
                 debugData += '--- ANIMATIONS STATUS ---\n';
                 debugData += `Charging Bubbles: ${isCharging ? 'Active' : 'Stopped'}\n`;
-                debugData += `Drain Leak: ${drainLeakTimeout ? 'Active (Random 15-30s)' : 'Stopped'}\n`;
+                debugData += `Drain Leak: ${drainLeakTimeout ? 'Active (3s delay + Random 15-30s)' : 'Stopped'}\n`;
                 debugData += `Bubbles Active: ${debugLog.bubbleStats.active} (Total: ${debugLog.bubbleStats.total})\n`;
                 debugData += `Drips Active: ${debugLog.drainStats.active} (Total: ${debugLog.drainStats.total})\n`;
-                debugData += `Droplet: 💧 teardrop shape, 1.4s gravity fall, 700px\n\n`;
+                debugData += `Splashes: ${splashCount} active (Total: ${debugLog.drainStats.splashes})\n`;
+                debugData += `Droplet: 💧 teardrop, 1.4s smooth fall (no overshoot), splash at bottom\n\n`;
                 
                 debugData += '--- RANDOM INTERVALS (Last 10) ---\n';
                 debugLog.drainStats.intervals.slice(-10).forEach(int => {
