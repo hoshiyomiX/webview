@@ -62,82 +62,28 @@
             }
         }
         
-        /* Global Drain Leak Effect */
-        @keyframes liquidDrainDripGlobal {
+        /* Optimized Drain Drip - Fast & Smooth */
+        @keyframes dripFall {
             0% {
-                transform: translateY(0) translateX(0) scale(1);
+                transform: translateY(0);
                 opacity: 0;
             }
-            3% {
+            5% {
                 opacity: 0.9;
-                transform: translateY(5px) scale(0.98);
             }
-            10% {
-                transform: translateY(20px) scale(0.95);
-            }
-            20% {
-                transform: translateY(60px) translateX(-3px) scale(0.9);
+            15% {
                 opacity: 0.85;
             }
-            40% {
-                transform: translateY(150px) translateX(-6px) scale(0.8);
-                opacity: 0.7;
-            }
-            60% {
-                transform: translateY(250px) translateX(-9px) scale(0.65);
-                opacity: 0.5;
-            }
-            80% {
-                transform: translateY(380px) translateX(-12px) scale(0.5);
-                opacity: 0.25;
-            }
-            100% {
-                transform: translateY(500px) translateX(-15px) scale(0.3);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes drainBlob {
-            0%, 100% {
-                transform: scale(1) translateY(0);
-                border-radius: 50% 50% 60% 40%;
-            }
-            25% {
-                transform: scale(1.05) translateY(1px);
-                border-radius: 45% 55% 65% 35%;
-            }
             50% {
-                transform: scale(1.08) translateY(2px);
-                border-radius: 55% 45% 55% 45%;
+                opacity: 0.6;
             }
-            75% {
-                transform: scale(1.03) translateY(1px);
-                border-radius: 50% 50% 70% 30%;
-            }
-        }
-        
-        @keyframes leakAccumulate {
-            0% {
-                height: 0;
-                opacity: 0;
-            }
-            20% {
-                height: 8px;
-                opacity: 0.7;
-            }
-            80% {
-                height: 12px;
-                opacity: 0.8;
+            85% {
+                opacity: 0.3;
             }
             100% {
-                height: 15px;
-                opacity: 0.9;
+                transform: translateY(600px);
+                opacity: 0;
             }
-        }
-        
-        @keyframes shimmerFlow {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
         }
         
         @keyframes fadeInUp {
@@ -473,64 +419,17 @@
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.8);
         }
         
-        /* Global Drain Drip */
+        /* Flat 2D Drain Drip */
         .drain-drip {
             position: absolute;
-            width: 7px;
-            height: 11px;
-            background: radial-gradient(ellipse at 30% 20%, 
-                rgba(255, 255, 255, 0.95) 0%, 
-                rgba(255, 255, 255, 0.6) 25%,
-                var(--drain-color) 50%, 
-                var(--drain-color) 100%);
-            border-radius: 50% 50% 50% 50% / 35% 35% 65% 65%;
-            animation: liquidDrainDripGlobal 4s cubic-bezier(0.4, 0.0, 0.6, 1) forwards;
+            width: 6px;
+            height: 10px;
+            background: var(--drain-color);
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            animation: dripFall 2.5s linear forwards;
             pointer-events: none;
-            filter: blur(0.3px);
-            box-shadow: 
-                0 2px 5px rgba(0, 0, 0, 0.4),
-                inset 0 1px 2px rgba(255, 255, 255, 0.6),
-                inset 0 -1px 2px rgba(0, 0, 0, 0.2);
             z-index: 999;
-        }
-        
-        /* Blob & Trail (stays in battery tile) */
-        .drain-blob {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 14px;
-            height: 14px;
-            background: radial-gradient(ellipse at 40% 30%, 
-                rgba(255, 255, 255, 0.9) 0%, 
-                var(--drain-color) 50%);
-            animation: drainBlob 2s ease-in-out infinite;
-            pointer-events: none;
-            filter: blur(0.5px);
-            box-shadow: 
-                0 3px 8px rgba(0, 0, 0, 0.5),
-                inset -2px -2px 3px rgba(0, 0, 0, 0.3),
-                inset 2px 2px 3px rgba(255, 255, 255, 0.7);
-            z-index: 14;
-            transform-origin: center bottom;
-        }
-        
-        .drain-trail {
-            position: absolute;
-            bottom: 0;
-            right: 5px;
-            width: 3px;
-            height: 0;
-            background: linear-gradient(180deg, 
-                transparent 0%,
-                var(--drain-color) 30%,
-                var(--drain-color) 100%);
-            border-radius: 2px;
-            animation: leakAccumulate 1.5s ease-out forwards;
-            pointer-events: none;
-            filter: blur(0.5px);
-            opacity: 0.8;
-            z-index: 13;
+            opacity: 0.85;
         }
         
         /* Status Text */
@@ -907,11 +806,10 @@
         let currentCapacity = 0;
         let currentTheme = 'dark';
         
-        // Drain leak state
+        // Drain leak state (simplified - no blob)
         let drainLeakInterval = null;
         let activeDrainLeaks = 0;
-        const MAX_DRAIN_LEAKS = 2;
-        let drainBlobExists = false;
+        const MAX_DRAIN_LEAKS = 3;
         
         const debugLog = {
             updates: 0,
@@ -928,7 +826,7 @@
             themeChanges: []
         };
         
-        console.log('[INIT] ✅ Global leak overlay - drips fall across all tiles');
+        console.log('[INIT] ⚡ Optimized drain leak: No blob, 2D flat, faster animation');
         console.log('[VOLTAGE] 🔌 Hybrid: Rooted + Charging = Charger voltage, else Battery voltage');
         console.log('[THEME] 🔗 Using Android JavaScript Bridge for theme detection');
         
@@ -1082,7 +980,7 @@
             
             return {
                 bottom: rect.bottom,
-                right: rect.right - 20 // 20px from tile right edge
+                right: rect.right - 20
             };
         }
         
@@ -1139,7 +1037,7 @@
             }
         }
         
-        // Global drain drip
+        // Optimized drain drip (no blob, pure 2D)
         function spawnDrainDrip() {
             if (activeDrainLeaks >= MAX_DRAIN_LEAKS) return;
             
@@ -1147,10 +1045,7 @@
             const drip = document.createElement('div');
             drip.className = 'drain-drip';
             
-            // Get battery tile position
             const pos = getBatteryTilePosition();
-            
-            // Position drip at battery tile bottom-right corner
             drip.style.top = pos.bottom + 'px';
             drip.style.left = pos.right + 'px';
             
@@ -1162,91 +1057,37 @@
             debugLog.drainStats.total++;
             debugLog.drainStats.active++;
             
-            // Drip duration: 4s (falls 500px)
+            // Auto-remove after 2.5s
             setTimeout(() => {
                 drip.remove();
                 activeDrainLeaks--;
                 debugLog.drainStats.active--;
-            }, 4000);
-        }
-        
-        function createDrainBlob() {
-            if (drainBlobExists) return;
-            
-            const tile = document.getElementById('tile-capacity');
-            
-            const trail = document.createElement('div');
-            trail.className = 'drain-trail';
-            trail.id = 'drain-trail';
-            const trailColor = getBatteryColor(currentCapacity);
-            trail.style.setProperty('--drain-color', trailColor);
-            tile.appendChild(trail);
-            
-            const blob = document.createElement('div');
-            blob.className = 'drain-blob';
-            blob.id = 'drain-blob';
-            const blobColor = getBatteryColor(currentCapacity);
-            blob.style.setProperty('--drain-color', blobColor);
-            tile.appendChild(blob);
-            
-            drainBlobExists = true;
-            console.log('[LEAK] 💧 Drain blob created at battery tile corner');
-        }
-        
-        function removeDrainBlob() {
-            if (!drainBlobExists) return;
-            
-            const blob = document.getElementById('drain-blob');
-            const trail = document.getElementById('drain-trail');
-            
-            if (blob) blob.remove();
-            if (trail) trail.remove();
-            
-            drainBlobExists = false;
-            console.log('[LEAK] 🛑 Drain blob removed');
-        }
-        
-        function updateDrainBlobColor() {
-            if (!drainBlobExists) return;
-            
-            const blob = document.getElementById('drain-blob');
-            const trail = document.getElementById('drain-trail');
-            const color = getBatteryColor(currentCapacity);
-            
-            if (blob) blob.style.setProperty('--drain-color', color);
-            if (trail) trail.style.setProperty('--drain-color', color);
+            }, 2500);
         }
         
         function toggleDrainLeak(active) {
             if (active && !drainLeakInterval) {
-                console.log('[LEAK] 🌊 Global drain leak overlay started');
+                console.log('[LEAK] ⚡ Optimized drain leak started (2D flat, 2.5s fall)');
                 debugLog.statusChanges.push({ 
                     time: new Date().toISOString(), 
-                    event: 'Global drain leak started' 
+                    event: 'Drain leak started (optimized)' 
                 });
-                
-                createDrainBlob();
                 
                 // Spawn first drip immediately
                 spawnDrainDrip();
                 
-                // Then spawn every 4 seconds
-                drainLeakInterval = setInterval(() => {
-                    spawnDrainDrip();
-                    updateDrainBlobColor();
-                }, 4000);
+                // Then spawn every 3 seconds
+                drainLeakInterval = setInterval(spawnDrainDrip, 3000);
                 
             } else if (!active && drainLeakInterval) {
-                console.log('[LEAK] 🛑 Global drain leak overlay stopped');
+                console.log('[LEAK] 🛑 Drain leak stopped');
                 debugLog.statusChanges.push({ 
                     time: new Date().toISOString(), 
-                    event: 'Global drain leak stopped' 
+                    event: 'Drain leak stopped' 
                 });
                 
                 clearInterval(drainLeakInterval);
                 drainLeakInterval = null;
-                
-                removeDrainBlob();
                 
                 // Clean up global drips
                 document.querySelectorAll('.drain-drip').forEach(el => el.remove());
@@ -1268,7 +1109,7 @@
                 g = Math.floor(244 - (244 - 175) * ratio);
                 b = Math.floor(54 + (80 - 54) * ratio);
             }
-            return `rgba(${r}, ${g}, ${b}, 0.75)`;
+            return `rgba(${r}, ${g}, ${b}, 0.85)`;
         }
         
         function checkRootStatus() {
@@ -1464,7 +1305,7 @@
                 });
                 if (debugLog.statusDetection.length > 20) debugLog.statusDetection.shift();
                 
-                // Toggle animations based on status
+                // Toggle animations
                 toggleBubbleSpawning(chargingActive);
                 
                 const isDraining = (
@@ -1509,14 +1350,13 @@
         
         function showDebug() {
             try {
-                debugData = '========== GLOBAL LEAK OVERLAY DEBUG ==========\n\n';
+                debugData = '========== OPTIMIZED LEAK DEBUG ==========\n\n';
                 debugData += '--- ANIMATIONS STATUS ---\n';
                 debugData += `Charging Bubbles: ${isCharging ? 'Active' : 'Stopped'}\n`;
-                debugData += `Global Drain Leak: ${drainLeakInterval ? 'Active' : 'Stopped'}\n`;
+                debugData += `Drain Leak: ${drainLeakInterval ? 'Active (Optimized 2D)' : 'Stopped'}\n`;
                 debugData += `Bubbles Active: ${debugLog.bubbleStats.active} (Total: ${debugLog.bubbleStats.total})\n`;
                 debugData += `Drips Active: ${debugLog.drainStats.active} (Total: ${debugLog.drainStats.total})\n`;
-                debugData += `Drain Blob: ${drainBlobExists ? 'Visible' : 'Hidden'}\n`;
-                debugData += `Drip Fall Distance: 500px (across tiles)\n\n`;
+                debugData += `Drip Specs: 2.5s fall, 600px, linear easing, no blur\n\n`;
                 
                 debugData += '--- HYBRID VOLTAGE TILE ---\n';
                 debugLog.voltageSource.slice(-10).forEach(vs => {
