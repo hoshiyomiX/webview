@@ -8,28 +8,59 @@ android {
         minSdkVersion 21
         targetSdkVersion 34
         versionCode 1
-        versionName "1.0-priv"
+        versionName "1.0"
+    }
+    
+    // Product Flavors untuk handle sharedUserId
+    flavorDimensions "deployment"
+    productFlavors {
+        // Standalone build - untuk testing tanpa ROM integration
+        // Install langsung via adb (debug/release certificate)
+        standalone {
+            dimension "deployment"
+            applicationIdSuffix ".standalone"
+            versionNameSuffix "-standalone"
+            
+            // NO sharedUserId - bisa install normal
+            // Permissions terbatas, sysfs access akan gagal di enforcing mode
+        }
         
-        // Enable BuildConfig.DEBUG untuk logging
-        buildConfigField "boolean", "ENABLE_SYSFS_LOGGING", "true"
+        // Priv-app build - untuk ROM integration
+        // Harus di-sign dengan platform certificate
+        privapp {
+            dimension "deployment"
+            versionNameSuffix "-privapp"
+            
+            // Inject sharedUserId via manifestPlaceholders
+            manifestPlaceholders = [
+                sharedUserId: 'android:sharedUserId="android.uid.system"'
+            ]
+        }
     }
     
     buildTypes {
+        debug {
+            minifyEnabled false
+            debuggable true
+            buildConfigField "boolean", "ENABLE_SYSFS_LOGGING", "true"
+            buildConfigField "boolean", "IS_PRIV_APP", "false"  // Override di privapp flavor
+        }
+        
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             
-            // Debug logging tetap enabled di priv-app builds
             debuggable false
             buildConfigField "boolean", "ENABLE_SYSFS_LOGGING", "true"
+            buildConfigField "boolean", "IS_PRIV_APP", "false"  // Override di privapp flavor
         }
-        
-        debug {
-            minifyEnabled false
-            debuggable true
-            buildConfigField "boolean", "ENABLE_SYSFS_LOGGING", "true"
-            applicationIdSuffix ".debug"
+    }
+    
+    // Override BuildConfig untuk privapp flavor
+    applicationVariants.all { variant ->
+        if (variant.flavorName == "privapp") {
+            variant.buildConfigField "boolean", "IS_PRIV_APP", "true"
         }
     }
     
@@ -38,7 +69,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     
-    // Lint options
     lintOptions {
         abortOnError false
         checkReleaseBuilds false

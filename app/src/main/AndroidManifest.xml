@@ -2,15 +2,18 @@
 <manifest
     package="com.deviant.batterymonitor"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:sharedUserId="android.uid.system">
+    xmlns:tools="http://schemas.android.com/tools">
+    
+    <!-- sharedUserId akan di-inject via build flavor -->
+    <!-- standalone flavor: tidak ada sharedUserId -->
+    <!-- privapp flavor: android:sharedUserId="android.uid.system" -->
     
     <!-- Standard Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     
-    <!-- System/Privileged Permissions -->
+    <!-- System/Privileged Permissions (hanya dipake di priv-app flavor) -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS" 
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" 
@@ -22,17 +25,12 @@
     <uses-permission android:name="android.permission.DUMP" 
         tools:ignore="ProtectedPermissions" />
     
-    <!-- Sysfs Access (implicitly via SELinux policy) -->
-    <uses-permission android:name="android.permission.ACCESS_SUPERUSER" 
-        tools:ignore="ProtectedPermissions" />
-    
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
         android:requestLegacyExternalStorage="true"
-        android:persistent="true"
         tools:ignore="GoogleAppIndexingWarning">
         
         <activity
