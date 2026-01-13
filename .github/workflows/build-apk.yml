@@ -6,23 +6,23 @@ on:
       - battery-monitor
       - master
       - checkpoint
-      - main
+      - priv-app-system
   pull_request:
     branches:
       - battery-monitor
       - master
       - checkpoint
-      - main
+      - priv-app-system
   workflow_dispatch:
     inputs:
       branch:
         description: 'Branch to build'
         required: true
-        default: 'battery-monitor'
+        default: 'priv-app-system'
         type: choice
         options:
           - battery-monitor
-          - master
+          - priv-app-system
           - main
       build_type:
         description: 'Build type'
