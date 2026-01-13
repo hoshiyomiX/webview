@@ -1,36 +1,39 @@
-#built application files
-*.apk
-*.ap_
-
-# files for the dex VM
-*.dex
-
-# Java class files
-*.class
-
-# generated files
-bin/
-gen/
+# Gradle files
+.gradle/
+build/
+!gradle-wrapper.jar
+*.log
 
 # Local configuration file (sdk path, etc)
 local.properties
 
-# Windows thumbnail db
-Thumbs.db
-
-# OSX files
-.DS_Store
-
 # Android Studio
+.idea/
 *.iml
-.idea
-#.idea/workspace.xml - remove # and delete .idea if it better suit your needs.
-.gradle
-build/
-.navigation
-captures/
-output.json
-
-#NDK
-obj/
+.DS_Store
+/captures
 .externalNativeBuild
+.cxx
+
+# Keystore files
+*.jks
+*.keystore
+
+# Built APK
+app/build/
+app/release/
+*.apk
+*.ap_
+*.aab
+
+# ProGuard
+proguard/
+
+# Log Files
+*.log
+
+# NDK
+obj/
+
+# OS-specific
+Thumbs.db
