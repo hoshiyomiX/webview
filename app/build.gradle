@@ -1,26 +1,47 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 34
     
     defaultConfig {
         applicationId "com.deviant.batterymonitor"
         minSdkVersion 21
-        targetSdkVersion 31
-        versionCode 2
-        versionName "2.0"
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0-priv"
+        
+        // Enable BuildConfig.DEBUG untuk logging
+        buildConfigField "boolean", "ENABLE_SYSFS_LOGGING", "true"
     }
     
     buildTypes {
         release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            
+            // Debug logging tetap enabled di priv-app builds
+            debuggable false
+            buildConfigField "boolean", "ENABLE_SYSFS_LOGGING", "true"
+        }
+        
+        debug {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable true
+            buildConfigField "boolean", "ENABLE_SYSFS_LOGGING", "true"
+            applicationIdSuffix ".debug"
         }
     }
     
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    
+    // Lint options
+    lintOptions {
+        abortOnError false
+        checkReleaseBuilds false
     }
 }
 

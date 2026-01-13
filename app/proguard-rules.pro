@@ -1,17 +1,48 @@
 # Add project specific ProGuard rules here.
-# By default, the flags in this file are appended to flags specified
-# in /Applications/Utilities/sdk/tools/proguard/proguard-android.txt
-# You can edit the include path and order by changing the proguardFiles
-# directive in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# You can control the set of applied configuration files using the
+# proguardFiles setting in build.gradle.
 
-# Add any project specific keep options here:
+# Preserve debug utilities di debug builds
+-keepclassmembers class com.deviant.batterymonitor.SELinuxDebugger {
+    public *;
+}
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+-keepclassmembers class com.deviant.batterymonitor.SysfsAccessLogger {
+    public *;
+}
+
+# Preserve logging methods
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+    public static *** i(...);
+}
+
+# Keep line numbers untuk crash reports
+-keepattributes SourceFile,LineNumberTable
+
+# Rename source file attribute untuk obfuscation
+-renamesourcefileattribute SourceFile
+
+# WebView related
+-keepclassmembers class * extends android.webkit.WebViewClient {
+    public void *(android.webkit.WebView, java.lang.String, android.graphics.Bitmap);
+    public boolean *(android.webkit.WebView, java.lang.String);
+}
+
+-keepclassmembers class * extends android.webkit.WebChromeClient {
+    public void *(android.webkit.WebView, java.lang.String);
+}
+
+# JavaScript Interface (jika ada)
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# Preserve native methods
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+# Preserve custom exceptions
+-keep public class * extends java.lang.Exception
