@@ -1,0 +1,23 @@
+;; SELinux Policy untuk BatteryMonitor priv-app
+;; Patch ini ke /vendor/etc/selinux/vendor_sepolicy.cil
+
+(typeattributeset battery_monitor_app (priv_app))
+
+;; Allow access ke sysfs nodes (battery, LED, etc)
+(allow priv_app sysfs_battery_supply (file (read write open getattr)))
+(allow priv_app sysfs_leds (file (read write open getattr)))
+(allow priv_app sysfs_leds (dir (search)))
+
+;; Allow read sysfs info
+(allow priv_app sysfs (file (read open getattr)))
+(allow priv_app sysfs (dir (search open read)))
+
+;; Allow write ke specific sysfs paths
+(allow priv_app sysfs_devices_system_cpu (file (read write open)))
+(allow priv_app sysfs_power (file (read write open getattr)))
+
+;; SELinux context transitions
+(allow priv_app sysfs (filesystem (getattr)))
+
+;; Dontaudit untuk suppress warnings
+(dontaudit priv_app sysfs (file (write)))

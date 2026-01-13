@@ -1,0 +1,11 @@
+# File contexts untuk BatteryMonitor
+# Patch ini ke /vendor/etc/selinux/vendor_file_contexts
+
+# App binary
+/system/priv-app/BatteryMonitor(/.*)?                                u:object_r:system_app_data_file:s0
+/data/data/com\.deviant\.batterymonitor(/.*)?                        u:object_r:app_data_file:s0
+
+# Sysfs nodes yang diakses
+/sys/class/power_supply/battery(/.*)?                                 u:object_r:sysfs_battery_supply:s0
+/sys/class/leds(/.*)?                                                 u:object_r:sysfs_leds:s0
+/sys/devices/system/cpu(/.*)?                                         u:object_r:sysfs_devices_system_cpu:s0

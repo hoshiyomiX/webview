@@ -2,11 +2,29 @@
 <manifest
     package="com.deviant.batterymonitor"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:sharedUserId="android.uid.system">
     
+    <!-- Standard Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    
+    <!-- System/Privileged Permissions -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" 
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" 
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.DEVICE_POWER" 
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.BATTERY_STATS" 
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.DUMP" 
+        tools:ignore="ProtectedPermissions" />
+    
+    <!-- Sysfs Access (implicitly via SELinux policy) -->
+    <uses-permission android:name="android.permission.ACCESS_SUPERUSER" 
+        tools:ignore="ProtectedPermissions" />
     
     <application
         android:allowBackup="true"
@@ -14,7 +32,9 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
         android:requestLegacyExternalStorage="true"
+        android:persistent="true"
         tools:ignore="GoogleAppIndexingWarning">
+        
         <activity
             android:configChanges="orientation|screenSize"
             android:name="com.deviant.batterymonitor.MainActivity"
@@ -24,5 +44,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
     </application>
+    
 </manifest>
