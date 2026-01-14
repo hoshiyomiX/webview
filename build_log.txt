@@ -1,0 +1,1626 @@
+===== BUILD INFORMATION =====
+Branch: priv-app-system
+Build type: debug
+Triggered by: push
+Commit SHA: d03bde49251715d5fd2c0606688fe3d501570f80
+Timestamp: Wed Jan 14 01:27:28 UTC 2026
+============================
+
+===== STARTING DEBUG BUILD =====
+Initialized native services in: /home/runner/.gradle/native
+Initialized jansi services in: /home/runner/.gradle/native
+
+Welcome to Gradle 7.2!
+
+Here are the highlights of this release:
+ - Toolchain support for Scala
+ - More cache hits when Java source files have platform-specific line endings
+ - More resilient remote HTTP build cache behavior
+
+For more details see https://docs.gradle.org/7.2/release-notes.html
+
+Removing 0 daemon stop events from registry
+Starting a Gradle Daemon (subsequent builds will be faster)
+Starting process 'Gradle build daemon'. Working directory: /home/runner/.gradle/daemon/7.2 Command: /usr/lib/jvm/temurin-17-jdk-amd64/bin/java --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.prefs/java.util.prefs=ALL-UNNAMED --add-opens java.prefs/java.util.prefs=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED -XX:MaxMetaspaceSize=256m -XX:+HeapDumpOnOutOfMemoryError -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Duser.country -Duser.language=en -Duser.variant -cp /home/runner/.gradle/wrapper/dists/gradle-7.2-bin/185udrcak5q5ortl1ra4if2ae8/gradle-7.2/lib/gradle-launcher-7.2.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 7.2
+Successfully started process 'Gradle build daemon'
+An attempt to start the daemon took 0.906 secs.
+The client will now receive all logging from the daemon (pid: 2194). The daemon log file: /home/runner/.gradle/daemon/7.2/daemon-2194.out.log
+Starting build in new daemon [memory: 512 MiB]
+Closing daemon's stdin at end of input.
+The daemon will no longer process any standard input.
+Using 4 worker leases.
+Watching the file system is configured to be enabled if available
+Now considering [/home/runner/work/webview/webview] as hierarchies to watch
+File system watching is active
+Starting Build
+Settings evaluated using settings file '/home/runner/work/webview/webview/settings.gradle'.
+Projects loaded. Root project using build file '/home/runner/work/webview/webview/build.gradle'.
+Included projects: [root project 'webview', project ':app']
+
+> Configure project :
+Evaluating root project 'webview' using build file '/home/runner/work/webview/webview/build.gradle'.
+
+> Configure project :app
+Evaluating project ':app' using build file '/home/runner/work/webview/webview/app/build.gradle'.
+Parsed shrinker version: 3.1.66
+All projects evaluated.
+Selected primary task 'assembleDebug' from project :
+WARNING:We recommend using a newer Android Gradle plugin to use compileSdk = 34
+
+This Android Gradle plugin (7.1.2) was tested up to compileSdk = 32
+
+This warning can be suppressed by adding
+    android.suppressUnsupportedCompileSdk=34
+to this project's gradle.properties
+
+The build will continue, but you are strongly encouraged to update your project to
+use a newer Android Gradle Plugin that has been tested with compileSdk = 34
+Parsing /usr/local/lib/android/sdk/build-tools/34.0.0/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/35.0.0/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/35.0.1/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/36.0.0/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/36.1.0/package.xml
+Parsing /usr/local/lib/android/sdk/cmake/3.31.5/package.xml
+Parsing /usr/local/lib/android/sdk/cmake/4.1.2/package.xml
+Parsing legacy package: /usr/local/lib/android/sdk/cmdline-tools/latest
+Parsing /usr/local/lib/android/sdk/extras/android/m2repository/package.xml
+Parsing /usr/local/lib/android/sdk/extras/google/google_play_services/package.xml
+Parsing /usr/local/lib/android/sdk/extras/google/m2repository/package.xml
+Parsing /usr/local/lib/android/sdk/ndk/26.3.11579264/package.xml
+Parsing /usr/local/lib/android/sdk/ndk/27.3.13750724/package.xml
+Parsing /usr/local/lib/android/sdk/ndk/28.2.13676358/package.xml
+Parsing /usr/local/lib/android/sdk/ndk/29.0.14206865/package.xml
+Parsing /usr/local/lib/android/sdk/platform-tools/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34-ext10/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34-ext11/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34-ext12/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34-ext8/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-35/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-35-ext14/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-35-ext15/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-36/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-36-ext18/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-36-ext19/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-36.1/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/34.0.0/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/35.0.0/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/35.0.1/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/36.0.0/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/36.1.0/package.xml
+Parsing /usr/local/lib/android/sdk/cmake/3.31.5/package.xml
+Parsing /usr/local/lib/android/sdk/cmake/4.1.2/package.xml
+Parsing legacy package: /usr/local/lib/android/sdk/cmdline-tools/latest
+Parsing /usr/local/lib/android/sdk/extras/android/m2repository/package.xml
+Parsing /usr/local/lib/android/sdk/extras/google/google_play_services/package.xml
+Parsing /usr/local/lib/android/sdk/extras/google/m2repository/package.xml
+Parsing /usr/local/lib/android/sdk/ndk/26.3.11579264/package.xml
+Parsing /usr/local/lib/android/sdk/ndk/27.3.13750724/package.xml
+Parsing /usr/local/lib/android/sdk/ndk/28.2.13676358/package.xml
+Parsing /usr/local/lib/android/sdk/ndk/29.0.14206865/package.xml
+Parsing /usr/local/lib/android/sdk/platform-tools/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34-ext10/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34-ext11/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34-ext12/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34-ext8/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-35/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-35-ext14/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-35-ext15/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-36/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-36-ext18/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-36-ext19/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-36.1/package.xml
+Checking the license for package Android SDK Build-Tools 30.0.3 in /usr/local/lib/android/sdk/licenses
+License for package Android SDK Build-Tools 30.0.3 accepted.
+Preparing "Install Android SDK Build-Tools 30.0.3 (revision: 30.0.3)".
+"Install Android SDK Build-Tools 30.0.3 (revision: 30.0.3)" ready.
+Installing Android SDK Build-Tools 30.0.3 in /usr/local/lib/android/sdk/build-tools/30.0.3
+"Install Android SDK Build-Tools 30.0.3 (revision: 30.0.3)" complete.
+"Install Android SDK Build-Tools 30.0.3 (revision: 30.0.3)" finished.
+Parsing /usr/local/lib/android/sdk/build-tools/30.0.3/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/34.0.0/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/35.0.0/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/35.0.1/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/36.0.0/package.xml
+Parsing /usr/local/lib/android/sdk/build-tools/36.1.0/package.xml
+Parsing /usr/local/lib/android/sdk/cmake/3.31.5/package.xml
+Parsing /usr/local/lib/android/sdk/cmake/4.1.2/package.xml
+Parsing legacy package: /usr/local/lib/android/sdk/cmdline-tools/latest
+Parsing /usr/local/lib/android/sdk/extras/android/m2repository/package.xml
+Parsing /usr/local/lib/android/sdk/extras/google/google_play_services/package.xml
+Parsing /usr/local/lib/android/sdk/extras/google/m2repository/package.xml
+Parsing /usr/local/lib/android/sdk/ndk/26.3.11579264/package.xml
+Parsing /usr/local/lib/android/sdk/ndk/27.3.13750724/package.xml
+Parsing /usr/local/lib/android/sdk/ndk/28.2.13676358/package.xml
+Parsing /usr/local/lib/android/sdk/ndk/29.0.14206865/package.xml
+Parsing /usr/local/lib/android/sdk/platform-tools/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34-ext10/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34-ext11/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34-ext12/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-34-ext8/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-35/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-35-ext14/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-35-ext15/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-36/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-36-ext18/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-36-ext19/package.xml
+Parsing /usr/local/lib/android/sdk/platforms/android-36.1/package.xml
+SDK initialized in 5610 ms
+Tasks to be executed: [task ':app:preBuild', task ':app:prePrivappDebugBuild', task ':app:mergePrivappDebugNativeDebugMetadata', task ':app:compilePrivappDebugAidl', task ':app:compilePrivappDebugRenderscript', task ':app:generatePrivappDebugBuildConfig', task ':app:javaPreCompilePrivappDebug', task ':app:checkPrivappDebugAarMetadata', task ':app:generatePrivappDebugResValues', task ':app:generatePrivappDebugResources', task ':app:mergePrivappDebugResources', task ':app:createPrivappDebugCompatibleScreenManifests', task ':app:extractDeepLinksPrivappDebug', task ':app:processPrivappDebugMainManifest', task ':app:processPrivappDebugManifest', task ':app:processPrivappDebugManifestForPackage', task ':app:processPrivappDebugResources', task ':app:compilePrivappDebugJavaWithJavac', task ':app:mergePrivappDebugShaders', task ':app:compilePrivappDebugShaders', task ':app:generatePrivappDebugAssets', task ':app:mergePrivappDebugAssets', task ':app:compressPrivappDebugAssets', task ':app:checkPrivappDebugDuplicateClasses', task ':app:desugarPrivappDebugFileDependencies', task ':app:mergeExtDexPrivappDebug', task ':app:mergeLibDexPrivappDebug', task ':app:processPrivappDebugJavaRes', task ':app:mergePrivappDebugJavaResource', task ':app:dexBuilderPrivappDebug', task ':app:mergeProjectDexPrivappDebug', task ':app:mergePrivappDebugJniLibFolders', task ':app:mergePrivappDebugNativeLibs', task ':app:stripPrivappDebugDebugSymbols', task ':app:validateSigningPrivappDebug', task ':app:writePrivappDebugAppMetadata', task ':app:writePrivappDebugSigningConfigVersions', task ':app:packagePrivappDebug', task ':app:createPrivappDebugApkListingFileRedirect', task ':app:assemblePrivappDebug', task ':app:preStandaloneDebugBuild', task ':app:mergeStandaloneDebugNativeDebugMetadata', task ':app:compileStandaloneDebugAidl', task ':app:compileStandaloneDebugRenderscript', task ':app:generateStandaloneDebugBuildConfig', task ':app:javaPreCompileStandaloneDebug', task ':app:checkStandaloneDebugAarMetadata', task ':app:generateStandaloneDebugResValues', task ':app:generateStandaloneDebugResources', task ':app:mergeStandaloneDebugResources', task ':app:createStandaloneDebugCompatibleScreenManifests', task ':app:extractDeepLinksStandaloneDebug', task ':app:processStandaloneDebugMainManifest', task ':app:processStandaloneDebugManifest', task ':app:processStandaloneDebugManifestForPackage', task ':app:processStandaloneDebugResources', task ':app:compileStandaloneDebugJavaWithJavac', task ':app:mergeStandaloneDebugShaders', task ':app:compileStandaloneDebugShaders', task ':app:generateStandaloneDebugAssets', task ':app:mergeStandaloneDebugAssets', task ':app:compressStandaloneDebugAssets', task ':app:checkStandaloneDebugDuplicateClasses', task ':app:desugarStandaloneDebugFileDependencies', task ':app:mergeExtDexStandaloneDebug', task ':app:mergeLibDexStandaloneDebug', task ':app:dexBuilderStandaloneDebug', task ':app:mergeProjectDexStandaloneDebug', task ':app:processStandaloneDebugJavaRes', task ':app:mergeStandaloneDebugJavaResource', task ':app:mergeStandaloneDebugJniLibFolders', task ':app:mergeStandaloneDebugNativeLibs', task ':app:stripStandaloneDebugDebugSymbols', task ':app:validateSigningStandaloneDebug', task ':app:writeStandaloneDebugAppMetadata', task ':app:writeStandaloneDebugSigningConfigVersions', task ':app:packageStandaloneDebug', task ':app:createStandaloneDebugApkListingFileRedirect', task ':app:assembleStandaloneDebug', task ':app:assembleDebug']
+Tasks that were excluded: []
+:app:preBuild (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:preBuild UP-TO-DATE
+Skipping task ':app:preBuild' as it has no actions.
+:app:preBuild (Thread[Execution worker for ':',5,main]) completed. Took 0.025 secs.
+:app:prePrivappDebugBuild (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:prePrivappDebugBuild UP-TO-DATE
+Skipping task ':app:prePrivappDebugBuild' as it has no actions.
+:app:prePrivappDebugBuild (Thread[Execution worker for ':',5,main]) completed. Took 0.0 secs.
+:app:mergePrivappDebugNativeDebugMetadata (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:mergePrivappDebugNativeDebugMetadata NO-SOURCE
+Skipping task ':app:mergePrivappDebugNativeDebugMetadata' as it has no source files and no previous output files.
+:app:mergePrivappDebugNativeDebugMetadata (Thread[Execution worker for ':',5,main]) completed. Took 0.016 secs.
+:app:compilePrivappDebugAidl (Thread[Execution worker for ':' Thread 3,5,main]) started.
+
+> Task :app:compilePrivappDebugAidl NO-SOURCE
+file or directory '/home/runner/work/webview/webview/app/src/main/aidl', not found
+file or directory '/home/runner/work/webview/webview/app/src/privapp/aidl', not found
+file or directory '/home/runner/work/webview/webview/app/src/debug/aidl', not found
+file or directory '/home/runner/work/webview/webview/app/src/privappDebug/aidl', not found
+Skipping task ':app:compilePrivappDebugAidl' as it has no source files and no previous output files.
+:app:compilePrivappDebugAidl (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.003 secs.
+:app:compilePrivappDebugRenderscript (Thread[Execution worker for ':' Thread 3,5,main]) started.
+
+> Task :app:compilePrivappDebugRenderscript NO-SOURCE
+file or directory '/home/runner/work/webview/webview/app/src/main/rs', not found
+file or directory '/home/runner/work/webview/webview/app/src/privapp/rs', not found
+file or directory '/home/runner/work/webview/webview/app/src/debug/rs', not found
+file or directory '/home/runner/work/webview/webview/app/src/privappDebug/rs', not found
+Skipping task ':app:compilePrivappDebugRenderscript' as it has no source files and no previous output files.
+:app:compilePrivappDebugRenderscript (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.003 secs.
+:app:generatePrivappDebugBuildConfig (Thread[Execution worker for ':' Thread 3,5,main]) started.
+
+> Task :app:generatePrivappDebugBuildConfig
+Watching 1 directories to track changes
+Caching disabled for task ':app:generatePrivappDebugBuildConfig' because:
+  Build cache is disabled
+Task ':app:generatePrivappDebugBuildConfig' is not up-to-date because:
+  No history is available.
+Not watching anything anymore
+Watching 0 directories to track changes
+Watching 5 directories to track changes
+:app:generatePrivappDebugBuildConfig (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.08 secs.
+:app:javaPreCompilePrivappDebug (Thread[Execution worker for ':' Thread 3,5,main]) started.
+:app:checkPrivappDebugAarMetadata (Thread[Daemon worker,5,main]) started.
+
+> Task :app:javaPreCompilePrivappDebug
+Watching 6 directories to track changes
+Caching disabled for task ':app:javaPreCompilePrivappDebug' because:
+  Build cache is disabled
+Task ':app:javaPreCompilePrivappDebug' is not up-to-date because:
+  No history is available.
+Watching 5 directories to track changes
+Watching 6 directories to track changes
+:app:javaPreCompilePrivappDebug (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.023 secs.
+:app:generatePrivappDebugResValues (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:checkPrivappDebugAarMetadata
+Watching 6 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:checkPrivappDebugAarMetadata' because:
+  Build cache is disabled
+Task ':app:checkPrivappDebugAarMetadata' is not up-to-date because:
+  No history is available.
+Watching 5 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 8 directories to track changes
+:app:checkPrivappDebugAarMetadata (Thread[Daemon worker,5,main]) completed. Took 0.012 secs.
+
+> Task :app:generatePrivappDebugResValues
+Watching 7 directories to track changes
+Caching disabled for task ':app:generatePrivappDebugResValues' because:
+  Build cache is disabled
+Task ':app:generatePrivappDebugResValues' is not up-to-date because:
+  No history is available.
+Watching 6 directories to track changes
+Watching 10 directories to track changes
+:app:generatePrivappDebugResValues (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.002 secs.
+:app:generatePrivappDebugResources (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:generatePrivappDebugResources
+Skipping task ':app:generatePrivappDebugResources' as it has no actions.
+:app:generatePrivappDebugResources (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.0 secs.
+:app:mergePrivappDebugResources (Thread[Execution worker for ':' Thread 2,5,main]) started.
+:app:createPrivappDebugCompatibleScreenManifests (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:createPrivappDebugCompatibleScreenManifests
+Watching 22 directories to track changes
+Caching disabled for task ':app:createPrivappDebugCompatibleScreenManifests' because:
+  Build cache is disabled
+Task ':app:createPrivappDebugCompatibleScreenManifests' is not up-to-date because:
+  No history is available.
+Watching 21 directories to track changes
+Watching 23 directories to track changes
+:app:createPrivappDebugCompatibleScreenManifests (Thread[Execution worker for ':',5,main]) completed. Took 0.039 secs.
+:app:extractDeepLinksPrivappDebug (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:extractDeepLinksPrivappDebug
+Watching 24 directories to track changes
+Caching disabled for task ':app:extractDeepLinksPrivappDebug' because:
+  Build cache is disabled
+Task ':app:extractDeepLinksPrivappDebug' is not up-to-date because:
+  No history is available.
+Watching 23 directories to track changes
+Watching 24 directories to track changes
+:app:extractDeepLinksPrivappDebug (Thread[Execution worker for ':',5,main]) completed. Took 0.008 secs.
+:app:processPrivappDebugMainManifest (Thread[Daemon worker,5,main]) started.
+
+> Task :app:mergePrivappDebugResources
+Watching 11 directories to track changes
+Watching 11 directories to track changes
+Watching 12 directories to track changes
+Watching 12 directories to track changes
+Watching 12 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 21 directories to track changes
+Watching 22 directories to track changes
+Watching 23 directories to track changes
+Watching 23 directories to track changes
+Caching disabled for task ':app:mergePrivappDebugResources' because:
+  Build cache is disabled
+Task ':app:mergePrivappDebugResources' is not up-to-date because:
+  No history is available.
+Watching 23 directories to track changes
+Watching 23 directories to track changes
+Watching 22 directories to track changes
+Watching 22 directories to track changes
+Watching 21 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergePrivappDebugResources'.
+[MergeResources] Inputs are non-incremental full task action.
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Compiling image file /home/runner/work/webview/webview/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+Compiling image file /home/runner/work/webview/webview/app/src/main/res/mipmap-hdpi/ic_launcher.png
+Compiling file /home/runner/work/webview/webview/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png to /home/runner/work/webview/webview/app/build/intermediates/merged_res/privappDebug/mipmap-xxxhdpi_ic_launcher.png.flat
+Compiling image file /home/runner/work/webview/webview/app/src/main/res/mipmap-mdpi/ic_launcher.png
+Compiling file /home/runner/work/webview/webview/app/src/main/res/mipmap-hdpi/ic_launcher.png to /home/runner/work/webview/webview/app/build/intermediates/merged_res/privappDebug/mipmap-hdpi_ic_launcher.png.flat
+Compiling file /home/runner/work/webview/webview/app/src/main/res/mipmap-mdpi/ic_launcher.png to /home/runner/work/webview/webview/app/build/intermediates/merged_res/privappDebug/mipmap-mdpi_ic_launcher.png.flat
+Compiling XML table /home/runner/work/webview/webview/app/build/intermediates/incremental/mergePrivappDebugResources/merged.dir/values/values.xml to /home/runner/work/webview/webview/app/build/intermediates/merged_res/privappDebug/values_values.arsc.flat
+Compiling image file /home/runner/work/webview/webview/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+Compiling file /home/runner/work/webview/webview/app/src/main/res/mipmap-xhdpi/ic_launcher.png to /home/runner/work/webview/webview/app/build/intermediates/merged_res/privappDebug/mipmap-xhdpi_ic_launcher.png.flat
+Compiling image file /home/runner/work/webview/webview/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+Compiling file /home/runner/work/webview/webview/app/src/main/res/mipmap-xxhdpi/ic_launcher.png to /home/runner/work/webview/webview/app/build/intermediates/merged_res/privappDebug/mipmap-xxhdpi_ic_launcher.png.flat
+Compiling xml file /home/runner/work/webview/webview/app/src/main/res/layout/activity_main.xml to /home/runner/work/webview/webview/app/build/intermediates/merged_res/privappDebug/layout_activity_main.xml.flat
+Watching 28 directories to track changes
+Watching 30 directories to track changes
+Watching 32 directories to track changes
+Watching 37 directories to track changes
+Watching 39 directories to track changes
+:app:mergePrivappDebugResources (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.258 secs.
+
+> Task :app:processPrivappDebugMainManifest
+Watching 25 directories to track changes
+Watching 25 directories to track changes
+Watching 26 directories to track changes
+Watching 26 directories to track changes
+Watching 26 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:processPrivappDebugMainManifest' because:
+  Build cache is disabled
+Task ':app:processPrivappDebugMainManifest' is not up-to-date because:
+  No history is available.
+Watching 26 directories to track changes
+Watching 25 directories to track changes
+Watching 24 directories to track changes
+The input changes require a full rebuild for incremental task ':app:processPrivappDebugMainManifest'.
+Unable do incremental execution: full task run
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Merging flavors and build manifest /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml 
+
+Merging main manifest /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml
+
+Merging manifest with lower AndroidManifest.xml:2:1-48:12
+Adopted [uses-permission: null]
+Adopted [uses-permission: null]
+Adopted [uses-permission: null]
+Adopted [uses-permission: null]
+Adopted [uses-permission: null]
+Adopted [uses-permission: null]
+Adopted [uses-permission: null]
+Adopted [uses-permission: null]
+application defined in both files...
+Merging application with lower AndroidManifest.xml:28:5-46:19
+Adopted [activity: null]
+Adopted [uses-sdk: null]
+Merging result: WARNING
+/home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml:10:5-12:46 Warning:
+	application@android:persistent was tagged at AndroidManifest.xml:10 to replace other declarations but no other declaration present
+-- Merging decision tree log ---
+manifest
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:2:1-48:12
+INJECTED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:2:1-48:12
+INJECTED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:2:1-48:12
+INJECTED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:2:1-48:12
+MERGED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:2:1-48:12
+INJECTED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml:2:1-14:12
+INJECTED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml:2:1-14:12
+INJECTED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml:2:1-14:12
+	package
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:3:5-41
+		INJECTED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:3:5-41
+		INJECTED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml
+	android:sharedUserId
+		ADDED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml:5:5-46
+	android:versionName
+		INJECTED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:2:1-48:12
+		INJECTED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml
+	xmlns:tools
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:5:5-51
+	android:versionCode
+		INJECTED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:2:1-48:12
+		INJECTED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml
+	xmlns:android
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:4:5-63
+uses-permission#android.permission.INTERNET
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:12:5-67
+	android:name
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:12:22-64
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:13:5-81
+	android:name
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:13:22-78
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:14:5-80
+	android:name
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:14:22-77
+uses-permission#android.permission.WRITE_SETTINGS
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:17:5-18:47
+	tools:ignore
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:18:9-44
+	android:name
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:17:22-70
+uses-permission#android.permission.WRITE_SECURE_SETTINGS
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:19:5-20:47
+	tools:ignore
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:20:9-44
+	android:name
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:19:22-77
+uses-permission#android.permission.DEVICE_POWER
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:21:5-22:47
+	tools:ignore
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:22:9-44
+	android:name
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:21:22-68
+uses-permission#android.permission.BATTERY_STATS
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:23:5-24:47
+	tools:ignore
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:23:22-69
+uses-permission#android.permission.DUMP
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:25:5-26:47
+	tools:ignore
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:26:9-44
+	android:name
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:25:22-60
+application
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:28:5-46:19
+MERGED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:28:5-46:19
+MERGED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:28:5-46:19
+	android:requestLegacyExternalStorage
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:33:9-52
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:33:9-52
+	android:label
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:31:9-41
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:31:9-41
+	tools:ignore
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:34:9-48
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:34:9-48
+	android:persistent
+		ADDED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml:11:9-34
+	android:icon
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:30:9-43
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:30:9-43
+	android:allowBackup
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:29:9-35
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:29:9-35
+	android:theme
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:32:9-40
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:32:9-40
+	tools:replace
+		ADDED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml:12:9-43
+activity#com.deviant.batterymonitor.MainActivity
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:36:9-44:20
+	android:exported
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:39:13-36
+	android:configChanges
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:37:13-59
+	android:name
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:38:13-67
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:40:13-43:29
+action#android.intent.action.MAIN
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:41:17-69
+	android:name
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:41:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:42:17-77
+	android:name
+		ADDED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:42:27-74
+uses-sdk
+INJECTED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml
+INJECTED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml
+INJECTED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml
+INJECTED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml
+		INJECTED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml
+		INJECTED from /home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml
+
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.deviant.batterymonitor"
+4    android:sharedUserId="android.uid.system"
+5    android:versionCode="1"
+6    android:versionName="1.0-privapp" >
+7
+8    <uses-sdk
+9        android:minSdkVersion="21"
+10        android:targetSdkVersion="34" />
+11
+12    <!-- sharedUserId akan di-inject via build flavor -->
+13    <!-- standalone flavor: tidak ada sharedUserId -->
+14    <!-- privapp flavor: android:sharedUserId="android.uid.system" -->
+15    <!-- Standard Permissions -->
+16    <uses-permission android:name="android.permission.INTERNET" />
+16-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:12:5-67
+16-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:12:22-64
+17    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+17-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:13:5-81
+17-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:13:22-78
+18    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- System/Privileged Permissions (hanya dipake di priv-app flavor) -->
+18-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:14:5-80
+18-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:14:22-77
+19    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+19-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:17:5-18:47
+19-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:17:22-70
+20    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+20-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:19:5-20:47
+20-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:19:22-77
+21    <uses-permission android:name="android.permission.DEVICE_POWER" />
+21-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:21:5-22:47
+21-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:21:22-68
+22    <uses-permission android:name="android.permission.BATTERY_STATS" />
+22-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:23:5-24:47
+22-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:23:22-69
+23    <uses-permission android:name="android.permission.DUMP" /> <!-- Manifest khusus untuk privapp flavor -->
+23-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:25:5-26:47
+23-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:25:22-60
+24    <!-- Merged dengan main manifest -->
+25    <application
+25-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:28:5-46:19
+26        android:allowBackup="true"
+26-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:29:9-35
+27        android:debuggable="true"
+28        android:icon="@mipmap/ic_launcher"
+28-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:30:9-43
+29        android:label="@string/app_name"
+29-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:31:9-41
+30        android:persistent="true"
+30-->/home/runner/work/webview/webview/app/src/privapp/AndroidManifest.xml:11:9-34
+31        android:requestLegacyExternalStorage="true"
+31-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:33:9-52
+32        android:theme="@style/AppTheme" >
+32-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:32:9-40
+33        <activity
+33-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:36:9-44:20
+34            android:name="com.deviant.batterymonitor.MainActivity"
+34-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:38:13-67
+35            android:configChanges="orientation|screenSize"
+35-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:37:13-59
+36            android:exported="true" >
+36-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:39:13-36
+37            <intent-filter>
+37-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:40:13-43:29
+38                <action android:name="android.intent.action.MAIN" />
+38-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:41:17-69
+38-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:41:25-66
+39
+40                <category android:name="android.intent.category.LAUNCHER" />
+40-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:42:17-77
+40-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:42:27-74
+41            </intent-filter>
+42        </activity>
+43    </application>
+44
+45</manifest>
+
+Merged manifest saved to /home/runner/work/webview/webview/app/build/intermediates/merged_manifest/privappDebug/AndroidManifest.xml
+Watching 40 directories to track changes
+Watching 41 directories to track changes
+Watching 42 directories to track changes
+:app:processPrivappDebugMainManifest (Thread[Daemon worker,5,main]) completed. Took 0.111 secs.
+:app:processPrivappDebugManifest (Thread[Execution worker for ':' Thread 3,5,main]) started.
+
+> Task :app:processPrivappDebugManifest
+Watching 43 directories to track changes
+Caching disabled for task ':app:processPrivappDebugManifest' because:
+  Build cache is disabled
+Task ':app:processPrivappDebugManifest' is not up-to-date because:
+  No history is available.
+Watching 42 directories to track changes
+The input changes require a full rebuild for incremental task ':app:processPrivappDebugManifest'.
+Unable do incremental execution: full task run
+Watching 44 directories to track changes
+:app:processPrivappDebugManifest (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.242 secs.
+:app:processPrivappDebugManifestForPackage (Thread[Execution worker for ':' Thread 3,5,main]) started.
+:app:mergePrivappDebugShaders (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:mergePrivappDebugShaders
+Watching 44 directories to track changes
+Watching 45 directories to track changes
+Watching 45 directories to track changes
+Watching 45 directories to track changes
+Watching 45 directories to track changes
+Watching 45 directories to track changes
+Caching disabled for task ':app:mergePrivappDebugShaders' because:
+  Build cache is disabled
+Task ':app:mergePrivappDebugShaders' is not up-to-date because:
+  No history is available.
+Watching 45 directories to track changes
+Watching 44 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergePrivappDebugShaders'.
+Unable do incremental execution: full task run
+Watching 45 directories to track changes
+Watching 47 directories to track changes
+:app:mergePrivappDebugShaders (Thread[Execution worker for ':',5,main]) completed. Took 0.012 secs.
+:app:compilePrivappDebugShaders (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:compilePrivappDebugShaders NO-SOURCE
+Skipping task ':app:compilePrivappDebugShaders' as it has no source files and no previous output files.
+:app:compilePrivappDebugShaders (Thread[Execution worker for ':',5,main]) completed. Took 0.003 secs.
+:app:generatePrivappDebugAssets (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:generatePrivappDebugAssets UP-TO-DATE
+Skipping task ':app:generatePrivappDebugAssets' as it has no actions.
+:app:generatePrivappDebugAssets (Thread[Execution worker for ':',5,main]) completed. Took 0.0 secs.
+:app:mergePrivappDebugAssets (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:mergePrivappDebugAssets
+Watching 47 directories to track changes
+Watching 48 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 48 directories to track changes
+Watching 50 directories to track changes
+Watching 50 directories to track changes
+Watching 50 directories to track changes
+Watching 50 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:mergePrivappDebugAssets' because:
+  Build cache is disabled
+Task ':app:mergePrivappDebugAssets' is not up-to-date because:
+  No history is available.
+Watching 50 directories to track changes
+Watching 50 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergePrivappDebugAssets'.
+Unable do incremental execution: full task run
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 51 directories to track changes
+Watching 54 directories to track changes
+:app:mergePrivappDebugAssets (Thread[Execution worker for ':',5,main]) completed. Took 0.027 secs.
+:app:compressPrivappDebugAssets (Thread[Execution worker for ':',5,main]) started.
+:app:checkPrivappDebugDuplicateClasses (Thread[Execution worker for ':' Thread 2,5,main]) started.
+:app:desugarPrivappDebugFileDependencies (Thread[Daemon worker,5,main]) started.
+
+> Task :app:checkPrivappDebugDuplicateClasses
+Watching 54 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:checkPrivappDebugDuplicateClasses' because:
+  Build cache is disabled
+Task ':app:checkPrivappDebugDuplicateClasses' is not up-to-date because:
+  No history is available.
+Watching 54 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 56 directories to track changes
+:app:checkPrivappDebugDuplicateClasses (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.015 secs.
+
+> Task :app:compressPrivappDebugAssets
+Watching 54 directories to track changes
+Caching disabled for task ':app:compressPrivappDebugAssets' because:
+  Build cache is disabled
+Task ':app:compressPrivappDebugAssets' is not up-to-date because:
+  No history is available.
+Watching 54 directories to track changes
+The input changes require a full rebuild for incremental task ':app:compressPrivappDebugAssets'.
+Watching 60 directories to track changes
+:app:compressPrivappDebugAssets (Thread[Execution worker for ':',5,main]) completed. Took 0.033 secs.
+
+> Task :app:desugarPrivappDebugFileDependencies
+Watching 56 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:desugarPrivappDebugFileDependencies' because:
+  Build cache is disabled
+Task ':app:desugarPrivappDebugFileDependencies' is not up-to-date because:
+  No history is available.
+Watching 60 directories to track changes
+Watching 62 directories to track changes
+:app:desugarPrivappDebugFileDependencies (Thread[Daemon worker,5,main]) completed. Took 1.281 secs.
+:app:mergeExtDexPrivappDebug (Thread[Daemon worker,5,main]) started.
+:app:mergeLibDexPrivappDebug (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:processPrivappDebugManifestForPackage
+Watching 45 directories to track changes
+Caching disabled for task ':app:processPrivappDebugManifestForPackage' because:
+  Build cache is disabled
+Task ':app:processPrivappDebugManifestForPackage' is not up-to-date because:
+  No history is available.
+Watching 44 directories to track changes
+Watching 64 directories to track changes
+:app:processPrivappDebugManifestForPackage (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 1.389 secs.
+
+> Task :app:mergeExtDexPrivappDebug
+Watching 62 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:mergeExtDexPrivappDebug' because:
+  Build cache is disabled
+Task ':app:mergeExtDexPrivappDebug' is not up-to-date because:
+  No history is available.
+Watching 62 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergeExtDexPrivappDebug'.
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 66 directories to track changes
+:app:mergeExtDexPrivappDebug (Thread[Daemon worker,5,main]) completed. Took 0.03 secs.
+:app:processPrivappDebugResources (Thread[Execution worker for ':' Thread 3,5,main]) started.
+
+> Task :app:mergeLibDexPrivappDebug
+Watching 63 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:mergeLibDexPrivappDebug' because:
+  Build cache is disabled
+Task ':app:mergeLibDexPrivappDebug' is not up-to-date because:
+  No history is available.
+Watching 62 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergeLibDexPrivappDebug'.
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 83 directories to track changes
+:app:mergeLibDexPrivappDebug (Thread[Execution worker for ':',5,main]) completed. Took 0.024 secs.
+:app:processPrivappDebugJavaRes (Thread[Daemon worker,5,main]) started.
+
+> Task :app:processPrivappDebugJavaRes NO-SOURCE
+file or directory '/home/runner/work/webview/webview/app/src/main/resources', not found
+file or directory '/home/runner/work/webview/webview/app/src/privapp/resources', not found
+file or directory '/home/runner/work/webview/webview/app/src/debug/resources', not found
+file or directory '/home/runner/work/webview/webview/app/src/privappDebug/resources', not found
+Skipping task ':app:processPrivappDebugJavaRes' as it has no source files and no previous output files.
+:app:processPrivappDebugJavaRes (Thread[Daemon worker,5,main]) completed. Took 0.002 secs.
+:app:mergePrivappDebugJavaResource (Thread[Daemon worker,5,main]) started.
+:app:mergePrivappDebugJniLibFolders (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:mergePrivappDebugJniLibFolders
+Watching 83 directories to track changes
+Watching 83 directories to track changes
+Watching 83 directories to track changes
+Watching 83 directories to track changes
+Watching 83 directories to track changes
+Watching 83 directories to track changes
+Caching disabled for task ':app:mergePrivappDebugJniLibFolders' because:
+  Build cache is disabled
+Task ':app:mergePrivappDebugJniLibFolders' is not up-to-date because:
+  No history is available.
+Watching 83 directories to track changes
+Watching 83 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergePrivappDebugJniLibFolders'.
+Unable do incremental execution: full task run
+Watching 84 directories to track changes
+Watching 86 directories to track changes
+:app:mergePrivappDebugJniLibFolders (Thread[Execution worker for ':',5,main]) completed. Took 0.015 secs.
+:app:mergePrivappDebugNativeLibs (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:mergePrivappDebugNativeLibs NO-SOURCE
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Skipping task ':app:mergePrivappDebugNativeLibs' as it has no source files and no previous output files.
+:app:mergePrivappDebugNativeLibs (Thread[Execution worker for ':',5,main]) completed. Took 0.004 secs.
+:app:stripPrivappDebugDebugSymbols (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:stripPrivappDebugDebugSymbols NO-SOURCE
+file or directory '/home/runner/work/webview/webview/app/build/intermediates/merged_native_libs/privappDebug/out', not found
+Skipping task ':app:stripPrivappDebugDebugSymbols' as it has no source files and no previous output files.
+:app:stripPrivappDebugDebugSymbols (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.001 secs.
+:app:validateSigningPrivappDebug (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:mergePrivappDebugJavaResource
+Watching 83 directories to track changes
+Watching 83 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 83 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:mergePrivappDebugJavaResource' because:
+  Build cache is disabled
+Task ':app:mergePrivappDebugJavaResource' is not up-to-date because:
+  No history is available.
+Watching 83 directories to track changes
+Watching 83 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergePrivappDebugJavaResource'.
+Unable do incremental execution: full task run
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 88 directories to track changes
+Watching 89 directories to track changes
+:app:mergePrivappDebugJavaResource (Thread[Daemon worker,5,main]) completed. Took 0.106 secs.
+
+> Task :app:processPrivappDebugResources
+Watching 66 directories to track changes
+Watching 66 directories to track changes
+Watching 66 directories to track changes
+Watching 66 directories to track changes
+Watching 66 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:processPrivappDebugResources' because:
+  Build cache is disabled
+Task ':app:processPrivappDebugResources' is not up-to-date because:
+  No history is available.
+Watching 83 directories to track changes
+Watching 83 directories to track changes
+Watching 83 directories to track changes
+Watching 83 directories to track changes
+Watching 83 directories to track changes
+The input changes require a full rebuild for incremental task ':app:processPrivappDebugResources'.
+Unable do incremental execution: full task run
+Transforming aapt2-7.1.2-7984345-linux.jar (com.android.tools.build:aapt2:7.1.2-7984345) with Aapt2Extractor
+Caching disabled for Aapt2Extractor: /home/runner/.gradle/caches/modules-2/files-2.1/com.android.tools.build/aapt2/7.1.2-7984345/d6829f8479c14442d2331993c25461722701acd8/aapt2-7.1.2-7984345-linux.jar because:
+  Build cache is disabled
+Skipping Aapt2Extractor: /home/runner/.gradle/caches/modules-2/files-2.1/com.android.tools.build/aapt2/7.1.2-7984345/d6829f8479c14442d2331993c25461722701acd8/aapt2-7.1.2-7984345-linux.jar as it is up-to-date.
+AAPT2 aapt2-7.1.2-7984345-linux Daemon #0: starting
+Aapt output file /home/runner/work/webview/webview/app/build/intermediates/processed_res/privappDebug/out/resources-privappDebug.ap_
+Watching 90 directories to track changes
+Watching 91 directories to track changes
+Watching 93 directories to track changes
+Watching 94 directories to track changes
+Watching 95 directories to track changes
+:app:processPrivappDebugResources (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.32 secs.
+
+> Task :app:validateSigningPrivappDebug
+Watching 86 directories to track changes
+Caching disabled for task ':app:validateSigningPrivappDebug' because:
+  Build cache is disabled
+Task ':app:validateSigningPrivappDebug' is not up-to-date because:
+  Task.upToDateWhen is false.
+Watching 86 directories to track changes
+Creating default debug keystore at /home/runner/.android/debug.keystore
+Watching 97 directories to track changes
+:app:validateSigningPrivappDebug (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.706 secs.
+:app:compilePrivappDebugJavaWithJavac (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:compilePrivappDebugJavaWithJavac
+Watching 97 directories to track changes
+Watching 98 directories to track changes
+Watching 99 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 99 directories to track changes
+Watching 99 directories to track changes
+Watching 99 directories to track changes
+Watching 99 directories to track changes
+Watching 99 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:compilePrivappDebugJavaWithJavac' because:
+  Build cache is disabled
+Task ':app:compilePrivappDebugJavaWithJavac' is not up-to-date because:
+  No history is available.
+Watching 99 directories to track changes
+Watching 99 directories to track changes
+Watching 98 directories to track changes
+The input changes require a full rebuild for incremental task ':app:compilePrivappDebugJavaWithJavac'.
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Full recompilation is required because no incremental change information is available. This is usually caused by clean builds or changing compiler arguments.
+Compiling with toolchain '/usr/lib/jvm/temurin-17-jdk-amd64'.
+file or directory '/home/runner/work/webview/webview/app/src/privapp/java', not found
+file or directory '/home/runner/work/webview/webview/app/src/debug/java', not found
+file or directory '/home/runner/work/webview/webview/app/src/privappDebug/java', not found
+file or directory '/home/runner/work/webview/webview/app/build/generated/aidl_source_output_dir/privappDebug/out', not found
+file or directory '/home/runner/work/webview/webview/app/build/generated/renderscript_source_output_dir/privappDebug/out', not found
+Compiling with JDK Java compiler API.
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Class dependency analysis for incremental compilation took 0.013 secs.
+Created classpath snapshot for incremental compilation in 0.005 secs.
+Watching 103 directories to track changes
+Watching 105 directories to track changes
+Watching 106 directories to track changes
+:app:compilePrivappDebugJavaWithJavac (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 1.139 secs.
+:app:dexBuilderPrivappDebug (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:dexBuilderPrivappDebug
+Watching 106 directories to track changes
+Watching 106 directories to track changes
+Watching 106 directories to track changes
+Watching 106 directories to track changes
+Watching 106 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:dexBuilderPrivappDebug' because:
+  Build cache is disabled
+Task ':app:dexBuilderPrivappDebug' is not up-to-date because:
+  No history is available.
+Watching 106 directories to track changes
+Watching 106 directories to track changes
+Watching 106 directories to track changes
+Watching 106 directories to track changes
+Watching 106 directories to track changes
+The input changes require a full rebuild for incremental task ':app:dexBuilderPrivappDebug'.
+Dex builder is incremental : false 
+Processing input /home/runner/work/webview/webview/app/build/intermediates/javac/privappDebug/classes
+Dexing /home/runner/work/webview/webview/app/build/intermediates/javac/privappDebug/classes
+Processing input /home/runner/work/webview/webview/app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/privappDebug/R.jar
+Dexing /home/runner/work/webview/webview/app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/privappDebug/R.jar
+Dexing '/home/runner/work/webview/webview/app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/privappDebug/R.jar' to '/home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out/4350ea28c1783b3bfae41c6e6aa76b8ce6e3fd9d36eecc22a2884bf2c9481d97_1.jar'
+Dexing '/home/runner/work/webview/webview/app/build/intermediates/javac/privappDebug/classes' to '/home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out'
+Dexing '/home/runner/work/webview/webview/app/build/intermediates/javac/privappDebug/classes' to '/home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out'
+Dexing '/home/runner/work/webview/webview/app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/privappDebug/R.jar' to '/home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out/4350ea28c1783b3bfae41c6e6aa76b8ce6e3fd9d36eecc22a2884bf2c9481d97_0.jar'
+Done with all dex archive conversions
+Watching 108 directories to track changes
+Watching 110 directories to track changes
+Watching 112 directories to track changes
+Watching 117 directories to track changes
+Watching 119 directories to track changes
+:app:dexBuilderPrivappDebug (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 1.135 secs.
+:app:mergeProjectDexPrivappDebug (Thread[Execution worker for ':',5,main]) started.
+:app:writePrivappDebugAppMetadata (Thread[Execution worker for ':' Thread 3,5,main]) started.
+
+> Task :app:writePrivappDebugAppMetadata
+Watching 119 directories to track changes
+Caching disabled for task ':app:writePrivappDebugAppMetadata' because:
+  Build cache is disabled
+Task ':app:writePrivappDebugAppMetadata' is not up-to-date because:
+  No history is available.
+Watching 119 directories to track changes
+Watching 120 directories to track changes
+:app:writePrivappDebugAppMetadata (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.003 secs.
+:app:writePrivappDebugSigningConfigVersions (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:writePrivappDebugSigningConfigVersions
+Watching 120 directories to track changes
+Caching disabled for task ':app:writePrivappDebugSigningConfigVersions' because:
+  Build cache is disabled
+Task ':app:writePrivappDebugSigningConfigVersions' is not up-to-date because:
+  No history is available.
+Watching 120 directories to track changes
+Watching 121 directories to track changes
+:app:writePrivappDebugSigningConfigVersions (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.012 secs.
+:app:preStandaloneDebugBuild (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:preStandaloneDebugBuild UP-TO-DATE
+Skipping task ':app:preStandaloneDebugBuild' as it has no actions.
+:app:preStandaloneDebugBuild (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.0 secs.
+:app:mergeStandaloneDebugNativeDebugMetadata (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:mergeStandaloneDebugNativeDebugMetadata NO-SOURCE
+Skipping task ':app:mergeStandaloneDebugNativeDebugMetadata' as it has no source files and no previous output files.
+:app:mergeStandaloneDebugNativeDebugMetadata (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.0 secs.
+:app:compileStandaloneDebugAidl (Thread[Daemon worker,5,main]) started.
+
+> Task :app:compileStandaloneDebugAidl NO-SOURCE
+file or directory '/home/runner/work/webview/webview/app/src/main/aidl', not found
+file or directory '/home/runner/work/webview/webview/app/src/standalone/aidl', not found
+file or directory '/home/runner/work/webview/webview/app/src/debug/aidl', not found
+file or directory '/home/runner/work/webview/webview/app/src/standaloneDebug/aidl', not found
+Skipping task ':app:compileStandaloneDebugAidl' as it has no source files and no previous output files.
+:app:compileStandaloneDebugAidl (Thread[Daemon worker,5,main]) completed. Took 0.0 secs.
+:app:compileStandaloneDebugRenderscript (Thread[Execution worker for ':' Thread 3,5,main]) started.
+
+> Task :app:compileStandaloneDebugRenderscript NO-SOURCE
+file or directory '/home/runner/work/webview/webview/app/src/main/rs', not found
+file or directory '/home/runner/work/webview/webview/app/src/standalone/rs', not found
+file or directory '/home/runner/work/webview/webview/app/src/debug/rs', not found
+file or directory '/home/runner/work/webview/webview/app/src/standaloneDebug/rs', not found
+Skipping task ':app:compileStandaloneDebugRenderscript' as it has no source files and no previous output files.
+:app:compileStandaloneDebugRenderscript (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.004 secs.
+:app:generateStandaloneDebugBuildConfig (Thread[Daemon worker,5,main]) started.
+
+> Task :app:generateStandaloneDebugBuildConfig
+Watching 122 directories to track changes
+Caching disabled for task ':app:generateStandaloneDebugBuildConfig' because:
+  Build cache is disabled
+Task ':app:generateStandaloneDebugBuildConfig' is not up-to-date because:
+  No history is available.
+Watching 121 directories to track changes
+Watching 126 directories to track changes
+:app:generateStandaloneDebugBuildConfig (Thread[Daemon worker,5,main]) completed. Took 0.005 secs.
+:app:javaPreCompileStandaloneDebug (Thread[Execution worker for ':' Thread 3,5,main]) started.
+:app:checkStandaloneDebugAarMetadata (Thread[Daemon worker,5,main]) started.
+
+> Task :app:javaPreCompileStandaloneDebug
+Watching 127 directories to track changes
+Caching disabled for task ':app:javaPreCompileStandaloneDebug' because:
+  Build cache is disabled
+Task ':app:javaPreCompileStandaloneDebug' is not up-to-date because:
+  No history is available.
+Watching 126 directories to track changes
+Watching 127 directories to track changes
+:app:javaPreCompileStandaloneDebug (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.003 secs.
+:app:generateStandaloneDebugResValues (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:checkStandaloneDebugAarMetadata
+Watching 127 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:checkStandaloneDebugAarMetadata' because:
+  Build cache is disabled
+Task ':app:checkStandaloneDebugAarMetadata' is not up-to-date because:
+  No history is available.
+Watching 127 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 128 directories to track changes
+:app:checkStandaloneDebugAarMetadata (Thread[Daemon worker,5,main]) completed. Took 0.005 secs.
+
+> Task :app:generateStandaloneDebugResValues
+Watching 129 directories to track changes
+Caching disabled for task ':app:generateStandaloneDebugResValues' because:
+  Build cache is disabled
+Task ':app:generateStandaloneDebugResValues' is not up-to-date because:
+  No history is available.
+Watching 128 directories to track changes
+Watching 130 directories to track changes
+:app:generateStandaloneDebugResValues (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.004 secs.
+:app:generateStandaloneDebugResources (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:generateStandaloneDebugResources
+Skipping task ':app:generateStandaloneDebugResources' as it has no actions.
+:app:generateStandaloneDebugResources (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.0 secs.
+:app:mergeStandaloneDebugResources (Thread[Execution worker for ':' Thread 2,5,main]) started.
+:app:createStandaloneDebugCompatibleScreenManifests (Thread[Execution worker for ':' Thread 3,5,main]) started.
+
+> Task :app:createStandaloneDebugCompatibleScreenManifests
+Watching 130 directories to track changes
+Caching disabled for task ':app:createStandaloneDebugCompatibleScreenManifests' because:
+  Build cache is disabled
+Task ':app:createStandaloneDebugCompatibleScreenManifests' is not up-to-date because:
+  No history is available.
+Watching 130 directories to track changes
+Watching 131 directories to track changes
+:app:createStandaloneDebugCompatibleScreenManifests (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.017 secs.
+:app:extractDeepLinksStandaloneDebug (Thread[Execution worker for ':' Thread 3,5,main]) started.
+
+> Task :app:extractDeepLinksStandaloneDebug
+Watching 140 directories to track changes
+Caching disabled for task ':app:extractDeepLinksStandaloneDebug' because:
+  Build cache is disabled
+Task ':app:extractDeepLinksStandaloneDebug' is not up-to-date because:
+  No history is available.
+Watching 139 directories to track changes
+Watching 140 directories to track changes
+:app:extractDeepLinksStandaloneDebug (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.004 secs.
+:app:processStandaloneDebugMainManifest (Thread[Daemon worker,5,main]) started.
+
+> Task :app:mergeStandaloneDebugResources
+Watching 131 directories to track changes
+Watching 132 directories to track changes
+Watching 133 directories to track changes
+Watching 133 directories to track changes
+Watching 133 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 133 directories to track changes
+Watching 133 directories to track changes
+Caching disabled for task ':app:mergeStandaloneDebugResources' because:
+  Build cache is disabled
+Task ':app:mergeStandaloneDebugResources' is not up-to-date because:
+  No history is available.
+Watching 132 directories to track changes
+Watching 131 directories to track changes
+Watching 130 directories to track changes
+Watching 130 directories to track changes
+Watching 130 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergeStandaloneDebugResources'.
+[MergeResources] Inputs are non-incremental full task action.
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Compiling XML table /home/runner/work/webview/webview/app/build/intermediates/incremental/mergeStandaloneDebugResources/merged.dir/values/values.xml to /home/runner/work/webview/webview/app/build/intermediates/merged_res/standaloneDebug/values_values.arsc.flat
+Compiling xml file /home/runner/work/webview/webview/app/src/main/res/layout/activity_main.xml to /home/runner/work/webview/webview/app/build/intermediates/merged_res/standaloneDebug/layout_activity_main.xml.flat
+Compiling image file /home/runner/work/webview/webview/app/src/main/res/mipmap-hdpi/ic_launcher.png
+Compiling file /home/runner/work/webview/webview/app/src/main/res/mipmap-hdpi/ic_launcher.png to /home/runner/work/webview/webview/app/build/intermediates/merged_res/standaloneDebug/mipmap-hdpi_ic_launcher.png.flat
+Compiling image file /home/runner/work/webview/webview/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+Compiling file /home/runner/work/webview/webview/app/src/main/res/mipmap-xhdpi/ic_launcher.png to /home/runner/work/webview/webview/app/build/intermediates/merged_res/standaloneDebug/mipmap-xhdpi_ic_launcher.png.flat
+Compiling image file /home/runner/work/webview/webview/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+Compiling file /home/runner/work/webview/webview/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png to /home/runner/work/webview/webview/app/build/intermediates/merged_res/standaloneDebug/mipmap-xxxhdpi_ic_launcher.png.flat
+Compiling image file /home/runner/work/webview/webview/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+Compiling file /home/runner/work/webview/webview/app/src/main/res/mipmap-xxhdpi/ic_launcher.png to /home/runner/work/webview/webview/app/build/intermediates/merged_res/standaloneDebug/mipmap-xxhdpi_ic_launcher.png.flat
+Compiling image file /home/runner/work/webview/webview/app/src/main/res/mipmap-mdpi/ic_launcher.png
+Compiling file /home/runner/work/webview/webview/app/src/main/res/mipmap-mdpi/ic_launcher.png to /home/runner/work/webview/webview/app/build/intermediates/merged_res/standaloneDebug/mipmap-mdpi_ic_launcher.png.flat
+Watching 135 directories to track changes
+Watching 137 directories to track changes
+Watching 139 directories to track changes
+Watching 146 directories to track changes
+Watching 145 directories to track changes
+:app:mergeStandaloneDebugResources (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.058 secs.
+
+> Task :app:mergeProjectDexPrivappDebug
+Watching 119 directories to track changes
+Caching disabled for task ':app:mergeProjectDexPrivappDebug' because:
+  Build cache is disabled
+Task ':app:mergeProjectDexPrivappDebug' is not up-to-date because:
+  No history is available.
+Watching 119 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergeProjectDexPrivappDebug'.
+Merging to '/home/runner/work/webview/webview/app/build/intermediates/dex/privappDebug/mergeProjectDexPrivappDebug/0' with D8 from all or a subset of dex files in /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out/4350ea28c1783b3bfae41c6e6aa76b8ce6e3fd9d36eecc22a2884bf2c9481d97_1.jar
+Merging to '/home/runner/work/webview/webview/app/build/intermediates/dex/privappDebug/mergeProjectDexPrivappDebug/13' with D8 from all or a subset of dex files in /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/privappDebug/out
+Watching 162 directories to track changes
+:app:mergeProjectDexPrivappDebug (Thread[Execution worker for ':',5,main]) completed. Took 0.119 secs.
+
+> Task :app:processStandaloneDebugMainManifest
+Watching 141 directories to track changes
+Watching 142 directories to track changes
+Watching 146 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:processStandaloneDebugMainManifest' because:
+  Build cache is disabled
+Task ':app:processStandaloneDebugMainManifest' is not up-to-date because:
+  No history is available.
+Watching 145 directories to track changes
+Watching 144 directories to track changes
+Watching 144 directories to track changes
+The input changes require a full rebuild for incremental task ':app:processStandaloneDebugMainManifest'.
+Unable do incremental execution: full task run
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Merging main manifest /home/runner/work/webview/webview/app/src/main/AndroidManifest.xml
+
+Merging result: SUCCESS
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.deviant.batterymonitor.standalone"
+4    android:versionCode="1"
+5    android:versionName="1.0-standalone" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+8-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml
+9        android:targetSdkVersion="34" />
+9-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml
+10
+11    <!-- sharedUserId akan di-inject via build flavor -->
+12    <!-- standalone flavor: tidak ada sharedUserId -->
+13    <!-- privapp flavor: android:sharedUserId="android.uid.system" -->
+14
+15
+16    <!-- Standard Permissions -->
+17    <uses-permission android:name="android.permission.INTERNET" />
+17-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:12:5-67
+17-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:12:22-64
+18    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+18-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:13:5-81
+18-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:13:22-78
+19    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+19-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:14:5-80
+19-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:14:22-77
+20
+21    <!-- System/Privileged Permissions (hanya dipake di priv-app flavor) -->
+22    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+22-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:17:5-18:47
+22-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:17:22-70
+23    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+23-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:19:5-20:47
+23-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:19:22-77
+24    <uses-permission android:name="android.permission.DEVICE_POWER" />
+24-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:21:5-22:47
+24-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:21:22-68
+25    <uses-permission android:name="android.permission.BATTERY_STATS" />
+25-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:23:5-24:47
+25-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:23:22-69
+26    <uses-permission android:name="android.permission.DUMP" />
+26-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:25:5-26:47
+26-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:25:22-60
+27
+28    <application
+28-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:28:5-46:19
+29        android:allowBackup="true"
+29-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:29:9-35
+30        android:debuggable="true"
+31        android:icon="@mipmap/ic_launcher"
+31-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:30:9-43
+32        android:label="@string/app_name"
+32-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:31:9-41
+33        android:requestLegacyExternalStorage="true"
+33-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:33:9-52
+34        android:theme="@style/AppTheme" >
+34-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:32:9-40
+35        <activity
+35-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:36:9-44:20
+36            android:name="com.deviant.batterymonitor.MainActivity"
+36-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:38:13-67
+37            android:configChanges="orientation|screenSize"
+37-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:37:13-59
+38            android:exported="true" >
+38-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:39:13-36
+39            <intent-filter>
+39-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:40:13-43:29
+40                <action android:name="android.intent.action.MAIN" />
+40-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:41:17-69
+40-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:41:25-66
+41
+42                <category android:name="android.intent.category.LAUNCHER" />
+42-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:42:17-77
+42-->/home/runner/work/webview/webview/app/src/main/AndroidManifest.xml:42:27-74
+43            </intent-filter>
+44        </activity>
+45    </application>
+46
+47</manifest>
+
+Merged manifest saved to /home/runner/work/webview/webview/app/build/intermediates/merged_manifest/standaloneDebug/AndroidManifest.xml
+Watching 163 directories to track changes
+Watching 164 directories to track changes
+Watching 164 directories to track changes
+:app:processStandaloneDebugMainManifest (Thread[Daemon worker,5,main]) completed. Took 0.028 secs.
+:app:packagePrivappDebug (Thread[Execution worker for ':' Thread 2,5,main]) started.
+:app:processStandaloneDebugManifest (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:processStandaloneDebugManifest
+Watching 164 directories to track changes
+Caching disabled for task ':app:processStandaloneDebugManifest' because:
+  Build cache is disabled
+Task ':app:processStandaloneDebugManifest' is not up-to-date because:
+  No history is available.
+Watching 164 directories to track changes
+The input changes require a full rebuild for incremental task ':app:processStandaloneDebugManifest'.
+Unable do incremental execution: full task run
+Watching 165 directories to track changes
+:app:processStandaloneDebugManifest (Thread[Execution worker for ':',5,main]) completed. Took 0.004 secs.
+:app:processStandaloneDebugManifestForPackage (Thread[Execution worker for ':' Thread 3,5,main]) started.
+:app:mergeStandaloneDebugShaders (Thread[Daemon worker,5,main]) started.
+
+> Task :app:mergeStandaloneDebugShaders
+Watching 165 directories to track changes
+Watching 166 directories to track changes
+Watching 166 directories to track changes
+Watching 166 directories to track changes
+Caching disabled for task ':app:mergeStandaloneDebugShaders' because:
+  Build cache is disabled
+Task ':app:mergeStandaloneDebugShaders' is not up-to-date because:
+  No history is available.
+Watching 166 directories to track changes
+Watching 165 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergeStandaloneDebugShaders'.
+Unable do incremental execution: full task run
+Watching 166 directories to track changes
+Watching 168 directories to track changes
+:app:mergeStandaloneDebugShaders (Thread[Daemon worker,5,main]) completed. Took 0.018 secs.
+:app:compileStandaloneDebugShaders (Thread[Daemon worker,5,main]) started.
+
+> Task :app:compileStandaloneDebugShaders NO-SOURCE
+Skipping task ':app:compileStandaloneDebugShaders' as it has no source files and no previous output files.
+:app:compileStandaloneDebugShaders (Thread[Daemon worker,5,main]) completed. Took 0.0 secs.
+:app:generateStandaloneDebugAssets (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:generateStandaloneDebugAssets UP-TO-DATE
+Skipping task ':app:generateStandaloneDebugAssets' as it has no actions.
+:app:generateStandaloneDebugAssets (Thread[Execution worker for ':',5,main]) completed. Took 0.0 secs.
+:app:mergeStandaloneDebugAssets (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:mergeStandaloneDebugAssets
+Watching 168 directories to track changes
+Watching 169 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 169 directories to track changes
+Watching 169 directories to track changes
+Watching 169 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:mergeStandaloneDebugAssets' because:
+  Build cache is disabled
+Task ':app:mergeStandaloneDebugAssets' is not up-to-date because:
+  No history is available.
+Watching 169 directories to track changes
+Watching 168 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergeStandaloneDebugAssets'.
+Unable do incremental execution: full task run
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 169 directories to track changes
+Watching 172 directories to track changes
+:app:mergeStandaloneDebugAssets (Thread[Execution worker for ':',5,main]) completed. Took 0.021 secs.
+:app:compressStandaloneDebugAssets (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:processStandaloneDebugManifestForPackage
+Watching 165 directories to track changes
+Caching disabled for task ':app:processStandaloneDebugManifestForPackage' because:
+  Build cache is disabled
+Task ':app:processStandaloneDebugManifestForPackage' is not up-to-date because:
+  No history is available.
+Watching 165 directories to track changes
+Watching 173 directories to track changes
+:app:processStandaloneDebugManifestForPackage (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.074 secs.
+:app:processStandaloneDebugResources (Thread[Execution worker for ':' Thread 3,5,main]) started.
+
+> Task :app:compressStandaloneDebugAssets
+Watching 173 directories to track changes
+Caching disabled for task ':app:compressStandaloneDebugAssets' because:
+  Build cache is disabled
+Task ':app:compressStandaloneDebugAssets' is not up-to-date because:
+  No history is available.
+Watching 172 directories to track changes
+The input changes require a full rebuild for incremental task ':app:compressStandaloneDebugAssets'.
+Watching 181 directories to track changes
+:app:compressStandaloneDebugAssets (Thread[Execution worker for ':',5,main]) completed. Took 0.012 secs.
+:app:checkStandaloneDebugDuplicateClasses (Thread[Daemon worker,5,main]) started.
+:app:desugarStandaloneDebugFileDependencies (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:checkStandaloneDebugDuplicateClasses
+Watching 177 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:checkStandaloneDebugDuplicateClasses' because:
+  Build cache is disabled
+Task ':app:checkStandaloneDebugDuplicateClasses' is not up-to-date because:
+  No history is available.
+Watching 177 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 178 directories to track changes
+:app:checkStandaloneDebugDuplicateClasses (Thread[Daemon worker,5,main]) completed. Took 0.007 secs.
+
+> Task :app:desugarStandaloneDebugFileDependencies
+Watching 177 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:desugarStandaloneDebugFileDependencies' because:
+  Build cache is disabled
+Task ':app:desugarStandaloneDebugFileDependencies' is not up-to-date because:
+  No history is available.
+Watching 177 directories to track changes
+Watching 179 directories to track changes
+:app:desugarStandaloneDebugFileDependencies (Thread[Execution worker for ':',5,main]) completed. Took 0.005 secs.
+:app:mergeExtDexStandaloneDebug (Thread[Execution worker for ':',5,main]) started.
+:app:mergeLibDexStandaloneDebug (Thread[Daemon worker,5,main]) started.
+
+> Task :app:mergeExtDexStandaloneDebug
+Watching 180 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:mergeExtDexStandaloneDebug' because:
+  Build cache is disabled
+Task ':app:mergeExtDexStandaloneDebug' is not up-to-date because:
+  No history is available.
+Watching 179 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergeExtDexStandaloneDebug'.
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 181 directories to track changes
+:app:mergeExtDexStandaloneDebug (Thread[Execution worker for ':',5,main]) completed. Took 0.013 secs.
+:app:processStandaloneDebugJavaRes (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:processStandaloneDebugJavaRes NO-SOURCE
+file or directory '/home/runner/work/webview/webview/app/src/main/resources', not found
+file or directory '/home/runner/work/webview/webview/app/src/standalone/resources', not found
+file or directory '/home/runner/work/webview/webview/app/src/debug/resources', not found
+file or directory '/home/runner/work/webview/webview/app/src/standaloneDebug/resources', not found
+Skipping task ':app:processStandaloneDebugJavaRes' as it has no source files and no previous output files.
+:app:processStandaloneDebugJavaRes (Thread[Execution worker for ':',5,main]) completed. Took 0.0 secs.
+:app:mergeStandaloneDebugJavaResource (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:mergeLibDexStandaloneDebug
+Watching 180 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:mergeLibDexStandaloneDebug' because:
+  Build cache is disabled
+Task ':app:mergeLibDexStandaloneDebug' is not up-to-date because:
+  No history is available.
+Watching 181 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergeLibDexStandaloneDebug'.
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 198 directories to track changes
+:app:mergeLibDexStandaloneDebug (Thread[Daemon worker,5,main]) completed. Took 0.037 secs.
+
+> Task :app:mergeStandaloneDebugJavaResource
+Watching 181 directories to track changes
+Watching 182 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 182 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:mergeStandaloneDebugJavaResource' because:
+  Build cache is disabled
+Task ':app:mergeStandaloneDebugJavaResource' is not up-to-date because:
+  No history is available.
+Watching 182 directories to track changes
+Watching 181 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergeStandaloneDebugJavaResource'.
+Unable do incremental execution: full task run
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 200 directories to track changes
+Watching 201 directories to track changes
+:app:mergeStandaloneDebugJavaResource (Thread[Execution worker for ':',5,main]) completed. Took 0.023 secs.
+:app:mergeStandaloneDebugJniLibFolders (Thread[Daemon worker,5,main]) started.
+
+> Task :app:mergeStandaloneDebugJniLibFolders
+Watching 201 directories to track changes
+Watching 202 directories to track changes
+Watching 202 directories to track changes
+Watching 202 directories to track changes
+Caching disabled for task ':app:mergeStandaloneDebugJniLibFolders' because:
+  Build cache is disabled
+Task ':app:mergeStandaloneDebugJniLibFolders' is not up-to-date because:
+  No history is available.
+Watching 202 directories to track changes
+Watching 201 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergeStandaloneDebugJniLibFolders'.
+Unable do incremental execution: full task run
+Watching 202 directories to track changes
+Watching 204 directories to track changes
+:app:mergeStandaloneDebugJniLibFolders (Thread[Daemon worker,5,main]) completed. Took 0.015 secs.
+:app:mergeStandaloneDebugNativeLibs (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:mergeStandaloneDebugNativeLibs NO-SOURCE
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Skipping task ':app:mergeStandaloneDebugNativeLibs' as it has no source files and no previous output files.
+:app:mergeStandaloneDebugNativeLibs (Thread[Execution worker for ':',5,main]) completed. Took 0.004 secs.
+:app:stripStandaloneDebugDebugSymbols (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:stripStandaloneDebugDebugSymbols NO-SOURCE
+file or directory '/home/runner/work/webview/webview/app/build/intermediates/merged_native_libs/standaloneDebug/out', not found
+Skipping task ':app:stripStandaloneDebugDebugSymbols' as it has no source files and no previous output files.
+:app:stripStandaloneDebugDebugSymbols (Thread[Execution worker for ':',5,main]) completed. Took 0.0 secs.
+:app:validateSigningStandaloneDebug (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:validateSigningStandaloneDebug
+Watching 204 directories to track changes
+Caching disabled for task ':app:validateSigningStandaloneDebug' because:
+  Build cache is disabled
+Task ':app:validateSigningStandaloneDebug' is not up-to-date because:
+  No history is available.
+Watching 204 directories to track changes
+Watching 205 directories to track changes
+:app:validateSigningStandaloneDebug (Thread[Execution worker for ':',5,main]) completed. Took 0.023 secs.
+:app:writeStandaloneDebugAppMetadata (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:writeStandaloneDebugAppMetadata
+Watching 206 directories to track changes
+Caching disabled for task ':app:writeStandaloneDebugAppMetadata' because:
+  Build cache is disabled
+Task ':app:writeStandaloneDebugAppMetadata' is not up-to-date because:
+  No history is available.
+Watching 205 directories to track changes
+Watching 206 directories to track changes
+:app:writeStandaloneDebugAppMetadata (Thread[Execution worker for ':',5,main]) completed. Took 0.007 secs.
+:app:writeStandaloneDebugSigningConfigVersions (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:writeStandaloneDebugSigningConfigVersions
+Watching 207 directories to track changes
+Caching disabled for task ':app:writeStandaloneDebugSigningConfigVersions' because:
+  Build cache is disabled
+Task ':app:writeStandaloneDebugSigningConfigVersions' is not up-to-date because:
+  No history is available.
+Watching 206 directories to track changes
+Watching 207 directories to track changes
+:app:writeStandaloneDebugSigningConfigVersions (Thread[Execution worker for ':',5,main]) completed. Took 0.012 secs.
+
+> Task :app:packagePrivappDebug
+Watching 165 directories to track changes
+Watching 165 directories to track changes
+Watching 165 directories to track changes
+Watching 165 directories to track changes
+Caching disabled for task ':app:packagePrivappDebug' because:
+  Build cache is disabled
+Task ':app:packagePrivappDebug' is not up-to-date because:
+  No history is available.
+Watching 164 directories to track changes
+Watching 164 directories to track changes
+The input changes require a full rebuild for incremental task ':app:packagePrivappDebug'.
+Watching 208 directories to track changes
+Watching 212 directories to track changes
+Watching 213 directories to track changes
+:app:packagePrivappDebug (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.285 secs.
+:app:createPrivappDebugApkListingFileRedirect (Thread[Daemon worker,5,main]) started.
+
+> Task :app:createPrivappDebugApkListingFileRedirect
+Watching 213 directories to track changes
+Caching disabled for task ':app:createPrivappDebugApkListingFileRedirect' because:
+  Build cache is disabled
+Task ':app:createPrivappDebugApkListingFileRedirect' is not up-to-date because:
+  No history is available.
+Watching 213 directories to track changes
+Watching 214 directories to track changes
+:app:createPrivappDebugApkListingFileRedirect (Thread[Daemon worker,5,main]) completed. Took 0.004 secs.
+:app:assemblePrivappDebug (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:assemblePrivappDebug
+Skipping task ':app:assemblePrivappDebug' as it has no actions.
+:app:assemblePrivappDebug (Thread[Execution worker for ':',5,main]) completed. Took 0.0 secs.
+
+> Task :app:processStandaloneDebugResources
+Watching 174 directories to track changes
+Watching 174 directories to track changes
+Watching 175 directories to track changes
+Watching 176 directories to track changes
+Watching 177 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:processStandaloneDebugResources' because:
+  Build cache is disabled
+Task ':app:processStandaloneDebugResources' is not up-to-date because:
+  No history is available.
+Watching 180 directories to track changes
+Watching 180 directories to track changes
+Watching 179 directories to track changes
+Watching 178 directories to track changes
+Watching 177 directories to track changes
+The input changes require a full rebuild for incremental task ':app:processStandaloneDebugResources'.
+Unable do incremental execution: full task run
+Aapt output file /home/runner/work/webview/webview/app/build/intermediates/processed_res/standaloneDebug/out/resources-standaloneDebug.ap_
+Watching 215 directories to track changes
+Watching 216 directories to track changes
+Watching 218 directories to track changes
+Watching 219 directories to track changes
+Watching 220 directories to track changes
+:app:processStandaloneDebugResources (Thread[Execution worker for ':' Thread 3,5,main]) completed. Took 0.203 secs.
+:app:compileStandaloneDebugJavaWithJavac (Thread[Execution worker for ':',5,main]) started.
+
+> Task :app:compileStandaloneDebugJavaWithJavac
+Watching 221 directories to track changes
+Watching 222 directories to track changes
+Watching 223 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Watching 223 directories to track changes
+Watching 223 directories to track changes
+Watching 223 directories to track changes
+Watching 223 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:compileStandaloneDebugJavaWithJavac' because:
+  Build cache is disabled
+Task ':app:compileStandaloneDebugJavaWithJavac' is not up-to-date because:
+  No history is available.
+Watching 222 directories to track changes
+Watching 221 directories to track changes
+Watching 220 directories to track changes
+The input changes require a full rebuild for incremental task ':app:compileStandaloneDebugJavaWithJavac'.
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Full recompilation is required because no incremental change information is available. This is usually caused by clean builds or changing compiler arguments.
+Compiling with toolchain '/usr/lib/jvm/temurin-17-jdk-amd64'.
+file or directory '/home/runner/work/webview/webview/app/src/standalone/java', not found
+file or directory '/home/runner/work/webview/webview/app/src/debug/java', not found
+file or directory '/home/runner/work/webview/webview/app/src/standaloneDebug/java', not found
+file or directory '/home/runner/work/webview/webview/app/build/generated/aidl_source_output_dir/standaloneDebug/out', not found
+file or directory '/home/runner/work/webview/webview/app/build/generated/renderscript_source_output_dir/standaloneDebug/out', not found
+Compiling with JDK Java compiler API.
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Class dependency analysis for incremental compilation took 0.003 secs.
+Created classpath snapshot for incremental compilation in 0.0 secs.
+Watching 225 directories to track changes
+Watching 227 directories to track changes
+Watching 228 directories to track changes
+:app:compileStandaloneDebugJavaWithJavac (Thread[Execution worker for ':',5,main]) completed. Took 0.338 secs.
+:app:dexBuilderStandaloneDebug (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:dexBuilderStandaloneDebug
+Watching 229 directories to track changes
+Watching 230 directories to track changes
+Watching 231 directories to track changes
+Watching 232 directories to track changes
+Watching 233 directories to track changes
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+file or directory '/home/runner/work/webview/webview/app/libs', not found
+Caching disabled for task ':app:dexBuilderStandaloneDebug' because:
+  Build cache is disabled
+Task ':app:dexBuilderStandaloneDebug' is not up-to-date because:
+  No history is available.
+Watching 232 directories to track changes
+Watching 231 directories to track changes
+Watching 230 directories to track changes
+Watching 229 directories to track changes
+Watching 228 directories to track changes
+The input changes require a full rebuild for incremental task ':app:dexBuilderStandaloneDebug'.
+Dex builder is incremental : false 
+Processing input /home/runner/work/webview/webview/app/build/intermediates/javac/standaloneDebug/classes
+Dexing /home/runner/work/webview/webview/app/build/intermediates/javac/standaloneDebug/classes
+Dexing '/home/runner/work/webview/webview/app/build/intermediates/javac/standaloneDebug/classes' to '/home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out'
+Processing input /home/runner/work/webview/webview/app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/standaloneDebug/R.jar
+Dexing /home/runner/work/webview/webview/app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/standaloneDebug/R.jar
+Dexing '/home/runner/work/webview/webview/app/build/intermediates/javac/standaloneDebug/classes' to '/home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out'
+Dexing '/home/runner/work/webview/webview/app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/standaloneDebug/R.jar' to '/home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out/4350ea28c1783b3bfae41c6e6aa76b8ce6e3fd9d36eecc22a2884bf2c9481d97_0.jar'
+Dexing '/home/runner/work/webview/webview/app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/standaloneDebug/R.jar' to '/home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out/4350ea28c1783b3bfae41c6e6aa76b8ce6e3fd9d36eecc22a2884bf2c9481d97_1.jar'
+Done with all dex archive conversions
+Watching 230 directories to track changes
+Watching 232 directories to track changes
+Watching 234 directories to track changes
+Watching 239 directories to track changes
+Watching 241 directories to track changes
+:app:dexBuilderStandaloneDebug (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.403 secs.
+:app:mergeProjectDexStandaloneDebug (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:mergeProjectDexStandaloneDebug
+Watching 241 directories to track changes
+Caching disabled for task ':app:mergeProjectDexStandaloneDebug' because:
+  Build cache is disabled
+Task ':app:mergeProjectDexStandaloneDebug' is not up-to-date because:
+  No history is available.
+Watching 241 directories to track changes
+The input changes require a full rebuild for incremental task ':app:mergeProjectDexStandaloneDebug'.
+Merging to '/home/runner/work/webview/webview/app/build/intermediates/dex/standaloneDebug/mergeProjectDexStandaloneDebug/0' with D8 from all or a subset of dex files in /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out/4350ea28c1783b3bfae41c6e6aa76b8ce6e3fd9d36eecc22a2884bf2c9481d97_1.jar
+Merging to '/home/runner/work/webview/webview/app/build/intermediates/dex/standaloneDebug/mergeProjectDexStandaloneDebug/13' with D8 from all or a subset of dex files in /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out, /home/runner/work/webview/webview/app/build/intermediates/project_dex_archive/standaloneDebug/out
+Watching 258 directories to track changes
+:app:mergeProjectDexStandaloneDebug (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.082 secs.
+:app:packageStandaloneDebug (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:packageStandaloneDebug
+Watching 259 directories to track changes
+Watching 259 directories to track changes
+Watching 259 directories to track changes
+Watching 259 directories to track changes
+Caching disabled for task ':app:packageStandaloneDebug' because:
+  Build cache is disabled
+Task ':app:packageStandaloneDebug' is not up-to-date because:
+  No history is available.
+Watching 258 directories to track changes
+Watching 258 directories to track changes
+The input changes require a full rebuild for incremental task ':app:packageStandaloneDebug'.
+Watching 259 directories to track changes
+Watching 263 directories to track changes
+Watching 264 directories to track changes
+:app:packageStandaloneDebug (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.071 secs.
+:app:createStandaloneDebugApkListingFileRedirect (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:createStandaloneDebugApkListingFileRedirect
+Watching 265 directories to track changes
+Caching disabled for task ':app:createStandaloneDebugApkListingFileRedirect' because:
+  Build cache is disabled
+Task ':app:createStandaloneDebugApkListingFileRedirect' is not up-to-date because:
+  No history is available.
+Watching 264 directories to track changes
+Watching 265 directories to track changes
+:app:createStandaloneDebugApkListingFileRedirect (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.002 secs.
+:app:assembleStandaloneDebug (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:assembleStandaloneDebug
+Skipping task ':app:assembleStandaloneDebug' as it has no actions.
+:app:assembleStandaloneDebug (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.0 secs.
+:app:assembleDebug (Thread[Execution worker for ':' Thread 2,5,main]) started.
+
+> Task :app:assembleDebug
+Skipping task ':app:assembleDebug' as it has no actions.
+:app:assembleDebug (Thread[Execution worker for ':' Thread 2,5,main]) completed. Took 0.0 secs.
+AAPT2 aapt2-7.1.2-7984345-linux Daemon #0: shutdown
+
+BUILD SUCCESSFUL in 21s
+56 actionable tasks: 56 executed
+Watching 265 directories to track changes
+
+Build exit code: 0
+
+===== BUILD OUTPUTS =====
+app/build/outputs/apk/standalone/debug/app-standalone-debug.apk
+app/build/outputs/apk/privapp/debug/app-privapp-debug.apk
+========================
+
+===== PUSHING TO BUILD-LOGS BRANCH =====
